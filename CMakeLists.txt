@@ -1,0 +1,143 @@
+cmake_minimum_required (VERSION 3.5)
+project (SCREEN)
+
+
+set (CMAKE_C_STANDARD 11)
+set (CMAKE_CXX_STANDARD 11)
+find_package (Threads REQUIRED)
+
+
+list (APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}")
+include (ExternalProject)
+include (FeatureSummary)
+include (CMakeDependentOption)
+
+
+
+set (IMPLIB_DIR "imp")
+
+set (GL3W_DIR ${IMPLIB_DIR}/gl3w)
+include_directories (${GL3W_DIR}/include)
+link_directories (${GL3W_DIR}/build/${ConfigurationName})
+
+set (SDL_DIR ${IMPLIB_DIR}/sdl)
+include_directories (${SDL_DIR}/include)
+link_directories (${SDL_DIR}/build/${ConfigurationName})
+
+
+include_directories (.)
+add_definitions (-D_UNICODE -D_CRT_SECURE_NO_WARNINGS -D_USE_MATH_DEFINES)
+
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+    add_definitions (-D_HAS_EXCEPTIONS=0)
+endif ()
+
+
+
+if (MSVC)
+    set (CMAKE_C_FLAGS "/W3 /WX")
+endif ()
+if (CMAKE_COMPILER_IS_GNUCC)
+    set (CMAKE_C_FLAGS "-std=c11 -Wall -Wno-unused-function -DHAVE_PTHREAD -D_GNU_SOURCE -D_O_CLOEXEC")
+endif ()
+
+
+set (CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DDEBUG")
+set (CMAKE_C_FLAGS_MINSIZEREL "${CMAKE_C_FLAGS_MINSIZEREL} -DDEBUG")
+set (CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -DNDEBUG")
+set (CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -DDEBUG")
+
+
+
+
+file (GLOB SRC_FILES *.h *.c)
+source_group (src FILES ${SRC_FILES})
+add_library (screen ${SRC_FILES})
+
+
+
+file (GLOB TESTS_SRC_FILES player/*.h player/*.c)
+source_group (src FILES ${TESTS_SRC_FILES})
+add_executable (player ${TESTS_SRC_FILES})
+target_link_libraries (player screen)
+if (WIN32)
+else ()
+    target_link_libraries (player m)
+endif ()
+
+if (NOT DEFINED EMSCRIPTEN)
+    target_link_libraries (player SDL2)
+endif ()
+if (NOT DEFINED EMSCRIPTEN)
+    if (WIN32)
+        target_link_libraries (player opengl32 gl3w version winmm imm32)
+    else ()
+        target_link_libraries (player GL gl3w)
+    endif ()
+endif ()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
