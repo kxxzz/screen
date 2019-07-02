@@ -58,6 +58,8 @@ int main(int argc, char* argv[])
         SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE
     );
     SDL_GLContext context = SDL_GL_CreateContext(window);
+    SCREEN_startup();
+    SCREEN_enter(winWidth, winHeight);
 
 
     bool quit = false;
@@ -77,11 +79,13 @@ int main(int argc, char* argv[])
                 break;
             }
         }
+        SCREEN_frame();
         SDL_GL_SwapWindow(window);
         // SDL_Delay(1);
     }
 
 
+    SCREEN_destroy();
     SDL_GL_DeleteContext(context);
     SDL_DestroyWindow(window);
     SDL_Quit();

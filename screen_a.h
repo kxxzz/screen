@@ -39,7 +39,36 @@
 
 
 
+#ifdef __EMSCRIPTEN__
+# include <GLES3/gl3.h>
+# include <emscripten/emscripten.h>
+# include <emscripten/html5.h>
+#elif defined(__ANDROID__)
+# if __ANDROID_API__ >= 24
+#  include <GLES3/gl32.h>
+# elif __ANDROID_API__ >= 21
+#  include <GLES3/gl31.h>
+# else
+#  error
+# endif
+#else
+# define SCREEN_USE_GL3W
+# include <GL/gl3w.h>
+# include <GL/glcorearb.h>
+#endif
 
+
+
+
+
+
+GLenum SCREEN_glCheck(const char *const file, int const line);
+
+#ifndef NDEBUG
+# define SCREEN_GLCHECK() SCREEN_glCheck(__FILE__, __LINE__)
+#else
+# define SCREEN_GLCHECK() SCREEN_glCheck(NULL, -1)
+#endif
 
 
 

@@ -21,9 +21,14 @@ typedef double f64;
 
 
 
+void SCREEN_startup(void);
+void SCREEN_destroy(void);
 
+void SCREEN_enter(u32 w, u32 h);
+void SCREEN_leave(void);
+void SCREEN_resize(u32 w, u32 h);
 
-
+void SCREEN_frame(void);
 
 
 
