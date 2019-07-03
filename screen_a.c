@@ -134,9 +134,9 @@ static GLuint SCREEN_compileShader(GLenum type, GLsizei numSrcs, const char** sr
     glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
     if (!status)
     {
-        char infoBuffer[4096];
-        glGetShaderInfoLog(shader, sizeof(infoBuffer), &status, infoBuffer);
-        assert(false);
+        char infoBuf[4096];
+        glGetShaderInfoLog(shader, sizeof(infoBuf), &status, infoBuf);
+        printf("%s", infoBuf);
         glDeleteShader(shader);
         return 0;
     }
@@ -160,6 +160,10 @@ GLuint SCREEN_buildShaderProgram(const char* shaderMain)
         SCREEN_shaderVertexSrc(),
     };
     GLuint vertShader = SCREEN_compileShader(GL_VERTEX_SHADER, ARYLEN(vsSrc), vsSrc);
+    if (!vertShader)
+    {
+        return 0;
+    }
 
     const char* fsSrc[] =
     {
@@ -169,19 +173,24 @@ GLuint SCREEN_buildShaderProgram(const char* shaderMain)
         SCREEN_shaderFragmentSrcFooter(),
     };
     GLuint fragShader = SCREEN_compileShader(GL_FRAGMENT_SHADER, ARYLEN(fsSrc), fsSrc);
+    if (!fragShader)
+    {
+        glDeleteShader(vertShader);
+        return 0;
+    }
 
     GLuint shaderProgram = glCreateProgram();
     glAttachShader(shaderProgram, vertShader);
     glAttachShader(shaderProgram, fragShader);
     glLinkProgram(shaderProgram);
 
-    int status;
+    GLint status;
     glGetProgramiv(shaderProgram, GL_LINK_STATUS, &status);
     if (!status)
     {
-        char infoBuffer[4096];
-        glGetProgramInfoLog(shaderProgram, sizeof(infoBuffer), &status, infoBuffer);
-        assert(false);
+        char infoBuf[4096];
+        glGetProgramInfoLog(shaderProgram, sizeof(infoBuf), &status, infoBuf);
+        printf("%s", infoBuf);
         glDeleteShader(fragShader);
         glDeleteShader(vertShader);
         glDeleteProgram(shaderProgram);
@@ -193,6 +202,8 @@ GLuint SCREEN_buildShaderProgram(const char* shaderMain)
 
     glUseProgram(shaderProgram);
     glValidateProgram(shaderProgram);
+    glGetProgramiv(shaderProgram, GL_VALIDATE_STATUS, &status);
+    assert(status);
     SCREEN_GLCHECK();
 
     return shaderProgram;
