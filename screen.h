@@ -34,17 +34,6 @@ void SCREEN_resize(u32 w, u32 h);
 void SCREEN_frame(f32 time);
 
 
-
-typedef struct SCREEN_SceneDesc
-{
-    const char* shaderMain;
-} SCREEN_SceneDesc;
-
-void SCREEN_loadScene(const SCREEN_SceneDesc* desc);
-void SCREEN_unloadScene(void);
-
-
-
 void SCREEN_mouseUp(int x, int y);
 void SCREEN_mouseDown(int x, int y);
 void SCREEN_mouseMotion(int x, int y, int dx, int dy);
@@ -53,6 +42,13 @@ void SCREEN_mouseMotion(int x, int y, int dx, int dy);
 
 
 
+typedef struct SCREEN_SceneDesc
+{
+    const char* shaderMain;
+} SCREEN_SceneDesc;
+
+void SCREEN_loadScene(const SCREEN_SceneDesc* desc);
+void SCREEN_unloadScene(void);
 
 
 

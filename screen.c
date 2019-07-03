@@ -135,6 +135,37 @@ void SCREEN_frame(f32 time)
 
 
 
+
+
+void SCREEN_mouseUp(int x, int y)
+{
+    ctx->pointButtonDown = false;
+    ctx->pointX = (float)x;
+    ctx->pointY = (float)y;
+}
+
+void SCREEN_mouseDown(int x, int y)
+{
+    ctx->pointButtonDown = true;
+    ctx->pointX = (float)x;
+    ctx->pointY = (float)y;
+}
+
+void SCREEN_mouseMotion(int x, int y, int dx, int dy)
+{
+    ctx->pointX = (float)x;
+    ctx->pointY = (float)y;
+}
+
+
+
+
+
+
+
+
+
+
 void SCREEN_loadScene(const SCREEN_SceneDesc* desc)
 {
     if (ctx->shaderProgram)
@@ -166,25 +197,7 @@ void SCREEN_unloadScene(void)
 
 
 
-void SCREEN_mouseUp(int x, int y)
-{
-    ctx->pointButtonDown = false;
-    ctx->pointX = (float)x;
-    ctx->pointY = (float)y;
-}
 
-void SCREEN_mouseDown(int x, int y)
-{
-    ctx->pointButtonDown = true;
-    ctx->pointX = (float)x;
-    ctx->pointY = (float)y;
-}
-
-void SCREEN_mouseMotion(int x, int y, int dx, int dy)
-{
-    ctx->pointX = (float)x;
-    ctx->pointY = (float)y;
-}
 
 
 
