@@ -124,13 +124,13 @@ void SCREEN_frame(f32 time)
 
 
 
-void SCREEN_load(const char* src)
+void SCREEN_loadScene(const SCREEN_SceneDesc* desc)
 {
     if (ctx->shaderProgram)
     {
         glDeleteProgram(ctx->shaderProgram);
     }
-    ctx->shaderProgram = SCREEN_buildShaderProgram(src);
+    ctx->shaderProgram = SCREEN_buildShaderProgram(desc->shaderMain);
 
     if (ctx->shaderProgram)
     {
@@ -140,7 +140,7 @@ void SCREEN_load(const char* src)
 }
 
 
-void SCREEN_unload(void)
+void SCREEN_unloadScene(void)
 {
     if (ctx->shaderProgram)
     {

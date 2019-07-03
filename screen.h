@@ -21,6 +21,7 @@ typedef double f64;
 
 
 
+
 void SCREEN_startup(void);
 void SCREEN_destroy(void);
 
@@ -33,8 +34,14 @@ void SCREEN_resize(u32 w, u32 h);
 void SCREEN_frame(f32 time);
 
 
-void SCREEN_load(const char* src);
-void SCREEN_unload(void);
+
+typedef struct SCREEN_SceneDesc
+{
+    const char* shaderMain;
+} SCREEN_SceneDesc;
+
+void SCREEN_loadScene(const SCREEN_SceneDesc* desc);
+void SCREEN_unloadScene(void);
 
 
 

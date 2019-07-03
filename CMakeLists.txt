@@ -49,6 +49,21 @@ set (CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -DDEBUG")
 
 
 
+include_directories (imp/fileu)
+include_directories (imp/argparse)
+
+file (GLOB IMP_SRC_FILES
+    imp/fileu/*.h
+    imp/fileu/*.c
+    imp/argparse/*.h
+    imp/argparse/*.c
+    )
+list(FILTER IMP_SRC_FILES EXCLUDE REGEX "main.c$")
+
+source_group (imp FILES ${IMP_SRC_FILES})
+add_library (imp STATIC ${IMP_SRC_FILES})
+
+
 
 file (GLOB SRC_FILES *.h *.c)
 source_group (src FILES ${SRC_FILES})
@@ -59,7 +74,7 @@ add_library (screen ${SRC_FILES})
 file (GLOB TESTS_SRC_FILES player/*.h player/*.c)
 source_group (src FILES ${TESTS_SRC_FILES})
 add_executable (player ${TESTS_SRC_FILES})
-target_link_libraries (player screen)
+target_link_libraries (player screen imp)
 if (WIN32)
 else ()
     target_link_libraries (player m)

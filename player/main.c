@@ -8,12 +8,19 @@
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
+
+#include <sys/stat.h>
+#include <signal.h>
 
 #define HAVE_M_PI
 #define SDL_MAIN_HANDLED
 #include <SDL.h>
 
 #include <screen.h>
+
+#include <argparse.h>
+#include <fileu.h>
 
 
 
@@ -29,12 +36,64 @@ static int mainReturn(int r)
 
 
 
+enum
+{
+    TimeStrBuf_MAX = 16,
+};
+
+static char* nowStr(char* timeBuf)
+{
+    time_t t = time(NULL);
+    struct tm *lt = localtime(&t);
+    timeBuf[strftime(timeBuf, TimeStrBuf_MAX, "%H:%M:%S", lt)] = '\0';
+    return timeBuf;
+}
+
+
+
+
+static void loadSceneByFile(const char* filename)
+{
+    char* src;
+    u32 srcSize = FILEU_readFile(filename, &src);
+    if (-1 == srcSize)
+    {
+        return;
+    }
+    SCREEN_SceneDesc desc = { src };
+    SCREEN_loadScene(&desc);
+    free(src);
+}
+
+
+
+
+
+
 
 int main(int argc, char* argv[])
 {
 #if !defined(NDEBUG) && defined(_WIN32)
     _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
+
+    char timeBuf[TimeStrBuf_MAX];
+
+
+    char* srcFile = NULL;
+    int watchFlag = false;
+    struct argparse_option options[] =
+    {
+        OPT_HELP(),
+        //OPT_GROUP("Basic options"),
+        OPT_STRING('f', "file", &srcFile, "file to open"),
+        OPT_BOOLEAN('w', "watch", &watchFlag, "watch file and reload it when it changes"),
+        OPT_END(),
+    };
+    struct argparse argparse;
+    argparse_init(&argparse, options, NULL, 0);
+    argc = argparse_parse(&argparse, argc, argv);
+
 
     SDL_Init(SDL_INIT_VIDEO);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
@@ -61,6 +120,16 @@ int main(int argc, char* argv[])
     SDL_GLContext context = SDL_GL_CreateContext(window);
     SCREEN_startup();
     SCREEN_enter(winWidth, winHeight);
+
+
+    time_t lastMtime;
+    if (srcFile)
+    {
+        struct stat st;
+        stat(srcFile, &st);
+        lastMtime = st.st_mtime;
+        loadSceneByFile(srcFile);
+    }
 
 
     bool quit = false;
@@ -97,6 +166,18 @@ int main(int argc, char* argv[])
         SCREEN_frame(gtime);
         SDL_GL_SwapWindow(window);
         // SDL_Delay(1);
+
+        if (srcFile && watchFlag)
+        {
+            struct stat st;
+            stat(srcFile, &st);
+            if (lastMtime != st.st_mtime)
+            {
+                printf("[CHANGE] \"%s\" [%s]\n", srcFile, nowStr(timeBuf));
+                loadSceneByFile(srcFile);
+            }
+            lastMtime = st.st_mtime;
+        }
     }
 
 
