@@ -73,21 +73,6 @@ void SCREEN_enter(u32 w, u32 h)
     glVertexAttribPointer(attrib_position, 2, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(attrib_position);
 
-
-    const char* shaderMain =
-        "void mainImage(out vec4 fragColor, in vec2 fragCoord)\n"
-        "{\n"
-        "    vec2 uv=fragCoord.xy/iResolution.xy;\n"
-        "    fragColor = vec4(uv, 0.5+0.5*sin(iTime), 1.0);\n"
-        "}\n";
-    ctx->shaderProgram = SCREEN_buildShaderProgram(shaderMain);
-
-    if (ctx->shaderProgram)
-    {
-        ctx->uniform_Resolution = glGetUniformLocation(ctx->shaderProgram, "iResolution");
-        ctx->uniform_Time = glGetUniformLocation(ctx->shaderProgram, "iTime");
-    }
-
     SCREEN_GLCHECK();
 }
 
@@ -139,6 +124,30 @@ void SCREEN_frame(f32 time)
 
 
 
+void SCREEN_load(const char* src)
+{
+    if (ctx->shaderProgram)
+    {
+        glDeleteProgram(ctx->shaderProgram);
+    }
+    ctx->shaderProgram = SCREEN_buildShaderProgram(src);
+
+    if (ctx->shaderProgram)
+    {
+        ctx->uniform_Resolution = glGetUniformLocation(ctx->shaderProgram, "iResolution");
+        ctx->uniform_Time = glGetUniformLocation(ctx->shaderProgram, "iTime");
+    }
+}
+
+
+void SCREEN_unload(void)
+{
+    if (ctx->shaderProgram)
+    {
+        glDeleteProgram(ctx->shaderProgram);
+        ctx->shaderProgram = 0;
+    }
+}
 
 
 
