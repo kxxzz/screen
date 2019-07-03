@@ -76,7 +76,7 @@ GLenum SCREEN_glCheck(const char *const file, int const line);
 
 
 
-GLuint SCREEN_compileShaderProgram(const char* shaderMain);
+GLuint SCREEN_buildShaderProgram(const char* shaderMain);
 
 
 

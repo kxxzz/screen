@@ -80,7 +80,7 @@ void SCREEN_enter(u32 w, u32 h)
         "    vec2 uv=fragCoord.xy/iResolution.xy;\n"
         "    fragColor = vec4(uv, 0.5+0.5*sin(iTime), 1.0);\n"
         "}\n";
-    ctx->shaderProgram = SCREEN_compileShaderProgram(shaderMain);
+    ctx->shaderProgram = SCREEN_buildShaderProgram(shaderMain);
 
     ctx->uniform_Resolution = glGetUniformLocation(ctx->shaderProgram, "iResolution");
     ctx->uniform_Time = glGetUniformLocation(ctx->shaderProgram, "iTime");
