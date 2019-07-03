@@ -55,6 +55,7 @@ void SCREEN_enter(u32 w, u32 h)
     ctx->width = (f32)w;
     ctx->height = (f32)h;
     glViewport(0, 0, w, h);
+    ctx->pointY = ctx->height;
 
     static const GLfloat vertices[] =
     {
@@ -97,6 +98,7 @@ void SCREEN_resize(u32 w, u32 h)
     ctx->height = (f32)h;
     glViewport(0, 0, w, h);
     SCREEN_GLCHECK();
+    ctx->pointY = ctx->height;
 }
 
 
@@ -121,7 +123,7 @@ void SCREEN_frame(f32 time)
     }
     if (ctx->uniform_Mouse >= 0)
     {
-        glUniform4f(ctx->uniform_Mouse, ctx->pointX, ctx->pointY, ctx->width, -ctx->height);
+        glUniform4f(ctx->uniform_Mouse, ctx->pointX, ctx->height - ctx->pointY, ctx->width, -ctx->height);
     }
 
     glBindVertexArray(ctx->va);
