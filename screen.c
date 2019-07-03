@@ -80,7 +80,7 @@ void SCREEN_destroy(void)
 
 void SCREEN_enter(u32 w, u32 h)
 {
-
+    glViewport(0, 0, w, h);
 }
 
 
@@ -94,15 +94,28 @@ void SCREEN_leave(void)
 
 void SCREEN_resize(u32 w, u32 h)
 {
-
+    glViewport(0, 0, w, h);
 }
 
 
 
 void SCREEN_frame(void)
 {
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0);
+    GLint attribPosition = 0;
+
+    glClearColor(0.0f, 0.0f, 1.0f, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
+
+    static const GLfloat vertices[] =
+    {
+        -1.0f, -1.0f,
+         1.0f, -1.0f,
+        -1.0f,  1.0f,
+         1.0f,  1.0f,
+    };
+    glEnableVertexAttribArray(attribPosition);
+    glVertexAttribPointer(attribPosition, 2, GL_FLOAT, GL_FALSE, 0, vertices);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 }
 
 
