@@ -12,6 +12,7 @@ typedef struct SCREEN_Context
 
     GLint uniform_Resolution;
     GLint uniform_Time;
+    GLint uniform_Mouse;
 
     f32 width, height;
     bool pointButtonDown;
@@ -118,6 +119,11 @@ void SCREEN_frame(f32 time)
     {
         glUniform3f(ctx->uniform_Resolution, ctx->width, ctx->height, 0);
     }
+    if (ctx->uniform_Mouse >= 0)
+    {
+        glUniform4f(ctx->uniform_Mouse, ctx->pointX, ctx->pointY, ctx->pointX, ctx->pointY);
+    }
+
     glBindVertexArray(ctx->va);
     glDrawArrays(GL_TRIANGLES, 0, 6);
     SCREEN_GLCHECK();
@@ -139,6 +145,7 @@ void SCREEN_loadScene(const SCREEN_SceneDesc* desc)
     {
         ctx->uniform_Resolution = glGetUniformLocation(ctx->shaderProgram, "iResolution");
         ctx->uniform_Time = glGetUniformLocation(ctx->shaderProgram, "iTime");
+        ctx->uniform_Mouse = glGetUniformLocation(ctx->shaderProgram, "iMouse");
     }
 }
 

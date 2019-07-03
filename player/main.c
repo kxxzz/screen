@@ -170,7 +170,10 @@ int main(int argc, char* argv[])
             }
             case SDL_MOUSEMOTION:
             {
-                SCREEN_mouseMotion(e.button.x, e.button.y, e.motion.xrel, e.motion.yrel);
+                if (e.motion.state > 0)
+                {
+                    SCREEN_mouseMotion(e.button.x, e.button.y, e.motion.xrel, e.motion.yrel);
+                }
                 break;
             }
             default:
