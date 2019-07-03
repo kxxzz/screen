@@ -82,9 +82,11 @@ void SCREEN_enter(u32 w, u32 h)
         "}\n";
     ctx->shaderProgram = SCREEN_buildShaderProgram(shaderMain);
 
-    ctx->uniform_Resolution = glGetUniformLocation(ctx->shaderProgram, "iResolution");
-    ctx->uniform_Time = glGetUniformLocation(ctx->shaderProgram, "iTime");
-
+    if (ctx->shaderProgram)
+    {
+        ctx->uniform_Resolution = glGetUniformLocation(ctx->shaderProgram, "iResolution");
+        ctx->uniform_Time = glGetUniformLocation(ctx->shaderProgram, "iTime");
+    }
 
     SCREEN_GLCHECK();
 }
@@ -114,6 +116,11 @@ void SCREEN_frame(f32 time)
 {
     glClearColor(0.0f, 0.0f, 1.0f, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
+
+    if (!ctx->shaderProgram)
+    {
+        return;
+    }
 
     if (ctx->uniform_Time >= 0)
     {
