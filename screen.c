@@ -6,13 +6,16 @@
 
 typedef struct SCREEN_Context
 {
-    f32 width, height;
     GLuint shaderProgram;
     GLuint vb;
     GLuint va;
 
     GLint uniform_Resolution;
     GLint uniform_Time;
+
+    f32 width, height;
+    bool pointButtonDown;
+    f32 pointX, pointY;
 } SCREEN_Context;
 
 SCREEN_Context* ctx = NULL;
@@ -154,7 +157,25 @@ void SCREEN_unloadScene(void)
 
 
 
+void SCREEN_mouseUp(int x, int y)
+{
+    ctx->pointButtonDown = false;
+    ctx->pointX = (float)x / ctx->width;
+    ctx->pointY = (float)y / ctx->height;
+}
 
+void SCREEN_mouseDown(int x, int y)
+{
+    ctx->pointButtonDown = true;
+    ctx->pointX = (float)x / ctx->width;
+    ctx->pointY = (float)y / ctx->height;
+}
+
+void SCREEN_mouseMotion(int x, int y, int dx, int dy)
+{
+    ctx->pointX = (float)x / ctx->width;
+    ctx->pointY = (float)y / ctx->height;
+}
 
 
 

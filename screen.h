@@ -45,9 +45,9 @@ void SCREEN_unloadScene(void);
 
 
 
-
-
-
+void SCREEN_mouseUp(int x, int y);
+void SCREEN_mouseDown(int x, int y);
+void SCREEN_mouseMotion(int x, int y, int dx, int dy);
 
 
 

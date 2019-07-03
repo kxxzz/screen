@@ -158,6 +158,21 @@ int main(int argc, char* argv[])
                 quit = true;
                 break;
             }
+            case SDL_MOUSEBUTTONUP:
+            {
+                SCREEN_mouseUp(e.button.x, e.button.y);
+                break;
+            }
+            case SDL_MOUSEBUTTONDOWN:
+            {
+                SCREEN_mouseDown(e.button.x, e.button.y);
+                break;
+            }
+            case SDL_MOUSEMOTION:
+            {
+                SCREEN_mouseMotion(e.button.x, e.button.y, e.motion.xrel, e.motion.yrel);
+                break;
+            }
             default:
                 break;
             }
