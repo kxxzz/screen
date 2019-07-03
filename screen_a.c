@@ -59,7 +59,7 @@ GLenum SCREEN_glCheck(const char *const file, int const line)
 
 
 
-const char* SCREEN_shaderCommonSrcHeader(void)
+static const char* SCREEN_shaderCommonSrcHeader(void)
 {
     static const char* a =
         "#version 300 es\n"
@@ -68,10 +68,10 @@ const char* SCREEN_shaderCommonSrcHeader(void)
     return a;
 }
 
-const char* SCREEN_shaderVertexSrc(void)
+static const char* SCREEN_shaderVertexSrc(void)
 {
     static const char* a =
-        "in vec4 vPosition;\n"
+        "layout (location = 0) in vec4 vPosition;\n"
         "void main()\n"
         "{\n"
         "    gl_Position = vPosition;\n"
@@ -79,7 +79,7 @@ const char* SCREEN_shaderVertexSrc(void)
     return a;
 }
 
-const char* SCREEN_shaderFragmentSrcHeader(void)
+static const char* SCREEN_shaderFragmentSrcHeader(void)
 {
     static const char* a =
         "uniform vec3      iResolution;\n"
@@ -99,7 +99,7 @@ const char* SCREEN_shaderFragmentSrcHeader(void)
     return a;
 }
 
-const char* SCREEN_shaderFragmentSrcFooter(void)
+static const char* SCREEN_shaderFragmentSrcFooter(void)
 {
     static const char* a =
         "void main()\n"
@@ -125,7 +125,7 @@ const char* SCREEN_shaderFragmentSrcFooter(void)
 
 
 
-u32 SCREEN_compileShader(GLenum type, GLsizei numSrcs, const char** srcs)
+static GLuint SCREEN_compileShader(GLenum type, GLsizei numSrcs, const char** srcs)
 {
     GLuint shader = glCreateShader(type);
     glShaderSource(shader, numSrcs, srcs, 0);
@@ -150,7 +150,47 @@ u32 SCREEN_compileShader(GLenum type, GLsizei numSrcs, const char** srcs)
 
 
 
+GLuint SCREEN_compileShaderProgram(const char* shaderMain)
+{
+    const char* vsSrc[] =
+    {
+        SCREEN_shaderCommonSrcHeader(),
+        SCREEN_shaderVertexSrc(),
+    };
+    GLuint vertShader = SCREEN_compileShader(GL_VERTEX_SHADER, ARYLEN(vsSrc), vsSrc);
 
+    const char* fsSrc[] =
+    {
+        SCREEN_shaderCommonSrcHeader(),
+        SCREEN_shaderFragmentSrcHeader(),
+        shaderMain,
+        SCREEN_shaderFragmentSrcFooter(),
+    };
+    GLuint fragShader = SCREEN_compileShader(GL_FRAGMENT_SHADER, ARYLEN(fsSrc), fsSrc);
+
+    GLuint shaderProgram = glCreateProgram();
+    glAttachShader(shaderProgram, vertShader);
+    glAttachShader(shaderProgram, fragShader);
+    glLinkProgram(shaderProgram);
+
+    int status;
+    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &status);
+    if (!status)
+    {
+        char infoBuffer[4096];
+        glGetProgramInfoLog(shaderProgram, sizeof(infoBuffer), &status, infoBuffer);
+        assert(false);
+    }
+    glDeleteShader(fragShader);
+    glDeleteShader(vertShader);
+    glReleaseShaderCompiler();
+
+    glUseProgram(shaderProgram);
+    glValidateProgram(shaderProgram);
+    SCREEN_GLCHECK();
+
+    return shaderProgram;
+}
 
 
 

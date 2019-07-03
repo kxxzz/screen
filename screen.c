@@ -2,11 +2,6 @@
 
 
 
-const char* SCREEN_shaderCommonSrcHeader(void);
-const char* SCREEN_shaderVertexSrc(void);
-const char* SCREEN_shaderFragmentSrcHeader(void);
-const char* SCREEN_shaderFragmentSrcFooter(void);
-
 
 
 typedef struct SCREEN_Context
@@ -45,6 +40,9 @@ void SCREEN_destroy(void)
 
 
 
+
+
+
 void SCREEN_enter(u32 w, u32 h)
 {
     //printf("GL_VERSION  : %s\n", glGetString(GL_VERSION));
@@ -53,52 +51,6 @@ void SCREEN_enter(u32 w, u32 h)
     ctx->width = (f32)w;
     ctx->height = (f32)h;
     glViewport(0, 0, w, h);
-
-
-    const char* shaderMain =
-        "void mainImage(out vec4 fragColor, in vec2 fragCoord)\n"
-        "{\n"
-        "    vec2 uv=fragCoord.xy/iResolution.xy;\n"
-        "    fragColor = vec4(uv, 0.5+0.5*sin(iTime), 1.0);\n"
-        "}\n";
-
-    const char* vsSrc[] =
-    {
-        SCREEN_shaderCommonSrcHeader(),
-        SCREEN_shaderVertexSrc(),
-    };
-    GLuint vertShader = SCREEN_compileShader(GL_VERTEX_SHADER, ARYLEN(vsSrc), vsSrc);
-
-    const char* fsSrc[] =
-    {
-        SCREEN_shaderCommonSrcHeader(),
-        SCREEN_shaderFragmentSrcHeader(),
-        shaderMain,
-        SCREEN_shaderFragmentSrcFooter(),
-    };
-    GLuint fragShader = SCREEN_compileShader(GL_FRAGMENT_SHADER, ARYLEN(fsSrc), fsSrc);
-
-    GLuint shaderProgram = ctx->shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vertShader);
-    glAttachShader(shaderProgram, fragShader);
-    glLinkProgram(shaderProgram);
-
-    int status;
-    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &status);
-    if (!status)
-    {
-        char infoBuffer[4096];
-        glGetProgramInfoLog(shaderProgram, sizeof(infoBuffer), &status, infoBuffer);
-        assert(false);
-    }
-    glDeleteShader(fragShader);
-    glDeleteShader(vertShader);
-    glReleaseShaderCompiler();
-
-    glUseProgram(shaderProgram);
-    glValidateProgram(shaderProgram);
-    SCREEN_GLCHECK();
-
 
     static const GLfloat vertices[] =
     {
@@ -116,15 +68,22 @@ void SCREEN_enter(u32 w, u32 h)
     glGenVertexArrays(1, &ctx->va);
     glBindVertexArray(ctx->va);
 
-    GLint attrib_position = glGetAttribLocation(shaderProgram, "vPosition");
-
+    const GLint attrib_position = 0;
     glBindBuffer(GL_ARRAY_BUFFER, ctx->vb);
     glVertexAttribPointer(attrib_position, 2, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(attrib_position);
 
 
-    ctx->uniform_Resolution = glGetUniformLocation(shaderProgram, "iResolution");
-    ctx->uniform_Time = glGetUniformLocation(shaderProgram, "iTime");
+    const char* shaderMain =
+        "void mainImage(out vec4 fragColor, in vec2 fragCoord)\n"
+        "{\n"
+        "    vec2 uv=fragCoord.xy/iResolution.xy;\n"
+        "    fragColor = vec4(uv, 0.5+0.5*sin(iTime), 1.0);\n"
+        "}\n";
+    ctx->shaderProgram = SCREEN_compileShaderProgram(shaderMain);
+
+    ctx->uniform_Resolution = glGetUniformLocation(ctx->shaderProgram, "iResolution");
+    ctx->uniform_Time = glGetUniformLocation(ctx->shaderProgram, "iTime");
 
 
     SCREEN_GLCHECK();
