@@ -13,10 +13,11 @@ typedef struct SCREEN_Context
 {
     f32 width, height;
     GLuint shaderProgram;
-    GLint uniform_time;
-    GLint uniform_res;
     GLuint vb;
     GLuint va;
+
+    GLint uniform_Resolution;
+    GLint uniform_Time;
 } SCREEN_Context;
 
 SCREEN_Context* ctx = NULL;
@@ -30,6 +31,7 @@ void SCREEN_startup(void)
     int err = gl3wInit();
     assert(0 == err);
 #endif
+    assert(!ctx);
     ctx = (SCREEN_Context*)zalloc(sizeof(*ctx));
 }
 
@@ -38,6 +40,7 @@ void SCREEN_startup(void)
 void SCREEN_destroy(void)
 {
     free(ctx);
+    ctx = NULL;
 }
 
 
@@ -46,6 +49,11 @@ void SCREEN_enter(u32 w, u32 h)
 {
     //printf("GL_VERSION  : %s\n", glGetString(GL_VERSION));
     //printf("GL_RENDERER : %s\n", glGetString(GL_RENDERER));
+
+    ctx->width = (f32)w;
+    ctx->height = (f32)h;
+    glViewport(0, 0, w, h);
+
 
     const char* shaderMain =
         "void mainImage(out vec4 fragColor, in vec2 fragCoord)\n"
@@ -92,10 +100,6 @@ void SCREEN_enter(u32 w, u32 h)
     SCREEN_GLCHECK();
 
 
-    ctx->uniform_time = glGetUniformLocation(shaderProgram, "iTime");
-    ctx->uniform_res = glGetUniformLocation(shaderProgram, "iResolution");
-
-
     static const GLfloat vertices[] =
     {
         -1.0f, -1.0f,
@@ -118,9 +122,11 @@ void SCREEN_enter(u32 w, u32 h)
     glVertexAttribPointer(attrib_position, 2, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(attrib_position);
 
-    ctx->width = (f32)w;
-    ctx->height = (f32)h;
-    glViewport(0, 0, w, h);
+
+    ctx->uniform_Resolution = glGetUniformLocation(shaderProgram, "iResolution");
+    ctx->uniform_Time = glGetUniformLocation(shaderProgram, "iTime");
+
+
     SCREEN_GLCHECK();
 }
 
@@ -150,13 +156,13 @@ void SCREEN_frame(f32 time)
     glClearColor(0.0f, 0.0f, 1.0f, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    if (ctx->uniform_time >= 0)
+    if (ctx->uniform_Time >= 0)
     {
-        glUniform1f(ctx->uniform_time, time);
+        glUniform1f(ctx->uniform_Time, time);
     }
-    if (ctx->uniform_res >= 0)
+    if (ctx->uniform_Resolution >= 0)
     {
-        glUniform3f(ctx->uniform_res, ctx->width, ctx->height, 0);
+        glUniform3f(ctx->uniform_Resolution, ctx->width, ctx->height, 0);
     }
     glBindVertexArray(ctx->va);
     glDrawArrays(GL_TRIANGLES, 0, 6);
