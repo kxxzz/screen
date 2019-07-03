@@ -43,8 +43,8 @@ int main(int argc, char* argv[])
     SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
     SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
     SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
     SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
     //SDL_GL_SetSwapInterval(0);
@@ -79,7 +79,8 @@ int main(int argc, char* argv[])
                 break;
             }
         }
-        SCREEN_frame();
+        f32 gtime = (f32)SDL_GetTicks() / 1000.f;
+        SCREEN_frame(gtime);
         SDL_GL_SwapWindow(window);
         // SDL_Delay(1);
     }
