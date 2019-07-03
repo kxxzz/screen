@@ -2,115 +2,10 @@
 
 
 
-static const char* SCREEN_glErrStr(GLenum err)
-{
-    if (GL_NO_ERROR == err)
-    {
-        return "no error";
-    }
-    else
-    {
-        switch (err)
-        {
-        case GL_INVALID_ENUM:
-            return "GL_INVALID_ENUM";
-        case GL_INVALID_VALUE:
-            return "GL_INVALID_VALUE";
-        case GL_INVALID_OPERATION:
-            return "GL_INVALID_OPERATION";
-        case GL_OUT_OF_MEMORY:
-            return "GL_OUT_OF_MEMORY";
-        case GL_INVALID_FRAMEBUFFER_OPERATION:
-            return "GL_INVALID_FRAMEBUFFER_OPERATION";
-        default:
-            return "unknown error";
-        }
-    }
-}
-
-GLenum SCREEN_glCheck(const char *const file, int const line)
-{
-#ifndef NDEBUG
-    GLenum glerr = glGetError();
-    if (glerr)
-    {
-        const char* errStr = SCREEN_glErrStr(glerr);
-        assert(false);
-    }
-    return glerr;
-#else
-    return GL_NO_ERROR;
-#endif
-}
-
-
-static const char* SCREEN_shaderCommonSrcHeader(void)
-{
-    static const char* a =
-        "#version 300 es\n"
-        "precision highp float;\n"
-        "precision highp int;\n";
-    return a;
-}
-
-static const char* SCREEN_shaderVertexSrc(void)
-{
-    static const char* a =
-        "in vec4 vPosition;\n"
-        "void main()\n"
-        "{\n"
-        "    gl_Position = vPosition;\n"
-        "}\n";
-    return a;
-}
-
-static const char* SCREEN_shaderFragmentSrcHeader(void)
-{
-    static const char* a =
-        "uniform vec3      iResolution;\n"
-        "uniform float     iTime;\n"
-        "uniform float     iTimeDelta;\n"
-        "uniform int       iFrame;\n"
-        "uniform float     iChannelTime[4];\n"
-        "uniform vec3      iChannelResolution[4];\n"
-        "uniform vec4      iMouse;\n"
-        "uniform sampler2D iChannel0;\n"
-        "uniform sampler2D iChannel1;\n"
-        "uniform sampler2D iChannel2;\n"
-        "uniform sampler2D iChannel3;\n"
-        "uniform vec4      iDate;\n"
-        "uniform float     iSampleRate;\n"
-        "out vec4 outColor;\n";
-    return a;
-}
-
-static const char* SCREEN_shaderFragmentSrcFooter(void)
-{
-    static const char* a =
-        "void main()\n"
-        "{\n"
-        "   mainImage(outColor, gl_FragCoord.xy);\n"
-        "}\n";
-    return a;
-}
-
-
-u32 SCREEN_compileShader(GLenum type, GLsizei numSrcs, const char** srcs)
-{
-    GLuint shader = glCreateShader(type);
-    glShaderSource(shader, numSrcs, srcs, 0);
-    glCompileShader(shader);
-    int status;
-    glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
-    if (!status)
-    {
-        char infoBuffer[4096];
-        glGetShaderInfoLog(shader, sizeof(infoBuffer), &status, infoBuffer);
-        assert(false);
-    }
-    return shader;
-}
-
+const char* SCREEN_shaderCommonSrcHeader(void);
+const char* SCREEN_shaderVertexSrc(void);
+const char* SCREEN_shaderFragmentSrcHeader(void);
+const char* SCREEN_shaderFragmentSrcFooter(void);
 
 
 
@@ -118,9 +13,10 @@ typedef struct SCREEN_Context
 {
     f32 width, height;
     GLuint shaderProgram;
-    GLint in_position;
     GLint uniform_time;
     GLint uniform_res;
+    GLuint vb;
+    GLuint va;
 } SCREEN_Context;
 
 SCREEN_Context* ctx = NULL;
@@ -150,7 +46,6 @@ void SCREEN_enter(u32 w, u32 h)
 {
     //printf("GL_VERSION  : %s\n", glGetString(GL_VERSION));
     //printf("GL_RENDERER : %s\n", glGetString(GL_RENDERER));
-    SCREEN_GLCHECK();
 
     const char* shaderMain =
         "void mainImage(out vec4 fragColor, in vec2 fragCoord)\n"
@@ -194,10 +89,34 @@ void SCREEN_enter(u32 w, u32 h)
 
     glUseProgram(shaderProgram);
     glValidateProgram(shaderProgram);
+    SCREEN_GLCHECK();
 
-    ctx->in_position = glGetAttribLocation(shaderProgram, "vPosition");
+
     ctx->uniform_time = glGetUniformLocation(shaderProgram, "iTime");
     ctx->uniform_res = glGetUniformLocation(shaderProgram, "iResolution");
+
+
+    static const GLfloat vertices[] =
+    {
+        -1.0f, -1.0f,
+         1.0f, -1.0f,
+        -1.0f,  1.0f,
+        -1.0f,  1.0f,
+         1.0f, -1.0f,
+         1.0f,  1.0f,
+    };
+    glGenBuffers(1, &ctx->vb);
+    glBindBuffer(GL_ARRAY_BUFFER, ctx->vb);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    glGenVertexArrays(1, &ctx->va);
+    glBindVertexArray(ctx->va);
+
+    GLint attrib_position = glGetAttribLocation(shaderProgram, "vPosition");
+
+    glBindBuffer(GL_ARRAY_BUFFER, ctx->vb);
+    glVertexAttribPointer(attrib_position, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(attrib_position);
 
     ctx->width = (f32)w;
     ctx->height = (f32)h;
@@ -209,6 +128,8 @@ void SCREEN_enter(u32 w, u32 h)
 
 void SCREEN_leave(void)
 {
+    glDeleteVertexArrays(1, &ctx->va);
+    glDeleteBuffers(1, &ctx->vb);
     glDeleteProgram(ctx->shaderProgram);
 }
 
@@ -228,7 +149,6 @@ void SCREEN_frame(f32 time)
 {
     glClearColor(0.0f, 0.0f, 1.0f, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
-    SCREEN_GLCHECK();
 
     if (ctx->uniform_time >= 0)
     {
@@ -238,19 +158,8 @@ void SCREEN_frame(f32 time)
     {
         glUniform3f(ctx->uniform_res, ctx->width, ctx->height, 0);
     }
-
-    glEnableVertexAttribArray(ctx->in_position);
-    static const GLfloat vertices[] =
-    {
-        -1.0f, -1.0f,
-         1.0f, -1.0f,
-        -1.0f,  1.0f,
-         1.0f,  1.0f,
-    };
-    glVertexAttribPointer(ctx->in_position, 2, GL_FLOAT, GL_FALSE, 0, vertices);
-    SCREEN_GLCHECK();
-
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    glBindVertexArray(ctx->va);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
     SCREEN_GLCHECK();
 }
 

@@ -77,6 +77,8 @@ GLenum SCREEN_glCheck(const char *const file, int const line);
 
 
 
+u32 SCREEN_compileShader(GLenum type, GLsizei numSrcs, const char** srcs);
+
 
 
 
