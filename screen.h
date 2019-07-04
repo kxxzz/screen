@@ -52,7 +52,7 @@ enum
 
 typedef enum SCREEN_ChannelType
 {
-    SCREEN_ChannelType_Unused,
+    SCREEN_ChannelType_Unused = 0,
     SCREEN_ChannelType_Buffer,
 } SCREEN_ChannelType;
 
@@ -74,7 +74,7 @@ typedef struct SCREEN_Buffer
 typedef struct SCREEN_Scene
 {
     const char* shaderComm;
-    SCREEN_Buffer buffer[4];
+    SCREEN_Buffer buffer[SCREEN_Buffers_MAX];
     SCREEN_Buffer image;
 } SCREEN_Scene;
 
