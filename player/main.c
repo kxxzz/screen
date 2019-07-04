@@ -80,8 +80,8 @@ static void loadSceneByFile(const char* filename)
     {
         return;
     }
-    SCREEN_SceneDesc desc = { 0 };
-    desc.shaderMain = src;
+    SCREEN_Scene desc = { 0 };
+    desc.image.shaderCode = src;
     SCREEN_loadScene(&desc);
     free(src);
 }

@@ -42,14 +42,45 @@ void SCREEN_mouseMotion(int x, int y, int dx, int dy);
 
 
 
-typedef struct SCREEN_SceneDesc
+
+
+enum
+{
+    SCREEN_Channels_MAX = 4,
+    SCREEN_Buffers_MAX = 4,
+};
+
+typedef enum SCREEN_ChannelType
+{
+    SCREEN_ChannelType_Unused,
+    SCREEN_ChannelType_Buffer,
+} SCREEN_ChannelType;
+
+typedef struct SCREEN_Channel
+{
+    SCREEN_ChannelType type;
+    union
+    {
+        u32 buffer;
+    };
+} SCREEN_Channel;
+
+typedef struct SCREEN_Buffer
+{
+    SCREEN_Channel channel[SCREEN_Channels_MAX];
+    const char* shaderCode;
+} SCREEN_Buffer;
+
+typedef struct SCREEN_Scene
 {
     const char* shaderComm;
-    const char* shaderBuff[4];
-    const char* shaderMain;
-} SCREEN_SceneDesc;
+    SCREEN_Buffer buffer[4];
+    SCREEN_Buffer image;
+} SCREEN_Scene;
 
-void SCREEN_loadScene(const SCREEN_SceneDesc* desc);
+
+
+void SCREEN_loadScene(const SCREEN_Scene* scene);
 void SCREEN_unloadScene(void);
 
 

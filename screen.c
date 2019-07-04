@@ -166,13 +166,13 @@ void SCREEN_mouseMotion(int x, int y, int dx, int dy)
 
 
 
-void SCREEN_loadScene(const SCREEN_SceneDesc* desc)
+void SCREEN_loadScene(const SCREEN_Scene* scene)
 {
     if (ctx->shaderProgram)
     {
         glDeleteProgram(ctx->shaderProgram);
     }
-    ctx->shaderProgram = SCREEN_buildShaderProgram(desc->shaderMain);
+    ctx->shaderProgram = SCREEN_buildShaderProgram(scene->image.shaderCode);
 
     if (ctx->shaderProgram)
     {
