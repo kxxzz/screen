@@ -180,13 +180,22 @@ int main(int argc, char* argv[])
                 break;
             }
         }
-        f32 gtime = (f32)SDL_GetTicks() / 1000.f;
-        SCREEN_frame(gtime);
+        f32 now = (f32)SDL_GetTicks() / 1000.f;
+        SCREEN_frame(now);
         SDL_GL_SwapWindow(window);
         // SDL_Delay(1);
 
-        if (srcFile && watchFlag)
+        static f32 lastTime = 0;
+        static u32 frames = 0;
+        ++frames;
+        if (srcFile && watchFlag && (now - lastTime > 0.25f))
         {
+            static char title[255] = "";
+            snprintf(title, sizeof(title), "PLAYER%*c FPS: %-2.2f", 16, ' ', (double)frames / (now - lastTime));
+            SDL_SetWindowTitle(window, title);
+            frames = 0;
+
+            lastTime = now;
             struct stat st;
             stat(srcFile, &st);
             if (lastMtime != st.st_mtime)
