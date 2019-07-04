@@ -230,13 +230,13 @@ static void SCREEN_loadSceneData(const SCREEN_Scene* srcScene)
 
 bool SCREEN_loadScene(const SCREEN_Scene* scene)
 {
-    if (ctx->sceneLoaded)
-    {
-        SCREEN_unloadScene();
-    }
     if (!SCREEN_validateScene(scene))
     {
         return false;
+    }
+    if (ctx->sceneLoaded)
+    {
+        SCREEN_unloadScene();
     }
     ctx->sceneLoaded = true;
     SCREEN_loadSceneData(scene);
