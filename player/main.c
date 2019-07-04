@@ -143,6 +143,8 @@ int main(int argc, char* argv[])
 
     u32 intervalMode = 2;
     bool fullscreen = false;
+    bool stopped = false;
+    f32 sceneTime = 0;
 
 
     static const int IntervalTable[] = { 0, 1, -1 };
@@ -160,6 +162,12 @@ int main(int argc, char* argv[])
     }
 
 
+    f32 now1 = (f32)SDL_GetTicks() / 1000.f;
+    f32 lastCheckTime = 0;
+    u32 frameCount = 0;
+    bool outdated = true;
+
+
     bool quit = false;
     SDL_Event e;
     while (!quit)
@@ -175,6 +183,7 @@ int main(int argc, char* argv[])
                 case SDL_WINDOWEVENT_RESIZED:
                 case SDL_WINDOWEVENT_SIZE_CHANGED:
                 {
+                    outdated = true;
                     SCREEN_resize(e.window.data1, e.window.data2);
                     break;
                 }
@@ -188,20 +197,23 @@ int main(int argc, char* argv[])
             }
             case SDL_MOUSEBUTTONUP:
             {
-                SDL_SetRelativeMouseMode(false);
+                outdated = true;
+                //SDL_SetRelativeMouseMode(false);
 
                 SCREEN_mouseUp(e.button.x, e.button.y);
                 break;
             }
             case SDL_MOUSEBUTTONDOWN:
             {
-                SDL_SetRelativeMouseMode(true);
+                outdated = true;
+                //SDL_SetRelativeMouseMode(true);
 
                 SCREEN_mouseDown(e.button.x, e.button.y);
                 break;
             }
             case SDL_MOUSEMOTION:
             {
+                outdated = true;
                 if (e.motion.state > 0)
                 {
                     SCREEN_mouseMotion(e.button.x, e.button.y, e.motion.xrel, e.motion.yrel);
@@ -210,6 +222,7 @@ int main(int argc, char* argv[])
             }
             case SDL_KEYDOWN:
             {
+                outdated = true;
                 if (SDLK_BACKSPACE == e.key.keysym.sym)
                 {
                     fullscreen = !fullscreen;
@@ -224,6 +237,10 @@ int main(int argc, char* argv[])
                         // todo
                     }
                 }
+                if (SDLK_SPACE == e.key.keysym.sym)
+                {
+                    stopped = !stopped;
+                }
                 break;
             }
             case SDL_KEYUP:
@@ -235,27 +252,33 @@ int main(int argc, char* argv[])
             }
         }
         f32 now = (f32)SDL_GetTicks() / 1000.f;
-        SCREEN_frame(now);
+        f32 deltaTime = stopped ? 0 : now1 - now;
+        now1 = now;
+        if (!stopped || outdated)
+        {
+            outdated = false;
+            ++frameCount;
+            sceneTime += deltaTime;
+            SCREEN_frame(sceneTime);
+        }
         SDL_GL_SwapWindow(window);
         // SDL_Delay(1);
 
 
-        static f32 lastTime = 0;
-        static u32 frames = 0;
-        ++frames;
-        if (srcFile && watchFlag && (now - lastTime > 0.25f))
+        if (srcFile && watchFlag && (now - lastCheckTime > 0.25f))
         {
             static char title[255] = "";
-            snprintf(title, sizeof(title), "PLAYER%*c FPS: %-2.2f", 16, ' ', (double)frames / (now - lastTime));
+            snprintf(title, sizeof(title), "PLAYER%*c FPS: %-2.2f", 16, ' ', (double)frameCount / (now - lastCheckTime));
             SDL_SetWindowTitle(window, title);
-            frames = 0;
+            frameCount = 0;
 
-            lastTime = now;
+            lastCheckTime = now;
             struct stat st;
             stat(srcFile, &st);
             if (lastMtime != st.st_mtime)
             {
                 printf("[CHANGE] \"%s\" [%s]\n", srcFile, nowStr(timeBuf));
+                sceneTime = 0;
                 loadSceneByFile(srcFile);
             }
             lastMtime = st.st_mtime;
