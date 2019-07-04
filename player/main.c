@@ -185,6 +185,7 @@ int main(int argc, char* argv[])
         SDL_GL_SwapWindow(window);
         // SDL_Delay(1);
 
+
         static f32 lastTime = 0;
         static u32 frames = 0;
         ++frames;
