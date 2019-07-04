@@ -123,28 +123,32 @@ static void loadSceneByJson(const char* code, const char* dir, SCREEN_Scene* des
     }
     {
         cJSON* shader = cJSON_GetObjectItem(root, "commonShader");
-        if (!cJSON_IsString(shader))
+        if (shader)
         {
-            // todo report error
-            goto error;
+            if (!cJSON_IsString(shader))
+            {
+                // todo report error
+                goto error;
+            }
+            char* filename = cJSON_GetStringValue(shader);
+            snprintf(path, sizeof(path), "%s/%s", dir, filename);
+            u32 off = loadFileDataToBuf(dataBuf, path);
+            if (-1 == off)
+            {
+                // todo report error
+                goto error;
+            }
+            commShaderOff = off;
         }
-        char* filename = cJSON_GetStringValue(shader);
-        snprintf(path, sizeof(path), "%s/%s", dir, filename);
-        u32 off = loadFileDataToBuf(dataBuf, path);
-        if (-1 == off)
-        {
-            // todo report error
-            goto error;
-        }
-        commShaderOff = off;
     }
     cJSON* buffers = cJSON_GetObjectItem(root, "buffers");
-    if (!cJSON_IsArray(buffers))
+    if (buffers)
     {
-        // todo report error
-        goto error;
-    }
-    {
+        if (!cJSON_IsArray(buffers))
+        {
+            // todo report error
+            goto error;
+        }
         cJSON *buffer, *channel;
         u32 bi = 0;
         cJSON_ArrayForEach(buffer, buffers)
@@ -182,55 +186,58 @@ static void loadSceneByJson(const char* code, const char* dir, SCREEN_Scene* des
             bufferUsed[bi] = true;
 
             cJSON* channels = cJSON_GetObjectItem(buffer, "channels");
-            if (!cJSON_IsArray(channels))
+            if (channels)
             {
-                // todo report error
-                goto error;
-            }
-            u32 ci = 0;
-            cJSON_ArrayForEach(channel, channels)
-            {
-                if (ci >= SCREEN_Channels_MAX)
+                if (!cJSON_IsArray(channels))
                 {
                     // todo report error
                     goto error;
                 }
-                if (!cJSON_IsObject(channel) && !cJSON_IsNull(channel))
+                u32 ci = 0;
+                cJSON_ArrayForEach(channel, channels)
                 {
-                    // todo report error
-                    goto error;
-                }
-                if (cJSON_IsNull(channel))
-                {
-                    ++ci;
-                    continue;
-                }
-                cJSON* type = cJSON_GetObjectItem(channel, "type");
-                if (!cJSON_IsString(type))
-                {
-                    // todo report error
-                    goto error;
-                }
-                char* typeStr = cJSON_GetStringValue(type);
-                if (0 == strcicmp(typeStr, "buffer"))
-                {
-                    desc->buffer[bi].channel[ci].type = SCREEN_ChannelType_Buffer;
-
-                    cJSON* bufferId = cJSON_GetObjectItem(channel, "buffer");
-                    if (!cJSON_IsNumber(bufferId))
+                    if (ci >= SCREEN_Channels_MAX)
                     {
                         // todo report error
                         goto error;
                     }
-                    u32 id = bufferId->valueint;
-                    desc->buffer[bi].channel[ci].buffer = id;
+                    if (!cJSON_IsObject(channel) && !cJSON_IsNull(channel))
+                    {
+                        // todo report error
+                        goto error;
+                    }
+                    if (cJSON_IsNull(channel))
+                    {
+                        ++ci;
+                        continue;
+                    }
+                    cJSON* type = cJSON_GetObjectItem(channel, "type");
+                    if (!cJSON_IsString(type))
+                    {
+                        // todo report error
+                        goto error;
+                    }
+                    char* typeStr = cJSON_GetStringValue(type);
+                    if (0 == strcicmp(typeStr, "buffer"))
+                    {
+                        desc->buffer[bi].channel[ci].type = SCREEN_ChannelType_Buffer;
+
+                        cJSON* bufferId = cJSON_GetObjectItem(channel, "buffer");
+                        if (!cJSON_IsNumber(bufferId))
+                        {
+                            // todo report error
+                            goto error;
+                        }
+                        u32 id = bufferId->valueint;
+                        desc->buffer[bi].channel[ci].buffer = id;
+                    }
+                    else
+                    {
+                        // todo report error
+                        goto error;
+                    }
+                    ++ci;
                 }
-                else
-                {
-                    // todo report error
-                    goto error;
-                }
-                ++ci;
             }
             ++bi;
         }
@@ -260,57 +267,60 @@ static void loadSceneByJson(const char* code, const char* dir, SCREEN_Scene* des
         imageShaderOff = off;
 
         cJSON* channels = cJSON_GetObjectItem(image, "channels");
-        if (!cJSON_IsArray(channels))
+        if (channels)
         {
-            // todo report error
-            goto error;
-        }
-        cJSON* channel;
-        u32 ci = 0;
-        cJSON_ArrayForEach(channel, channels)
-        {
-            if (ci >= SCREEN_Channels_MAX)
+            if (!cJSON_IsArray(channels))
             {
                 // todo report error
                 goto error;
             }
-            if (!cJSON_IsObject(channel) && !cJSON_IsNull(channel))
+            cJSON* channel;
+            u32 ci = 0;
+            cJSON_ArrayForEach(channel, channels)
             {
-                // todo report error
-                goto error;
-            }
-            if (cJSON_IsNull(channel))
-            {
-                ++ci;
-                continue;
-            }
-
-            cJSON* type = cJSON_GetObjectItem(channel, "type");
-            if (!cJSON_IsString(type))
-            {
-                // todo report error
-                goto error;
-            }
-            char* typeStr = cJSON_GetStringValue(type);
-            if (0 == strcicmp(typeStr, "buffer"))
-            {
-                desc->image.channel[ci].type = SCREEN_ChannelType_Buffer;
-
-                cJSON* bufferId = cJSON_GetObjectItem(channel, "buffer");
-                if (!cJSON_IsNumber(bufferId))
+                if (ci >= SCREEN_Channels_MAX)
                 {
                     // todo report error
                     goto error;
                 }
-                u32 id = bufferId->valueint;
-                desc->image.channel[ci].buffer = id;
+                if (!cJSON_IsObject(channel) && !cJSON_IsNull(channel))
+                {
+                    // todo report error
+                    goto error;
+                }
+                if (cJSON_IsNull(channel))
+                {
+                    ++ci;
+                    continue;
+                }
+
+                cJSON* type = cJSON_GetObjectItem(channel, "type");
+                if (!cJSON_IsString(type))
+                {
+                    // todo report error
+                    goto error;
+                }
+                char* typeStr = cJSON_GetStringValue(type);
+                if (0 == strcicmp(typeStr, "buffer"))
+                {
+                    desc->image.channel[ci].type = SCREEN_ChannelType_Buffer;
+
+                    cJSON* bufferId = cJSON_GetObjectItem(channel, "buffer");
+                    if (!cJSON_IsNumber(bufferId))
+                    {
+                        // todo report error
+                        goto error;
+                    }
+                    u32 id = bufferId->valueint;
+                    desc->image.channel[ci].buffer = id;
+                }
+                else
+                {
+                    // todo report error
+                    goto error;
+                }
+                ++ci;
             }
-            else
-            {
-                // todo report error
-                goto error;
-            }
-            ++ci;
         }
     }
     if (commShaderOff != -1)

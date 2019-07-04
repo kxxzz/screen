@@ -184,6 +184,7 @@ void SCREEN_bufferRunBindUniform(SCREEN_BufferRun* b)
     }
     if (b->shaderProgram != ctx->curShaderProgram)
     {
+        ctx->curShaderProgram = b->shaderProgram;
         glUseProgram(b->shaderProgram);
     }
     if (b->uniform_Resolution >= 0)
@@ -217,11 +218,13 @@ void SCREEN_frame(f32 time)
     {
         return;
     }
+    SCREEN_GLCHECK();
     for (u32 i = 0; i < SCREEN_Buffers_MAX; ++i)
     {
         SCREEN_bufferRunBindUniform(ctx->buffer + i);
     }
     SCREEN_bufferRunBindUniform(ctx->image);
+
     glBindVertexArray(ctx->va);
     glDrawArrays(GL_TRIANGLES, 0, 6);
     SCREEN_GLCHECK();
