@@ -89,13 +89,14 @@ static const char* SCREEN_shaderFragmentSrcHeader(void)
         "uniform float     iChannelTime[4];\n"
         "uniform vec3      iChannelResolution[4];\n"
         "uniform vec4      iMouse;\n"
+        "uniform vec4      iDate;\n"
+        "uniform float     iSampleRate;\n"
+        "out vec4 outColor;\n"
         "uniform sampler2D iChannel0;\n"
         "uniform sampler2D iChannel1;\n"
         "uniform sampler2D iChannel2;\n"
         "uniform sampler2D iChannel3;\n"
-        "uniform vec4      iDate;\n"
-        "uniform float     iSampleRate;\n"
-        "out vec4 outColor;\n";
+        ;
     return a;
 }
 
