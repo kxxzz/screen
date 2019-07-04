@@ -88,7 +88,7 @@ typedef struct SCREEN_BufferRun
     GLuint shaderProgram;
 } SCREEN_BufferRun;
 
-void SCREEN_bufferRunFree(SCREEN_BufferRun* b);
+void SCREEN_bufferRunLeave(SCREEN_BufferRun* b);
 
 
 

@@ -216,9 +216,12 @@ GLuint SCREEN_buildShaderProgram(const char* shaderComm, const char* shaderMain)
 
 
 
-void SCREEN_bufferRunFree(SCREEN_BufferRun* b)
+void SCREEN_bufferRunLeave(SCREEN_BufferRun* b)
 {
-    glDeleteProgram(b->shaderProgram);
+    if (b->shaderProgram)
+    {
+        glDeleteProgram(b->shaderProgram);
+    }
 }
 
 

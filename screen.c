@@ -4,6 +4,7 @@
 
 typedef struct SCREEN_Context
 {
+    bool entered;
     SCREEN_BufferRun buffer[SCREEN_Buffers_MAX];
     SCREEN_BufferRun image[1];
     GLuint vb;
@@ -50,7 +51,18 @@ void SCREEN_destroy(void)
 
 static void SCREEN_enterScene(void)
 {
+    assert(ctx->entered);
     assert(ctx->sceneLoaded);
+
+    for (u32 i = 0; i < SCREEN_Buffers_MAX; ++i)
+    {
+        if (!ctx->scene->buffer[i].shaderCode)
+        {
+            continue;
+        }
+        SCREEN_BufferRun* bufRun = ctx->buffer + i;
+        bufRun->shaderProgram = SCREEN_buildShaderProgram(ctx->scene->shaderComm, ctx->scene->buffer[i].shaderCode);
+    }
 
     ctx->image->shaderProgram = SCREEN_buildShaderProgram(ctx->scene->shaderComm, ctx->scene->image.shaderCode);
 
@@ -62,11 +74,26 @@ static void SCREEN_enterScene(void)
     }
 }
 
+static void SCREEN_leaveScene(void)
+{
+    for (u32 i = 0; i < SCREEN_Buffers_MAX; ++i)
+    {
+        SCREEN_BufferRun* bufRun = ctx->buffer + i;
+        SCREEN_bufferRunLeave(bufRun);
+    }
+    SCREEN_bufferRunLeave(ctx->image);
+}
+
+
+
+
 
 
 
 void SCREEN_enter(u32 w, u32 h)
 {
+    assert(!ctx->entered);
+    ctx->entered = true;
     //printf("GL_VERSION  : %s\n", glGetString(GL_VERSION));
     //printf("GL_RENDERER : %s\n", glGetString(GL_RENDERER));
 
@@ -108,15 +135,19 @@ void SCREEN_enter(u32 w, u32 h)
 
 void SCREEN_leave(void)
 {
+    assert(ctx->entered);
+    ctx->entered = false;
+
     glDeleteVertexArrays(1, &ctx->va);
     glDeleteBuffers(1, &ctx->vb);
-    SCREEN_bufferRunFree(ctx->image);
+    SCREEN_bufferRunLeave(ctx->image);
 }
 
 
 
 void SCREEN_resize(u32 w, u32 h)
 {
+    assert(ctx->entered);
     ctx->width = w;
     ctx->height = h;
     glViewport(0, 0, w, h);
@@ -128,6 +159,8 @@ void SCREEN_resize(u32 w, u32 h)
 
 void SCREEN_frame(f32 time)
 {
+    assert(ctx->entered);
+
     glClearColor(0.0f, 0.0f, 1.0f, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
 
@@ -240,7 +273,10 @@ bool SCREEN_loadScene(const SCREEN_Scene* scene)
     }
     ctx->sceneLoaded = true;
     SCREEN_loadSceneData(scene);
-    SCREEN_enterScene();
+    if (ctx->entered)
+    {
+        SCREEN_enterScene();
+    }
     return true;
 }
 
@@ -253,7 +289,10 @@ void SCREEN_unloadScene(void)
     }
     ctx->sceneLoaded = false;
     vec_resize(ctx->sceneDataBuf, 0);
-    SCREEN_bufferRunFree(ctx->image);
+    if (ctx->entered)
+    {
+        SCREEN_leaveScene();
+    }
 }
 
 
