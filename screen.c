@@ -18,6 +18,8 @@ typedef struct SCREEN_Context
     bool sceneLoaded;
     vec_char sceneDataBuf[1];
     SCREEN_Scene scene[1];
+
+    GLuint curShaderProgram;
 } SCREEN_Context;
 
 SCREEN_Context* ctx = NULL;
@@ -54,6 +56,7 @@ void SCREEN_destroy(void)
 void SCREEN_bufferRunEnter(SCREEN_BufferRun* bufRun, const SCREEN_Buffer* desc)
 {
     GLuint shaderProgram = bufRun->shaderProgram = SCREEN_buildShaderProgram(ctx->scene->shaderComm, desc->shaderCode);
+    ctx->curShaderProgram = shaderProgram;
 
     bufRun->uniform_Resolution = glGetUniformLocation(shaderProgram, "iResolution");
     bufRun->uniform_Time = glGetUniformLocation(shaderProgram, "iTime");
@@ -154,6 +157,8 @@ void SCREEN_leave(void)
     glDeleteVertexArrays(1, &ctx->va);
     glDeleteBuffers(1, &ctx->vb);
     SCREEN_bufferRunLeave(ctx->image);
+
+    ctx->curShaderProgram = 0;
 }
 
 
@@ -177,8 +182,10 @@ void SCREEN_bufferRunBindUniform(SCREEN_BufferRun* b)
     {
         return;
     }
-    glUseProgram(b->shaderProgram);
-    SCREEN_GLCHECK();
+    if (b->shaderProgram != ctx->curShaderProgram)
+    {
+        glUseProgram(b->shaderProgram);
+    }
     if (b->uniform_Resolution >= 0)
     {
         glUniform3f(b->uniform_Resolution, (f32)ctx->width, (f32)ctx->height, 0.f);
@@ -204,20 +211,17 @@ void SCREEN_frame(f32 time)
 
     glClearColor(0.0f, 0.0f, 1.0f, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
+    SCREEN_GLCHECK();
 
     if (!ctx->image->shaderProgram)
     {
         return;
     }
-    SCREEN_GLCHECK();
     for (u32 i = 0; i < SCREEN_Buffers_MAX; ++i)
     {
         SCREEN_bufferRunBindUniform(ctx->buffer + i);
-        SCREEN_GLCHECK();
     }
     SCREEN_bufferRunBindUniform(ctx->image);
-    SCREEN_GLCHECK();
-
     glBindVertexArray(ctx->va);
     glDrawArrays(GL_TRIANGLES, 0, 6);
     SCREEN_GLCHECK();
