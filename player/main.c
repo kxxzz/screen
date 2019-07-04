@@ -143,7 +143,7 @@ int main(int argc, char* argv[])
 
     u32 intervalMode = 2;
     bool fullscreen = false;
-    bool stopped = false;
+    bool lazyMode = false;
     f32 sceneTime = 0;
 
 
@@ -239,7 +239,7 @@ int main(int argc, char* argv[])
                 }
                 if (SDLK_SPACE == e.key.keysym.sym)
                 {
-                    stopped = !stopped;
+                    lazyMode = !lazyMode;
                 }
                 break;
             }
@@ -252,9 +252,9 @@ int main(int argc, char* argv[])
             }
         }
         f32 now = (f32)SDL_GetTicks() / 1000.f;
-        f32 deltaTime = stopped ? 0 : now1 - now;
+        f32 deltaTime = lazyMode ? 0 : now1 - now;
         now1 = now;
-        if (!stopped || outdated)
+        if (!lazyMode || outdated)
         {
             outdated = false;
             ++frameCount;
