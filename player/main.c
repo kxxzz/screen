@@ -188,11 +188,15 @@ int main(int argc, char* argv[])
             }
             case SDL_MOUSEBUTTONUP:
             {
+                SDL_SetRelativeMouseMode(false);
+
                 SCREEN_mouseUp(e.button.x, e.button.y);
                 break;
             }
             case SDL_MOUSEBUTTONDOWN:
             {
+                SDL_SetRelativeMouseMode(true);
+
                 SCREEN_mouseDown(e.button.x, e.button.y);
                 break;
             }
