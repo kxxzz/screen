@@ -8,6 +8,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <vec.h>
+
 
 
 
@@ -74,8 +76,6 @@ GLenum SCREEN_glCheck(const char *const file, int const line);
 
 
 
-
-
 GLuint SCREEN_buildShaderProgram(const char* shaderComm, const char* shaderMain);
 
 
@@ -83,6 +83,12 @@ GLuint SCREEN_buildShaderProgram(const char* shaderComm, const char* shaderMain)
 
 
 
+typedef struct SCREEN_BufferRun
+{
+    GLuint shaderProgram;
+} SCREEN_BufferRun;
+
+void SCREEN_bufferRunFree(SCREEN_BufferRun* b);
 
 
 
@@ -90,8 +96,9 @@ GLuint SCREEN_buildShaderProgram(const char* shaderComm, const char* shaderMain)
 
 
 
+u32 SCREEN_calcSceneDataSize(const SCREEN_Scene* scene);
 
-
+bool SCREEN_validateScene(const SCREEN_Scene* scene);
 
 
 

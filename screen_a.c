@@ -216,6 +216,10 @@ GLuint SCREEN_buildShaderProgram(const char* shaderComm, const char* shaderMain)
 
 
 
+void SCREEN_bufferRunFree(SCREEN_BufferRun* b)
+{
+    glDeleteProgram(b->shaderProgram);
+}
 
 
 
@@ -228,8 +232,33 @@ GLuint SCREEN_buildShaderProgram(const char* shaderComm, const char* shaderMain)
 
 
 
+u32 SCREEN_calcSceneDataSize(const SCREEN_Scene* scene)
+{
+    u32 size = 0;
+    if (scene->shaderComm)
+    {
+        size += (u32)strlen(scene->shaderComm) + 1;
+    }
+    for (u32 i = 0; i < SCREEN_Buffers_MAX; ++i)
+    {
+        if (scene->buffer[i].shaderCode)
+        {
+            size += (u32)strlen(scene->buffer[i].shaderCode) + 1;
+        }
+    }
+    if (scene->image.shaderCode)
+    {
+        size += (u32)strlen(scene->image.shaderCode) + 1;
+    }
+    return size;
+}
 
 
+
+bool SCREEN_validateScene(const SCREEN_Scene* scene)
+{
+    return true;
+}
 
 
 

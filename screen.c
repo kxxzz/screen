@@ -2,11 +2,10 @@
 
 
 
-
-
 typedef struct SCREEN_Context
 {
-    GLuint shaderProgram;
+    SCREEN_BufferRun buffer[SCREEN_Buffers_MAX];
+    SCREEN_BufferRun image[1];
     GLuint vb;
     GLuint va;
 
@@ -17,6 +16,10 @@ typedef struct SCREEN_Context
     u32 width, height;
     bool pointButtonDown;
     int pointX, pointY;
+
+    bool sceneLoaded;
+    vec_char sceneDataBuf[1];
+    SCREEN_Scene scene[1];
 } SCREEN_Context;
 
 SCREEN_Context* ctx = NULL;
@@ -38,11 +41,26 @@ void SCREEN_startup(void)
 
 void SCREEN_destroy(void)
 {
+    vec_free(ctx->sceneDataBuf);
     free(ctx);
     ctx = NULL;
 }
 
 
+
+static void SCREEN_enterScene(void)
+{
+    assert(ctx->sceneLoaded);
+
+    ctx->image->shaderProgram = SCREEN_buildShaderProgram(ctx->scene->shaderComm, ctx->scene->image.shaderCode);
+
+    if (ctx->image->shaderProgram)
+    {
+        ctx->uniform_Resolution = glGetUniformLocation(ctx->image->shaderProgram, "iResolution");
+        ctx->uniform_Time = glGetUniformLocation(ctx->image->shaderProgram, "iTime");
+        ctx->uniform_Mouse = glGetUniformLocation(ctx->image->shaderProgram, "iMouse");
+    }
+}
 
 
 
@@ -79,6 +97,11 @@ void SCREEN_enter(u32 w, u32 h)
     glEnableVertexAttribArray(attrib_position);
 
     SCREEN_GLCHECK();
+
+    if (ctx->sceneLoaded)
+    {
+        SCREEN_enterScene();
+    }
 }
 
 
@@ -87,7 +110,7 @@ void SCREEN_leave(void)
 {
     glDeleteVertexArrays(1, &ctx->va);
     glDeleteBuffers(1, &ctx->vb);
-    glDeleteProgram(ctx->shaderProgram);
+    SCREEN_bufferRunFree(ctx->image);
 }
 
 
@@ -108,7 +131,7 @@ void SCREEN_frame(f32 time)
     glClearColor(0.0f, 0.0f, 1.0f, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    if (!ctx->shaderProgram)
+    if (!ctx->image->shaderProgram)
     {
         return;
     }
@@ -163,34 +186,74 @@ void SCREEN_mouseMotion(int x, int y, int dx, int dy)
 
 
 
+static void SCREEN_loadSceneData(const SCREEN_Scene* srcScene)
+{
+    assert(0 == ctx->sceneDataBuf->length);
+    SCREEN_Scene* dstScene = ctx->scene;
+    u32 dataSize = SCREEN_calcSceneDataSize(srcScene);
+    vec_reserve(ctx->sceneDataBuf, dataSize);
 
+    if (srcScene->shaderComm)
+    {
+        dstScene->shaderComm = ctx->sceneDataBuf->data + ctx->sceneDataBuf->length;
+        u32 n = (u32)strlen(srcScene->shaderComm) + 1;
+        vec_pusharr(ctx->sceneDataBuf, srcScene->shaderComm, n);
+    }
+    for (u32 i = 0; i < SCREEN_Buffers_MAX; ++i)
+    {
+        if (srcScene->buffer[i].shaderCode)
+        {
+            dstScene->buffer[i].shaderCode = ctx->sceneDataBuf->data + ctx->sceneDataBuf->length;
+            u32 n = (u32)strlen(srcScene->buffer[i].shaderCode) + 1;
+            vec_pusharr(ctx->sceneDataBuf, srcScene->buffer[i].shaderCode, n);
+
+            for (u32 i = 0; i < SCREEN_Channels_MAX; ++i)
+            {
+                dstScene->buffer[i].channel[i] = srcScene->buffer[i].channel[i];
+            }
+        }
+    }
+    if (srcScene->image.shaderCode)
+    {
+        dstScene->image.shaderCode = ctx->sceneDataBuf->data + ctx->sceneDataBuf->length;
+        u32 n = (u32)strlen(srcScene->image.shaderCode) + 1;
+        vec_pusharr(ctx->sceneDataBuf, srcScene->image.shaderCode, n);
+
+        for (u32 i = 0; i < SCREEN_Channels_MAX; ++i)
+        {
+            dstScene->image.channel[i] = srcScene->image.channel[i];
+        }
+    }
+    assert(ctx->sceneDataBuf->length == dataSize);
+}
 
 
 bool SCREEN_loadScene(const SCREEN_Scene* scene)
 {
-    if (ctx->shaderProgram)
+    if (ctx->sceneLoaded)
     {
-        glDeleteProgram(ctx->shaderProgram);
+        SCREEN_unloadScene();
     }
-    ctx->shaderProgram = SCREEN_buildShaderProgram(scene->shaderComm, scene->image.shaderCode);
-
-    if (ctx->shaderProgram)
+    if (!SCREEN_validateScene(scene))
     {
-        ctx->uniform_Resolution = glGetUniformLocation(ctx->shaderProgram, "iResolution");
-        ctx->uniform_Time = glGetUniformLocation(ctx->shaderProgram, "iTime");
-        ctx->uniform_Mouse = glGetUniformLocation(ctx->shaderProgram, "iMouse");
+        return false;
     }
+    ctx->sceneLoaded = true;
+    SCREEN_loadSceneData(scene);
+    SCREEN_enterScene();
     return true;
 }
 
 
 void SCREEN_unloadScene(void)
 {
-    if (ctx->shaderProgram)
+    if (!ctx->sceneLoaded)
     {
-        glDeleteProgram(ctx->shaderProgram);
-        ctx->shaderProgram = 0;
+        return;
     }
+    ctx->sceneLoaded = false;
+    vec_resize(ctx->sceneDataBuf, 0);
+    SCREEN_bufferRunFree(ctx->image);
 }
 
 
