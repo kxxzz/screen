@@ -172,7 +172,7 @@ bool SCREEN_loadScene(const SCREEN_Scene* scene)
     {
         glDeleteProgram(ctx->shaderProgram);
     }
-    ctx->shaderProgram = SCREEN_buildShaderProgram(scene->image.shaderCode);
+    ctx->shaderProgram = SCREEN_buildShaderProgram(scene->shaderComm, scene->image.shaderCode);
 
     if (ctx->shaderProgram)
     {

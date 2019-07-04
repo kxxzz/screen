@@ -152,7 +152,7 @@ static GLuint SCREEN_compileShader(GLenum type, GLsizei numSrcs, const char** sr
 
 
 
-GLuint SCREEN_buildShaderProgram(const char* shaderMain)
+GLuint SCREEN_buildShaderProgram(const char* shaderComm, const char* shaderMain)
 {
     const char* vsSrc[] =
     {
@@ -169,6 +169,7 @@ GLuint SCREEN_buildShaderProgram(const char* shaderMain)
     {
         SCREEN_shaderCommonSrcHeader(),
         SCREEN_shaderFragmentSrcHeader(),
+        shaderComm ? shaderComm : "",
         shaderMain,
         SCREEN_shaderFragmentSrcFooter(),
     };
