@@ -213,9 +213,9 @@ int main(int argc, char* argv[])
             }
             case SDL_MOUSEMOTION:
             {
-                outdated = true;
                 if (e.motion.state > 0)
                 {
+                    outdated = true;
                     SCREEN_mouseMotion(e.button.x, e.button.y, e.motion.xrel, e.motion.yrel);
                 }
                 break;
@@ -251,6 +251,29 @@ int main(int argc, char* argv[])
                 break;
             }
         }
+
+
+        if (srcFile && watchFlag && (now1 - lastCheckTime > 0.25f))
+        {
+            static char title[255] = "";
+            snprintf(title, sizeof(title), "PLAYER%*c FPS: %-2.2f", 16, ' ', (double)frameCount / (now1 - lastCheckTime));
+            SDL_SetWindowTitle(window, title);
+            frameCount = 0;
+
+            lastCheckTime = now1;
+            struct stat st;
+            stat(srcFile, &st);
+            if (lastMtime != st.st_mtime)
+            {
+                printf("[CHANGE] \"%s\" [%s]\n", srcFile, nowStr(timeBuf));
+                sceneTime = 0;
+                loadSceneByFile(srcFile);
+            }
+            lastMtime = st.st_mtime;
+        }
+
+
+
         f32 now = (f32)SDL_GetTicks() / 1000.f;
         f32 deltaTime = lazyMode ? 0 : now1 - now;
         now1 = now;
@@ -263,26 +286,6 @@ int main(int argc, char* argv[])
         }
         SDL_GL_SwapWindow(window);
         // SDL_Delay(1);
-
-
-        if (srcFile && watchFlag && (now - lastCheckTime > 0.25f))
-        {
-            static char title[255] = "";
-            snprintf(title, sizeof(title), "PLAYER%*c FPS: %-2.2f", 16, ' ', (double)frameCount / (now - lastCheckTime));
-            SDL_SetWindowTitle(window, title);
-            frameCount = 0;
-
-            lastCheckTime = now;
-            struct stat st;
-            stat(srcFile, &st);
-            if (lastMtime != st.st_mtime)
-            {
-                printf("[CHANGE] \"%s\" [%s]\n", srcFile, nowStr(timeBuf));
-                sceneTime = 0;
-                loadSceneByFile(srcFile);
-            }
-            lastMtime = st.st_mtime;
-        }
     }
 
 

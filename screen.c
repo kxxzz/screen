@@ -14,9 +14,9 @@ typedef struct SCREEN_Context
     GLint uniform_Time;
     GLint uniform_Mouse;
 
-    f32 width, height;
+    u32 width, height;
     bool pointButtonDown;
-    f32 pointX, pointY;
+    int pointX, pointY;
 } SCREEN_Context;
 
 SCREEN_Context* ctx = NULL;
@@ -52,8 +52,8 @@ void SCREEN_enter(u32 w, u32 h)
     //printf("GL_VERSION  : %s\n", glGetString(GL_VERSION));
     //printf("GL_RENDERER : %s\n", glGetString(GL_RENDERER));
 
-    ctx->width = (f32)w;
-    ctx->height = (f32)h;
+    ctx->width = w;
+    ctx->height = h;
     glViewport(0, 0, w, h);
     ctx->pointY = ctx->height;
 
@@ -94,8 +94,8 @@ void SCREEN_leave(void)
 
 void SCREEN_resize(u32 w, u32 h)
 {
-    ctx->width = (f32)w;
-    ctx->height = (f32)h;
+    ctx->width = w;
+    ctx->height = h;
     glViewport(0, 0, w, h);
     SCREEN_GLCHECK();
     ctx->pointY = ctx->height;
@@ -119,11 +119,11 @@ void SCREEN_frame(f32 time)
     }
     if (ctx->uniform_Resolution >= 0)
     {
-        glUniform3f(ctx->uniform_Resolution, ctx->width, ctx->height, 0);
+        glUniform3f(ctx->uniform_Resolution, (f32)ctx->width, (f32)ctx->height, 0);
     }
     if (ctx->uniform_Mouse >= 0)
     {
-        glUniform4f(ctx->uniform_Mouse, ctx->pointX, ctx->height - ctx->pointY, ctx->width, -ctx->height);
+        glUniform4f(ctx->uniform_Mouse, (f32)ctx->pointX, (f32)ctx->height - ctx->pointY, (f32)ctx->width, -(f32)ctx->height);
     }
 
     glBindVertexArray(ctx->va);
@@ -140,21 +140,21 @@ void SCREEN_frame(f32 time)
 void SCREEN_mouseUp(int x, int y)
 {
     ctx->pointButtonDown = false;
-    ctx->pointX = (float)x;
-    ctx->pointY = (float)y;
+    ctx->pointX = x;
+    ctx->pointY = y;
 }
 
 void SCREEN_mouseDown(int x, int y)
 {
     ctx->pointButtonDown = true;
-    ctx->pointX = (float)x;
-    ctx->pointY = (float)y;
+    ctx->pointX = x;
+    ctx->pointY = y;
 }
 
 void SCREEN_mouseMotion(int x, int y, int dx, int dy)
 {
-    ctx->pointX = (float)x;
-    ctx->pointY = (float)y;
+    ctx->pointX = x;
+    ctx->pointY = y;
 }
 
 
