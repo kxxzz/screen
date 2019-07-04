@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include <ctype.h>
 
 #include <sys/stat.h>
 #include <signal.h>
@@ -44,6 +45,16 @@
 #define zalloc(sz) calloc(1, sz)
 
 
+static int strcicmp(const char* a, const char* b)
+{
+    for (;; ++a, ++b)
+    {
+        int n = tolower(*a) - tolower(*b);
+        if (n || !*a || !*b) return n;
+    }
+}
+
+
 static int mainReturn(int r)
 {
 #if !defined(NDEBUG) && defined(_WIN32)
@@ -74,16 +85,30 @@ static char* nowStr(char* timeBuf)
 
 static void loadSceneByFile(const char* filename)
 {
-    char* src;
-    u32 srcSize = FILEU_readFile(filename, &src);
-    if ((-1 == srcSize) || !srcSize)
-    {
-        return;
-    }
     SCREEN_Scene desc = { 0 };
-    desc.image.shaderCode = src;
-    SCREEN_loadScene(&desc);
-    free(src);
+    if (FILEU_fileExist(filename))
+    {
+        if (0 == strcicmp(FILEU_filenameExt(filename), "frag"))
+        {
+            char* src;
+            u32 srcSize = FILEU_readFile(filename, &src);
+            if ((-1 == srcSize) || !srcSize)
+            {
+                return;
+            }
+            desc.image.shaderCode = src;
+            SCREEN_loadScene(&desc);
+            free(src);
+        }
+        else if (0 == strcicmp(FILEU_filenameExt(filename), "json"))
+        {
+
+        }
+    }
+    else if (FILEU_dirExist(filename))
+    {
+        // todo
+    }
 }
 
 
