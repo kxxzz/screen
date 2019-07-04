@@ -44,6 +44,8 @@ void SCREEN_mouseMotion(int x, int y, int dx, int dy);
 
 typedef struct SCREEN_SceneDesc
 {
+    const char* shaderComm;
+    const char* shaderBuff[4];
     const char* shaderMain;
 } SCREEN_SceneDesc;
 

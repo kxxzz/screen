@@ -80,7 +80,8 @@ static void loadSceneByFile(const char* filename)
     {
         return;
     }
-    SCREEN_SceneDesc desc = { src };
+    SCREEN_SceneDesc desc = { 0 };
+    desc.shaderMain = src;
     SCREEN_loadScene(&desc);
     free(src);
 }
@@ -132,7 +133,7 @@ int main(int argc, char* argv[])
     u32 winHeight = 600;
     SDL_Window* window = SDL_CreateWindow
     (
-        "PLAYER",
+        "SCREEN PLAYER",
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, winWidth, winHeight,
         SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE
     );
@@ -256,7 +257,7 @@ int main(int argc, char* argv[])
         if (srcFile && watchFlag && (now1 - lastCheckTime > 0.25f))
         {
             static char title[255] = "";
-            snprintf(title, sizeof(title), "PLAYER%*c FPS: %-2.2f", 16, ' ', (double)frameCount / (now1 - lastCheckTime));
+            snprintf(title, sizeof(title), "SCREEN PLAYER%*c FPS: %-2.2f", 16, ' ', (double)frameCount / (now1 - lastCheckTime));
             SDL_SetWindowTitle(window, title);
             frameCount = 0;
 
