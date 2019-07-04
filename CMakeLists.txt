@@ -52,6 +52,7 @@ set (CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -DDEBUG")
 include_directories (imp/vec)
 include_directories (imp/fileu)
 include_directories (imp/argparse)
+include_directories (imp/cJSON)
 
 file (GLOB IMP_SRC_FILES
     imp/vec/*.h
@@ -60,6 +61,8 @@ file (GLOB IMP_SRC_FILES
     imp/fileu/*.c
     imp/argparse/*.h
     imp/argparse/*.c
+    imp/cJSON/*.h
+    imp/cJSON/*.c
     )
 list(FILTER IMP_SRC_FILES EXCLUDE REGEX "main.c$")
 
