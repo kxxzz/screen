@@ -49,6 +49,21 @@ void SCREEN_destroy(void)
 
 
 
+
+
+
+
+
+void SCREEN_bufferRunEnter(SCREEN_BufferRun* bufRun, const SCREEN_Buffer* desc)
+{
+    bufRun->shaderProgram = SCREEN_buildShaderProgram(ctx->scene->shaderComm, desc->shaderCode);
+}
+
+
+
+
+
+
 static void SCREEN_enterScene(void)
 {
     assert(ctx->entered);
@@ -61,10 +76,9 @@ static void SCREEN_enterScene(void)
             continue;
         }
         SCREEN_BufferRun* bufRun = ctx->buffer + i;
-        bufRun->shaderProgram = SCREEN_buildShaderProgram(ctx->scene->shaderComm, ctx->scene->buffer[i].shaderCode);
+        SCREEN_bufferRunEnter(bufRun, ctx->scene->buffer + i);
     }
-
-    ctx->image->shaderProgram = SCREEN_buildShaderProgram(ctx->scene->shaderComm, ctx->scene->image.shaderCode);
+    SCREEN_bufferRunEnter(ctx->image, &ctx->scene->image);
 
     if (ctx->image->shaderProgram)
     {
@@ -83,6 +97,9 @@ static void SCREEN_leaveScene(void)
     }
     SCREEN_bufferRunLeave(ctx->image);
 }
+
+
+
 
 
 
@@ -193,6 +210,9 @@ void SCREEN_frame(f32 time)
 
 
 
+
+
+
 void SCREEN_mouseUp(int x, int y)
 {
     ctx->pointButtonDown = false;
@@ -212,6 +232,10 @@ void SCREEN_mouseMotion(int x, int y, int dx, int dy)
     ctx->pointX = x;
     ctx->pointY = y;
 }
+
+
+
+
 
 
 
@@ -259,6 +283,12 @@ static void SCREEN_loadSceneData(const SCREEN_Scene* srcScene)
     }
     assert(ctx->sceneDataBuf->length == dataSize);
 }
+
+
+
+
+
+
 
 
 bool SCREEN_loadScene(const SCREEN_Scene* scene)
