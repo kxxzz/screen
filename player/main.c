@@ -24,6 +24,26 @@
 
 
 
+
+#ifdef ARYLEN
+# undef ARYLEN
+#endif
+#define ARYLEN(a) (sizeof(a) / sizeof((a)[0]))
+
+
+#ifdef max
+# undef max
+#endif
+#ifdef min
+# undef min
+#endif
+#define max(a,b) ((a) > (b) ? (a) : (b))
+#define min(a,b) ((a) < (b) ? (a) : (b))
+
+
+#define zalloc(sz) calloc(1, sz)
+
+
 static int mainReturn(int r)
 {
 #if !defined(NDEBUG) && defined(_WIN32)
@@ -107,7 +127,6 @@ int main(int argc, char* argv[])
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
     SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
-    //SDL_GL_SetSwapInterval(0);
 
     u32 winWidth = 800;
     u32 winHeight = 600;
@@ -120,6 +139,15 @@ int main(int argc, char* argv[])
     SDL_GLContext context = SDL_GL_CreateContext(window);
     SCREEN_startup();
     SCREEN_enter(winWidth, winHeight);
+
+
+    u32 intervalMode = 2;
+    bool fullscreen = false;
+
+
+    static const int IntervalTable[] = { 0, 1, -1 };
+    int r = SDL_GL_SetSwapInterval(IntervalTable[intervalMode]);
+    assert(0 == r);
 
 
     time_t lastMtime;
@@ -174,6 +202,28 @@ int main(int argc, char* argv[])
                 {
                     SCREEN_mouseMotion(e.button.x, e.button.y, e.motion.xrel, e.motion.yrel);
                 }
+                break;
+            }
+            case SDL_KEYDOWN:
+            {
+                if (SDLK_BACKSPACE == e.key.keysym.sym)
+                {
+                    fullscreen = !fullscreen;
+                    SDL_SetWindowFullscreen(window, fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
+                }
+                if (SDLK_TAB == e.key.keysym.sym)
+                {
+                    intervalMode = ++intervalMode % ARYLEN(IntervalTable);
+                    int r = SDL_GL_SetSwapInterval(intervalMode);
+                    if (0 != r)
+                    {
+                        // todo
+                    }
+                }
+                break;
+            }
+            case SDL_KEYUP:
+            {
                 break;
             }
             default:
