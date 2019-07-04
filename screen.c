@@ -10,11 +10,8 @@ typedef struct SCREEN_Context
     GLuint vb;
     GLuint va;
 
-    GLint uniform_Resolution;
-    GLint uniform_Time;
-    GLint uniform_Mouse;
-
     u32 width, height;
+    f32 time;
     bool pointButtonDown;
     int pointX, pointY;
 
@@ -56,7 +53,11 @@ void SCREEN_destroy(void)
 
 void SCREEN_bufferRunEnter(SCREEN_BufferRun* bufRun, const SCREEN_Buffer* desc)
 {
-    bufRun->shaderProgram = SCREEN_buildShaderProgram(ctx->scene->shaderComm, desc->shaderCode);
+    GLuint shaderProgram = bufRun->shaderProgram = SCREEN_buildShaderProgram(ctx->scene->shaderComm, desc->shaderCode);
+
+    bufRun->uniform_Resolution = glGetUniformLocation(shaderProgram, "iResolution");
+    bufRun->uniform_Time = glGetUniformLocation(shaderProgram, "iTime");
+    bufRun->uniform_Mouse = glGetUniformLocation(shaderProgram, "iMouse");
 }
 
 
@@ -79,13 +80,6 @@ static void SCREEN_enterScene(void)
         SCREEN_bufferRunEnter(bufRun, ctx->scene->buffer + i);
     }
     SCREEN_bufferRunEnter(ctx->image, &ctx->scene->image);
-
-    if (ctx->image->shaderProgram)
-    {
-        ctx->uniform_Resolution = glGetUniformLocation(ctx->image->shaderProgram, "iResolution");
-        ctx->uniform_Time = glGetUniformLocation(ctx->image->shaderProgram, "iTime");
-        ctx->uniform_Mouse = glGetUniformLocation(ctx->image->shaderProgram, "iMouse");
-    }
 }
 
 static void SCREEN_leaveScene(void)
@@ -174,9 +168,34 @@ void SCREEN_resize(u32 w, u32 h)
 
 
 
+
+void SCREEN_bufferRunSetUniforms(SCREEN_BufferRun* b)
+{
+    if (!b->shaderProgram)
+    {
+        return;
+    }
+    if (b->uniform_Time >= 0)
+    {
+        glUniform1f(b->uniform_Time, ctx->time);
+    }
+    if (b->uniform_Resolution >= 0)
+    {
+        glUniform3f(b->uniform_Resolution, (f32)ctx->width, (f32)ctx->height, 0);
+    }
+    if (b->uniform_Mouse >= 0)
+    {
+        glUniform4f(b->uniform_Mouse, (f32)ctx->pointX, (f32)ctx->height - ctx->pointY, (f32)ctx->width, -(f32)ctx->height);
+    }
+}
+
+
+
 void SCREEN_frame(f32 time)
 {
     assert(ctx->entered);
+
+    ctx->time = time;
 
     glClearColor(0.0f, 0.0f, 1.0f, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
@@ -185,19 +204,11 @@ void SCREEN_frame(f32 time)
     {
         return;
     }
-
-    if (ctx->uniform_Time >= 0)
+    for (u32 i = 0; i < SCREEN_Buffers_MAX; ++i)
     {
-        glUniform1f(ctx->uniform_Time, time);
+        SCREEN_bufferRunSetUniforms(ctx->buffer + i);
     }
-    if (ctx->uniform_Resolution >= 0)
-    {
-        glUniform3f(ctx->uniform_Resolution, (f32)ctx->width, (f32)ctx->height, 0);
-    }
-    if (ctx->uniform_Mouse >= 0)
-    {
-        glUniform4f(ctx->uniform_Mouse, (f32)ctx->pointX, (f32)ctx->height - ctx->pointY, (f32)ctx->width, -(f32)ctx->height);
-    }
+    SCREEN_bufferRunSetUniforms(ctx->image);
 
     glBindVertexArray(ctx->va);
     glDrawArrays(GL_TRIANGLES, 0, 6);

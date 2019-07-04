@@ -205,7 +205,6 @@ GLuint SCREEN_buildShaderProgram(const char* shaderComm, const char* shaderMain)
     glValidateProgram(shaderProgram);
     glGetProgramiv(shaderProgram, GL_VALIDATE_STATUS, &status);
     assert(status);
-    SCREEN_GLCHECK();
 
     return shaderProgram;
 }
