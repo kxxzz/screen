@@ -80,6 +80,8 @@ static void SCREEN_enterScene(void)
         SCREEN_bufferRunEnter(bufRun, ctx->scene->buffer + i);
     }
     SCREEN_bufferRunEnter(ctx->image, &ctx->scene->image);
+
+    SCREEN_GLCHECK();
 }
 
 static void SCREEN_leaveScene(void)
@@ -175,13 +177,16 @@ void SCREEN_bufferRunSetUniforms(SCREEN_BufferRun* b)
     {
         return;
     }
+    glUseProgram(b->shaderProgram);
+    SCREEN_GLCHECK();
+    if (b->uniform_Resolution >= 0)
+    {
+        glUniform3f(b->uniform_Resolution, (f32)ctx->width, (f32)ctx->height, 0.f);
+        
+    }
     if (b->uniform_Time >= 0)
     {
         glUniform1f(b->uniform_Time, ctx->time);
-    }
-    if (b->uniform_Resolution >= 0)
-    {
-        glUniform3f(b->uniform_Resolution, (f32)ctx->width, (f32)ctx->height, 0);
     }
     if (b->uniform_Mouse >= 0)
     {
@@ -204,11 +209,14 @@ void SCREEN_frame(f32 time)
     {
         return;
     }
+    SCREEN_GLCHECK();
     for (u32 i = 0; i < SCREEN_Buffers_MAX; ++i)
     {
         SCREEN_bufferRunSetUniforms(ctx->buffer + i);
+        SCREEN_GLCHECK();
     }
     SCREEN_bufferRunSetUniforms(ctx->image);
+    SCREEN_GLCHECK();
 
     glBindVertexArray(ctx->va);
     glDrawArrays(GL_TRIANGLES, 0, 6);
