@@ -166,7 +166,7 @@ void SCREEN_mouseMotion(int x, int y, int dx, int dy)
 
 
 
-void SCREEN_loadScene(const SCREEN_Scene* scene)
+bool SCREEN_loadScene(const SCREEN_Scene* scene)
 {
     if (ctx->shaderProgram)
     {
@@ -180,6 +180,7 @@ void SCREEN_loadScene(const SCREEN_Scene* scene)
         ctx->uniform_Time = glGetUniformLocation(ctx->shaderProgram, "iTime");
         ctx->uniform_Mouse = glGetUniformLocation(ctx->shaderProgram, "iMouse");
     }
+    return true;
 }
 
 

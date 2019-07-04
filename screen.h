@@ -80,7 +80,8 @@ typedef struct SCREEN_Scene
 
 
 
-void SCREEN_loadScene(const SCREEN_Scene* scene);
+
+bool SCREEN_loadScene(const SCREEN_Scene* scene);
 void SCREEN_unloadScene(void);
 
 
