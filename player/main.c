@@ -76,7 +76,7 @@ static void loadSceneByFile(const char* filename)
 {
     char* src;
     u32 srcSize = FILEU_readFile(filename, &src);
-    if (-1 == srcSize)
+    if ((-1 == srcSize) || !srcSize)
     {
         return;
     }
