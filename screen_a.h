@@ -99,7 +99,7 @@ typedef struct SCREEN_BufferRun
 
 void SCREEN_bufferRunEnter(SCREEN_BufferRun* b, const SCREEN_Buffer* desc);
 void SCREEN_bufferRunLeave(SCREEN_BufferRun* b);
-void SCREEN_bufferRunSetUniforms(SCREEN_BufferRun* b);
+void SCREEN_bufferRunBindUniform(SCREEN_BufferRun* b);
 
 
 

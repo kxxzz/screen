@@ -171,7 +171,7 @@ void SCREEN_resize(u32 w, u32 h)
 
 
 
-void SCREEN_bufferRunSetUniforms(SCREEN_BufferRun* b)
+void SCREEN_bufferRunBindUniform(SCREEN_BufferRun* b)
 {
     if (!b->shaderProgram)
     {
@@ -212,10 +212,10 @@ void SCREEN_frame(f32 time)
     SCREEN_GLCHECK();
     for (u32 i = 0; i < SCREEN_Buffers_MAX; ++i)
     {
-        SCREEN_bufferRunSetUniforms(ctx->buffer + i);
+        SCREEN_bufferRunBindUniform(ctx->buffer + i);
         SCREEN_GLCHECK();
     }
-    SCREEN_bufferRunSetUniforms(ctx->image);
+    SCREEN_bufferRunBindUniform(ctx->image);
     SCREEN_GLCHECK();
 
     glBindVertexArray(ctx->va);
