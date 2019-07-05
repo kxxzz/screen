@@ -8,7 +8,7 @@
 
 enum
 {
-    PATH_MAX = 1024,
+    PATH_MAX = 4096,
 };
 
 static int strcicmp(const char* a, const char* b)
@@ -166,9 +166,10 @@ static void SCREEN_loadSceneBufferFromJson
     {
         *pBi = bi;
     }
+    return;
 error:
-    // todo
-    ;
+    *pOff = -1;
+    *pBi = -1;
 }
 
 
