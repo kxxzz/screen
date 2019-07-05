@@ -163,20 +163,16 @@ void SCREEN_enter(u32 w, u32 h)
 {
     assert(!ctx->entered);
     ctx->entered = true;
+
     //printf("GL_VERSION  : %s\n", glGetString(GL_VERSION));
     //printf("GL_RENDERER : %s\n", glGetString(GL_RENDERER));
 
-    if (!ctx->width || !ctx->height)
-    {
-        ctx->pointX = w / 2;
-        ctx->pointY = h / 2;
-    }
-    else
+    assert(w && h);
+    if (ctx->width && ctx->height)
     {
         ctx->pointX = (int)((f32)ctx->pointX / ctx->width * w);
         ctx->pointY = (int)((f32)ctx->pointY / ctx->height * h);
     }
-
     ctx->width = w;
     ctx->height = h;
     glViewport(0, 0, w, h);
@@ -241,20 +237,19 @@ void SCREEN_leave(void)
 void SCREEN_resize(u32 w, u32 h)
 {
     assert(ctx->entered);
+    if (!w || !h)
+    {
+        return;
+    }
     if ((ctx->width == w) && (ctx->height == h))
     {
         return;
     }
-    SCREEN_leave();
-    SCREEN_enter(w, h);
-    return;
+    //SCREEN_leave();
+    //SCREEN_enter(w, h);
+    //return;
 
-    if (!ctx->width || !ctx->height)
-    {
-        ctx->pointX = w / 2;
-        ctx->pointY = h / 2;
-    }
-    else
+    if (ctx->width && ctx->height)
     {
         ctx->pointX = (int)((f32)ctx->pointX / ctx->width * w);
         ctx->pointY = (int)((f32)ctx->pointY / ctx->height * h);
