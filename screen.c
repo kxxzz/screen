@@ -388,12 +388,16 @@ void SCREEN_mouseUp(int x, int y)
 {
     ctx->pointStart[0] = -ctx->pointStart[0];
     ctx->pointStart[1] = -ctx->pointStart[1];
+    //ctx->pointX = x;
+    //ctx->pointY = y;
 }
 
 void SCREEN_mouseDown(int x, int y)
 {
     ctx->pointStart[0] = x;
     ctx->pointStart[1] = y;
+    //ctx->pointX = x;
+    //ctx->pointY = y;
 }
 
 void SCREEN_mouseMotion(int x, int y)
