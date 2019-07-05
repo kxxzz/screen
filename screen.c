@@ -97,7 +97,7 @@ static void SCREEN_bufferRunEnter(SCREEN_BufferRun* b, const SCREEN_Buffer* desc
 
 static void SCREEN_bufferRunResize
 (
-    SCREEN_BufferRun* b, const SCREEN_Buffer* desc, bool noTex, u32 width_copy, u32 height_copy
+    SCREEN_BufferRun* b, const SCREEN_Buffer* desc, bool noTex, u32 widthCopy, u32 heightCopy
 )
 {
     if (noTex)
@@ -117,25 +117,27 @@ static void SCREEN_bufferRunResize
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    if (width_copy && height_copy)
+    if (widthCopy && heightCopy)
     {
         glBindFramebuffer(GL_FRAMEBUFFER, ctx->fb);
         ctx->curFramebuffer = ctx->fb;
-        glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture0, 0);
-        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, b->texture, 0);
+
         {
             const GLenum bufs[] = { GL_COLOR_ATTACHMENT1 };
             glDrawBuffers(ARYLEN(bufs), bufs);
+            SCREEN_GL_CHECK();
         }
-        glBlitFramebuffer(0, 0, ctx->width, ctx->height, 0, 0, ctx->width, ctx->height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+        glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture0, 0);
+        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, b->texture, 0);
+        glBlitFramebuffer(0, 0, widthCopy, heightCopy, 0, 0, widthCopy, heightCopy, GL_COLOR_BUFFER_BIT, GL_NEAREST);
         SCREEN_GL_CHECK();
 
-        glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, 0, 0);
         {
             const GLenum bufs[] = { GL_COLOR_ATTACHMENT0 };
             glDrawBuffers(ARYLEN(bufs), bufs);
+            SCREEN_GL_CHECK();
         }
-        SCREEN_GL_CHECK();
     }
     glDeleteTextures(1, &texture0);
 }
@@ -259,6 +261,12 @@ void SCREEN_leave(void)
 
 
 
+
+
+
+
+
+
 void SCREEN_resize(u32 w, u32 h)
 {
     assert(ctx->entered);
@@ -274,8 +282,8 @@ void SCREEN_resize(u32 w, u32 h)
     //SCREEN_enter(w, h);
     //return;
 
-    u32 width_copy = min(ctx->width, w);
-    u32 height_copy = min(ctx->height, h);
+    u32 widthCopy = min(ctx->width, w);
+    u32 heightCopy = min(ctx->height, h);
     if (ctx->width && ctx->height)
     {
         ctx->pointX = (int)((f32)ctx->pointX / ctx->width * w);
@@ -287,13 +295,18 @@ void SCREEN_resize(u32 w, u32 h)
 
     for (u32 i = 0; i < SCREEN_Buffers_MAX; ++i)
     {
-        SCREEN_bufferRunResize(ctx->buffer + i, ctx->scene->buffer + i, false, width_copy, height_copy);
+        SCREEN_bufferRunResize(ctx->buffer + i, ctx->scene->buffer + i, false, widthCopy, heightCopy);
     }
     SCREEN_bufferRunResize(ctx->image, &ctx->scene->image, true, 0, 0);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     ctx->curFramebuffer = 0;
 }
+
+
+
+
+
 
 
 
