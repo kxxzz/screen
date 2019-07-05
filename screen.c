@@ -72,8 +72,15 @@ static void SCREEN_bufferRunEnter(SCREEN_BufferRun* b, const SCREEN_Buffer* desc
     for (u32 i = 0; i < SCREEN_Channels_MAX; ++i)
     {
         char name[4096] = "";
+
         snprintf(name, sizeof(name), "iChannel%u", i);
         b->uniform_Channel[i] = glGetUniformLocation(shaderProgram, name);
+
+        snprintf(name, sizeof(name), "iChannelTime[%u]", i);
+        b->uniform_ChannelTime[i] = glGetUniformLocation(shaderProgram, name);
+
+        snprintf(name, sizeof(name), "iChannelResolution[%u]", i);
+        b->uniform_ChannelResolution[i] = glGetUniformLocation(shaderProgram, name);
     }
 
     if (!noTex)
@@ -141,6 +148,106 @@ static void SCREEN_bufferRunResize
     }
     glDeleteTextures(1, &texture0);
 }
+
+
+
+
+
+static void SCREEN_bufferRunRender(SCREEN_BufferRun* b, SCREEN_Buffer* desc)
+{
+    if (!b->shaderProgram)
+    {
+        return;
+    }
+    if (b->shaderProgram != ctx->curShaderProgram)
+    {
+        ctx->curShaderProgram = b->shaderProgram;
+        glUseProgram(b->shaderProgram);
+    }
+    if (b->uniform_Resolution >= 0)
+    {
+        glUniform3f(b->uniform_Resolution, (f32)ctx->width, (f32)ctx->height, 0.f);
+
+    }
+    if (b->uniform_Time >= 0)
+    {
+        glUniform1f(b->uniform_Time, ctx->time);
+    }
+    if (b->uniform_Mouse >= 0)
+    {
+        glUniform4f
+        (
+            b->uniform_Mouse,
+            (f32)ctx->pointX, (f32)(ctx->height - ctx->pointY),
+            (f32)ctx->pointStart[0], (f32)ctx->pointStart[1]
+        );
+    }
+    if (b->uniform_Frame >= 0)
+    {
+        glUniform1i(b->uniform_Frame, ctx->frame);
+    }
+
+    for (u32 i = 0; i < SCREEN_Channels_MAX; ++i)
+    {
+        if (b->uniform_Channel[i] >= 0)
+        {
+            glUniform1i(b->uniform_Channel[i], i);
+        }
+        if (b->uniform_ChannelTime[i] >= 0)
+        {
+            glUniform1f(b->uniform_ChannelTime[i], ctx->time);
+        }
+        if (b->uniform_ChannelResolution[i] >= 0)
+        {
+            glUniform3f(b->uniform_ChannelResolution[i], (f32)ctx->width, (f32)ctx->height, 0.f);
+        }
+    }
+
+
+    if (b->texture)
+    {
+        if (ctx->curFramebuffer != ctx->fb)
+        {
+            ctx->curFramebuffer = ctx->fb;
+            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, ctx->fb);
+        }
+        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, b->texture, 0);
+        //assert(GL_FRAMEBUFFER_COMPLETE == glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER));
+    }
+    else
+    {
+        if (ctx->curFramebuffer != 0)
+        {
+            ctx->curFramebuffer = 0;
+            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+        }
+    }
+    SCREEN_GL_CHECK();
+
+    for (u32 i = 0; i < SCREEN_Channels_MAX; ++i)
+    {
+        if (SCREEN_ChannelType_Unused == desc->channel[i].type)
+        {
+            //glActiveTexture(GL_TEXTURE0 + i);
+            //glBindTexture(GL_TEXTURE_2D, 0);
+            continue;
+        }
+        assert(SCREEN_ChannelType_Buffer == desc->channel[i].type);
+        glActiveTexture(GL_TEXTURE0 + i);
+        GLuint texture = ctx->buffer[desc->channel[i].buffer].texture;
+        glBindTexture(GL_TEXTURE_2D, texture);
+    }
+
+    glBindVertexArray(ctx->va);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    SCREEN_GL_CHECK();
+}
+
+
+
+
+
+
 
 
 
@@ -310,101 +417,6 @@ void SCREEN_resize(u32 w, u32 h)
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     ctx->curFramebuffer = 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-static void SCREEN_bufferRunRender(SCREEN_BufferRun* b, SCREEN_Buffer* desc)
-{
-    if (!b->shaderProgram)
-    {
-        return;
-    }
-    if (b->shaderProgram != ctx->curShaderProgram)
-    {
-        ctx->curShaderProgram = b->shaderProgram;
-        glUseProgram(b->shaderProgram);
-    }
-    if (b->uniform_Resolution >= 0)
-    {
-        glUniform3f(b->uniform_Resolution, (f32)ctx->width, (f32)ctx->height, 0.f);
-        
-    }
-    if (b->uniform_Time >= 0)
-    {
-        glUniform1f(b->uniform_Time, ctx->time);
-    }
-    if (b->uniform_Mouse >= 0)
-    {
-        glUniform4f
-        (
-            b->uniform_Mouse,
-            (f32)ctx->pointX, (f32)(ctx->height - ctx->pointY),
-            (f32)ctx->pointStart[0], (f32)ctx->pointStart[1]
-        );
-    }
-    if (b->uniform_Frame >= 0)
-    {
-        glUniform1i(b->uniform_Frame, ctx->frame);
-    }
-
-    if (b->texture)
-    {
-        if (ctx->curFramebuffer != ctx->fb)
-        {
-            ctx->curFramebuffer = ctx->fb;
-            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, ctx->fb);
-        }
-        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, b->texture, 0);
-        assert(GL_FRAMEBUFFER_COMPLETE == glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER));
-    }
-    else
-    {
-        if (ctx->curFramebuffer != 0)
-        {
-            ctx->curFramebuffer = 0;
-            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-        }
-    }
-    SCREEN_GL_CHECK();
-
-    for (u32 i = 0; i < SCREEN_Channels_MAX; ++i)
-    {
-        if (SCREEN_ChannelType_Unused == desc->channel[i].type)
-        {
-            glActiveTexture(GL_TEXTURE0 + i);
-            glBindTexture(GL_TEXTURE_2D, 0);
-            continue;
-        }
-        assert(SCREEN_ChannelType_Buffer == desc->channel[i].type);
-        glActiveTexture(GL_TEXTURE0 + i);
-        GLuint texture = ctx->buffer[desc->channel[i].buffer].texture;
-        glBindTexture(GL_TEXTURE_2D, texture);
-
-        if (b->uniform_Channel[i] >= 0)
-        {
-            glUniform1i(b->uniform_Channel[i], i);
-        }
-    }
-
-    glBindVertexArray(ctx->va);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-    SCREEN_GL_CHECK();
-}
-
-
-
-
 
 
 
