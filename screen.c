@@ -200,6 +200,10 @@ void SCREEN_enter(u32 w, u32 h)
         ctx->pointX = (int)((f32)ctx->pointX / ctx->width * w);
         ctx->pointY = (int)((f32)ctx->pointY / ctx->height * h);
     }
+    else
+    {
+        ctx->pointY = h;
+    }
     ctx->width = w;
     ctx->height = h;
     glViewport(0, 0, w, h);
@@ -289,6 +293,10 @@ void SCREEN_resize(u32 w, u32 h)
         ctx->pointX = (int)((f32)ctx->pointX / ctx->width * w);
         ctx->pointY = (int)((f32)ctx->pointY / ctx->height * h);
     }
+    else
+    {
+        ctx->pointY = h;
+    }
     ctx->width = w;
     ctx->height = h;
     glViewport(0, 0, w, h);
@@ -341,7 +349,7 @@ static void SCREEN_bufferRunRender(SCREEN_BufferRun* b, SCREEN_Buffer* desc)
         glUniform4f
         (
             b->uniform_Mouse,
-            (f32)ctx->pointX, (f32)ctx->height - ctx->pointY,
+            (f32)ctx->pointX, (f32)(ctx->height - ctx->pointY),
             (f32)ctx->pointStart[0], (f32)ctx->pointStart[1]
         );
     }
