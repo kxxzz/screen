@@ -90,16 +90,18 @@ GLuint SCREEN_buildShaderProgram(const char* shaderComm, const char* shaderMain)
 
 typedef struct SCREEN_BufferRun
 {
+    bool entered;
+
     GLuint shaderProgram;
+    GLuint texture;
 
     GLint uniform_Resolution;
     GLint uniform_Time;
     GLint uniform_Mouse;
+    GLint uniform_Channel[SCREEN_Channels_MAX];
 } SCREEN_BufferRun;
 
-void SCREEN_bufferRunEnter(SCREEN_BufferRun* b, const SCREEN_Buffer* desc);
 void SCREEN_bufferRunLeave(SCREEN_BufferRun* b);
-void SCREEN_bufferRunBindUniform(SCREEN_BufferRun* b);
 
 
 

@@ -9,6 +9,7 @@ typedef struct SCREEN_Context
     SCREEN_BufferRun image[1];
     GLuint vb;
     GLuint va;
+    GLuint fb;
 
     u32 width, height;
     f32 time;
@@ -20,6 +21,7 @@ typedef struct SCREEN_Context
     SCREEN_Scene scene[1];
 
     GLuint curShaderProgram;
+    GLuint curFramebuffer;
 } SCREEN_Context;
 
 SCREEN_Context* ctx = NULL;
@@ -53,14 +55,37 @@ void SCREEN_destroy(void)
 
 
 
-void SCREEN_bufferRunEnter(SCREEN_BufferRun* bufRun, const SCREEN_Buffer* desc)
+static void SCREEN_bufferRunEnter(SCREEN_BufferRun* b, const SCREEN_Buffer* desc, bool noTex)
 {
-    GLuint shaderProgram = bufRun->shaderProgram = SCREEN_buildShaderProgram(ctx->scene->shaderComm, desc->shaderCode);
+    assert(!b->entered);
+    b->entered = true;
+
+    GLuint shaderProgram = b->shaderProgram = SCREEN_buildShaderProgram(ctx->scene->shaderComm, desc->shaderCode);
     ctx->curShaderProgram = shaderProgram;
 
-    bufRun->uniform_Resolution = glGetUniformLocation(shaderProgram, "iResolution");
-    bufRun->uniform_Time = glGetUniformLocation(shaderProgram, "iTime");
-    bufRun->uniform_Mouse = glGetUniformLocation(shaderProgram, "iMouse");
+    b->uniform_Resolution = glGetUniformLocation(shaderProgram, "iResolution");
+    b->uniform_Time = glGetUniformLocation(shaderProgram, "iTime");
+    b->uniform_Mouse = glGetUniformLocation(shaderProgram, "iMouse");
+
+    for (u32 i = 0; i < SCREEN_Channels_MAX; ++i)
+    {
+        char name[4096] = "";
+        snprintf(name, sizeof(name), "iChannel%u", i);
+        b->uniform_Channel[i] = glGetUniformLocation(shaderProgram, name);
+    }
+
+    if (!noTex)
+    {
+        glGenTextures(1, &b->texture);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, b->texture);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA32F, ctx->width, ctx->height);
+    }
 }
 
 
@@ -80,9 +105,9 @@ static void SCREEN_enterScene(void)
             continue;
         }
         SCREEN_BufferRun* bufRun = ctx->buffer + i;
-        SCREEN_bufferRunEnter(bufRun, ctx->scene->buffer + i);
+        SCREEN_bufferRunEnter(bufRun, ctx->scene->buffer + i, false);
     }
-    SCREEN_bufferRunEnter(ctx->image, &ctx->scene->image);
+    SCREEN_bufferRunEnter(ctx->image, &ctx->scene->image, true);
 
     SCREEN_GLCHECK();
 }
@@ -141,6 +166,10 @@ void SCREEN_enter(u32 w, u32 h)
 
     SCREEN_GLCHECK();
 
+
+    glGenFramebuffers(1, &ctx->fb);
+
+
     if (ctx->sceneLoaded)
     {
         SCREEN_enterScene();
@@ -154,6 +183,7 @@ void SCREEN_leave(void)
     assert(ctx->entered);
     ctx->entered = false;
 
+    glDeleteFramebuffers(1, &ctx->fb);
     glDeleteVertexArrays(1, &ctx->va);
     glDeleteBuffers(1, &ctx->vb);
     SCREEN_bufferRunLeave(ctx->image);
@@ -176,7 +206,7 @@ void SCREEN_resize(u32 w, u32 h)
 
 
 
-void SCREEN_bufferRunBindUniform(SCREEN_BufferRun* b)
+static void SCREEN_bufferRunRender(SCREEN_BufferRun* b, SCREEN_Buffer* desc)
 {
     if (!b->shaderProgram)
     {
@@ -200,6 +230,51 @@ void SCREEN_bufferRunBindUniform(SCREEN_BufferRun* b)
     {
         glUniform4f(b->uniform_Mouse, (f32)ctx->pointX, (f32)ctx->height - ctx->pointY, (f32)ctx->width, -(f32)ctx->height);
     }
+
+    if (b->texture)
+    {
+        if (ctx->curFramebuffer != ctx->fb)
+        {
+            ctx->curFramebuffer = ctx->fb;
+            glBindFramebuffer(GL_FRAMEBUFFER, ctx->fb);
+        }
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, b->texture, 0);
+        //if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        //{
+        //    // todo error report
+        //    return;
+        //}
+    }
+    else
+    {
+        if (ctx->curFramebuffer != 0)
+        {
+            ctx->curFramebuffer = 0;
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        }
+    }
+    SCREEN_GLCHECK();
+
+    for (u32 i = 0; i < SCREEN_Channels_MAX; ++i)
+    {
+        if (SCREEN_ChannelType_Unused == desc->channel[i].type)
+        {
+            continue;
+        }
+        assert(SCREEN_ChannelType_Buffer == desc->channel[i].type);
+        glActiveTexture(GL_TEXTURE0 + i);
+        GLuint texture = ctx->buffer[desc->channel[i].buffer].texture;
+        glBindTexture(GL_TEXTURE_2D, texture);
+
+        if (b->uniform_Channel[i] >= 0)
+        {
+            glUniform1i(b->uniform_Channel[i], i);
+        }
+    }
+
+    glBindVertexArray(ctx->va);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    SCREEN_GLCHECK();
 }
 
 
@@ -221,13 +296,9 @@ void SCREEN_frame(f32 time)
     SCREEN_GLCHECK();
     for (u32 i = 0; i < SCREEN_Buffers_MAX; ++i)
     {
-        SCREEN_bufferRunBindUniform(ctx->buffer + i);
+        SCREEN_bufferRunRender(ctx->buffer + i, ctx->scene->buffer + i);
     }
-    SCREEN_bufferRunBindUniform(ctx->image);
-
-    glBindVertexArray(ctx->va);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-    SCREEN_GLCHECK();
+    SCREEN_bufferRunRender(ctx->image, &ctx->scene->image);
 }
 
 
