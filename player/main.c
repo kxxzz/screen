@@ -527,7 +527,7 @@ int main(int argc, char* argv[])
                 if (e.motion.state > 0)
                 {
                     outdated = true;
-                    SCREEN_mouseMotion(e.button.x, e.button.y, e.motion.xrel, e.motion.yrel);
+                    SCREEN_mouseMotion(e.button.x, e.button.y);
                 }
                 break;
             }

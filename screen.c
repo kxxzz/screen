@@ -13,8 +13,8 @@ typedef struct SCREEN_Context
 
     u32 width, height;
     f32 time;
-    bool pointButtonDown;
     int pointX, pointY;
+    int pointStart[2];
     u32 frame;
 
     bool sceneLoaded;
@@ -171,7 +171,6 @@ void SCREEN_enter(u32 w, u32 h)
     ctx->width = w;
     ctx->height = h;
     glViewport(0, 0, w, h);
-    ctx->frame = 0;
 
     static const GLfloat vertices[] =
     {
@@ -241,7 +240,6 @@ void SCREEN_resize(u32 w, u32 h)
     ctx->height = h;
     glViewport(0, 0, w, h);
     SCREEN_GLCHECK();
-    ctx->frame = 0;
 
     glDeleteFramebuffers(1, &ctx->fb);
     glGenFramebuffers(1, &ctx->fb);
@@ -286,8 +284,7 @@ static void SCREEN_bufferRunRender(SCREEN_BufferRun* b, SCREEN_Buffer* desc)
         (
             b->uniform_Mouse,
             (f32)ctx->pointX, (f32)ctx->height - ctx->pointY,
-            (ctx->pointButtonDown ? 1.f : 0.f),
-            (ctx->pointButtonDown ? 1.f : 0.f)
+            (f32)ctx->pointStart[0], (f32)ctx->pointStart[1]
         );
     }
     if (b->uniform_Frame >= 0)
@@ -389,19 +386,17 @@ void SCREEN_frame(f32 time)
 
 void SCREEN_mouseUp(int x, int y)
 {
-    ctx->pointButtonDown = false;
-    //ctx->pointX = x;
-    //ctx->pointY = y;
+    ctx->pointStart[0] = -ctx->pointStart[0];
+    ctx->pointStart[1] = -ctx->pointStart[1];
 }
 
 void SCREEN_mouseDown(int x, int y)
 {
-    ctx->pointButtonDown = true;
-    //ctx->pointX = x;
-    //ctx->pointY = y;
+    ctx->pointStart[0] = x;
+    ctx->pointStart[1] = y;
 }
 
-void SCREEN_mouseMotion(int x, int y, int dx, int dy)
+void SCREEN_mouseMotion(int x, int y)
 {
     ctx->pointX = x;
     ctx->pointY = y;

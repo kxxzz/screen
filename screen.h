@@ -36,7 +36,7 @@ void SCREEN_frame(f32 time);
 
 void SCREEN_mouseUp(int x, int y);
 void SCREEN_mouseDown(int x, int y);
-void SCREEN_mouseMotion(int x, int y, int dx, int dy);
+void SCREEN_mouseMotion(int x, int y);
 
 
 
