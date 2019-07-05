@@ -138,6 +138,7 @@ static GLuint SCREEN_compileShader(GLenum type, GLsizei numSrcs, const char** sr
         char infoBuf[4096];
         glGetShaderInfoLog(shader, sizeof(infoBuf), &status, infoBuf);
         // todo report
+        assert(false);
         glDeleteShader(shader);
         return 0;
     }
@@ -192,7 +193,7 @@ GLuint SCREEN_buildShaderProgram(const char* shaderComm, const char* shaderMain)
     {
         char infoBuf[4096];
         glGetProgramInfoLog(shaderProgram, sizeof(infoBuf), &status, infoBuf);
-        printf("%s", infoBuf);
+        assert(false);
         glDeleteShader(fragShader);
         glDeleteShader(vertShader);
         glDeleteProgram(shaderProgram);
@@ -207,6 +208,7 @@ GLuint SCREEN_buildShaderProgram(const char* shaderComm, const char* shaderMain)
     glGetProgramiv(shaderProgram, GL_VALIDATE_STATUS, &status);
     assert(status);
 
+    SCREEN_GL_CHECK();
     return shaderProgram;
 }
 

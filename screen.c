@@ -62,6 +62,7 @@ static void SCREEN_bufferRunEnter(SCREEN_BufferRun* b, const SCREEN_Buffer* desc
     b->entered = true;
 
     GLuint shaderProgram = b->shaderProgram = SCREEN_buildShaderProgram(ctx->scene->shaderComm, desc->shaderCode);
+    assert(shaderProgram);
     ctx->curShaderProgram = shaderProgram;
 
     b->uniform_Resolution = glGetUniformLocation(shaderProgram, "iResolution");
