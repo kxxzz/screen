@@ -511,7 +511,7 @@ int main(int argc, char* argv[])
                 outdated = true;
                 //SDL_SetRelativeMouseMode(false);
 
-                SCREEN_mouseUp(e.button.x, e.button.y);
+                SCREEN_mouseUp(e.button.button, e.button.x, e.button.y);
                 break;
             }
             case SDL_MOUSEBUTTONDOWN:
@@ -519,7 +519,7 @@ int main(int argc, char* argv[])
                 outdated = true;
                 //SDL_SetRelativeMouseMode(true);
 
-                SCREEN_mouseDown(e.button.x, e.button.y);
+                SCREEN_mouseDown(e.button.button, e.button.x, e.button.y);
                 break;
             }
             case SDL_MOUSEMOTION:
@@ -527,7 +527,7 @@ int main(int argc, char* argv[])
                 if (e.motion.state > 0)
                 {
                     outdated = true;
-                    SCREEN_mouseMotion(e.button.x, e.button.y, e.motion.xrel, e.motion.yrel);
+                    SCREEN_mouseMotion(e.button.button, e.button.x, e.button.y, e.motion.xrel, e.motion.yrel);
                 }
                 break;
             }

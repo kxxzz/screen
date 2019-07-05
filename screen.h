@@ -34,9 +34,9 @@ void SCREEN_resize(u32 w, u32 h);
 void SCREEN_frame(f32 time);
 
 
-void SCREEN_mouseUp(int x, int y);
-void SCREEN_mouseDown(int x, int y);
-void SCREEN_mouseMotion(int x, int y, int dx, int dy);
+void SCREEN_mouseUp(u8 button, int x, int y);
+void SCREEN_mouseDown(u8 button, int x, int y);
+void SCREEN_mouseMotion(u8 button, int x, int y, int dx, int dy);
 
 
 

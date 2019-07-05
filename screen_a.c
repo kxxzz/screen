@@ -137,7 +137,7 @@ static GLuint SCREEN_compileShader(GLenum type, GLsizei numSrcs, const char** sr
     {
         char infoBuf[4096];
         glGetShaderInfoLog(shader, sizeof(infoBuf), &status, infoBuf);
-        printf("%s", infoBuf);
+        // todo report
         glDeleteShader(shader);
         return 0;
     }
