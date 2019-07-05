@@ -98,6 +98,7 @@ typedef struct SCREEN_BufferRun
     GLint uniform_Resolution;
     GLint uniform_Time;
     GLint uniform_Mouse;
+    GLint uniform_Frame;
     GLint uniform_Channel[SCREEN_Channels_MAX];
 } SCREEN_BufferRun;
 
