@@ -303,11 +303,11 @@ static void SCREEN_bufferRunRender(SCREEN_BufferRun* b, SCREEN_Buffer* desc)
             glBindFramebuffer(GL_FRAMEBUFFER, ctx->fb);
         }
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, b->texture, 0);
-        //if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-        //{
-        //    // todo error report
-        //    return;
-        //}
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        {
+            // todo error report
+            return;
+        }
     }
     else
     {
@@ -358,7 +358,6 @@ void SCREEN_frame(f32 time)
     assert(ctx->entered);
 
     ctx->time = time;
-    ctx->frame += 1;
 
     glClearColor(0.0f, 0.0f, 1.0f, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
@@ -375,6 +374,8 @@ void SCREEN_frame(f32 time)
         SCREEN_bufferRunRender(ctx->buffer + i, ctx->scene->buffer + i);
     }
     SCREEN_bufferRunRender(ctx->image, &ctx->scene->image);
+
+    ctx->frame += 1;
 }
 
 
