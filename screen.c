@@ -13,6 +13,7 @@ typedef struct SCREEN_Context
 
     u32 width, height;
     f32 time;
+    f32 timeDelta;
     int pointX, pointY;
     int pointStart[2];
     u32 frame;
@@ -67,6 +68,7 @@ static void SCREEN_bufferRunEnter(SCREEN_BufferRun* b, const SCREEN_Buffer* desc
 
     b->uniform_Resolution = glGetUniformLocation(shaderProgram, "iResolution");
     b->uniform_Time = glGetUniformLocation(shaderProgram, "iTime");
+    b->uniform_TimeDelta = glGetUniformLocation(shaderProgram, "iTimeDelta");
     b->uniform_Mouse = glGetUniformLocation(shaderProgram, "iMouse");
     b->uniform_Frame = glGetUniformLocation(shaderProgram, "iFrame");
 
@@ -173,6 +175,10 @@ static void SCREEN_bufferRunRender(SCREEN_BufferRun* b, SCREEN_Buffer* desc)
     if (b->uniform_Time >= 0)
     {
         glUniform1f(b->uniform_Time, ctx->time);
+    }
+    if (b->uniform_TimeDelta >= 0)
+    {
+        glUniform1f(b->uniform_TimeDelta, ctx->timeDelta);
     }
     if (b->uniform_Mouse >= 0)
     {
@@ -431,6 +437,10 @@ void SCREEN_frame(f32 time)
 {
     assert(ctx->entered);
 
+    if (ctx->time > 0)
+    {
+        ctx->timeDelta = time - ctx->time;
+    }
     ctx->time = time;
 
     glClearColor(0.0f, 0.0f, 1.0f, 1.0);
