@@ -212,11 +212,13 @@ void SCREEN_leave(void)
     assert(ctx->entered);
     ctx->entered = false;
 
+    SCREEN_leaveScene();
+
     glDeleteFramebuffers(1, &ctx->fb);
     glDeleteVertexArrays(1, &ctx->va);
     glDeleteBuffers(1, &ctx->vb);
-    SCREEN_bufferRunLeave(ctx->image);
 
+    ctx->curFramebuffer = -1;
     ctx->curShaderProgram = 0;
 }
 
