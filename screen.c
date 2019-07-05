@@ -95,13 +95,16 @@ static void SCREEN_bufferRunEnter(SCREEN_BufferRun* b, const SCREEN_Buffer* desc
 
 
 
-static void SCREEN_bufferRunResize(SCREEN_BufferRun* b, const SCREEN_Buffer* desc, bool noTex)
+static void SCREEN_bufferRunResize
+(
+    SCREEN_BufferRun* b, const SCREEN_Buffer* desc, bool noTex, u32 width_copy, u32 height_copy
+)
 {
     if (noTex)
     {
         return;
     }
-    glDeleteTextures(1, &b->texture);
+    GLuint texture0 = b->texture;
     glGenTextures(1, &b->texture);
 
     glActiveTexture(GL_TEXTURE0);
@@ -113,6 +116,28 @@ static void SCREEN_bufferRunResize(SCREEN_BufferRun* b, const SCREEN_Buffer* des
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    if (width_copy && height_copy)
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, ctx->fb);
+        ctx->curFramebuffer = ctx->fb;
+        glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture0, 0);
+        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, b->texture, 0);
+        {
+            const GLenum bufs[] = { GL_COLOR_ATTACHMENT1 };
+            glDrawBuffers(ARYLEN(bufs), bufs);
+        }
+        glBlitFramebuffer(0, 0, ctx->width, ctx->height, 0, 0, ctx->width, ctx->height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+        SCREEN_GL_CHECK();
+
+        glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, 0, 0);
+        {
+            const GLenum bufs[] = { GL_COLOR_ATTACHMENT0 };
+            glDrawBuffers(ARYLEN(bufs), bufs);
+        }
+        SCREEN_GL_CHECK();
+    }
+    glDeleteTextures(1, &texture0);
 }
 
 
@@ -137,7 +162,7 @@ static void SCREEN_enterScene(void)
     }
     SCREEN_bufferRunEnter(ctx->image, &ctx->scene->image, true);
 
-    SCREEN_GLCHECK();
+    SCREEN_GL_CHECK();
 }
 
 static void SCREEN_leaveScene(void)
@@ -198,7 +223,7 @@ void SCREEN_enter(u32 w, u32 h)
     glVertexAttribPointer(attrib_position, 2, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(attrib_position);
 
-    SCREEN_GLCHECK();
+    SCREEN_GL_CHECK();
 
 
     glGenFramebuffers(1, &ctx->fb);
@@ -249,6 +274,8 @@ void SCREEN_resize(u32 w, u32 h)
     //SCREEN_enter(w, h);
     //return;
 
+    u32 width_copy = min(ctx->width, w);
+    u32 height_copy = min(ctx->height, h);
     if (ctx->width && ctx->height)
     {
         ctx->pointX = (int)((f32)ctx->pointX / ctx->width * w);
@@ -260,9 +287,12 @@ void SCREEN_resize(u32 w, u32 h)
 
     for (u32 i = 0; i < SCREEN_Buffers_MAX; ++i)
     {
-        SCREEN_bufferRunResize(ctx->buffer + i, ctx->scene->buffer + i, false);
+        SCREEN_bufferRunResize(ctx->buffer + i, ctx->scene->buffer + i, false, width_copy, height_copy);
     }
-    SCREEN_bufferRunResize(ctx->image, &ctx->scene->image, true);
+    SCREEN_bufferRunResize(ctx->image, &ctx->scene->image, true, 0, 0);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    ctx->curFramebuffer = 0;
 }
 
 
@@ -312,20 +342,20 @@ static void SCREEN_bufferRunRender(SCREEN_BufferRun* b, SCREEN_Buffer* desc)
         if (ctx->curFramebuffer != ctx->fb)
         {
             ctx->curFramebuffer = ctx->fb;
-            glBindFramebuffer(GL_FRAMEBUFFER, ctx->fb);
+            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, ctx->fb);
         }
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, b->texture, 0);
-        //assert(GL_FRAMEBUFFER_COMPLETE == glCheckFramebufferStatus(GL_FRAMEBUFFER));
+        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, b->texture, 0);
+        assert(GL_FRAMEBUFFER_COMPLETE == glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER));
     }
     else
     {
         if (ctx->curFramebuffer != 0)
         {
             ctx->curFramebuffer = 0;
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
         }
     }
-    SCREEN_GLCHECK();
+    SCREEN_GL_CHECK();
 
     for (u32 i = 0; i < SCREEN_Channels_MAX; ++i)
     {
@@ -348,7 +378,7 @@ static void SCREEN_bufferRunRender(SCREEN_BufferRun* b, SCREEN_Buffer* desc)
 
     glBindVertexArray(ctx->va);
     glDrawArrays(GL_TRIANGLES, 0, 6);
-    SCREEN_GLCHECK();
+    SCREEN_GL_CHECK();
 }
 
 
@@ -371,13 +401,13 @@ void SCREEN_frame(f32 time)
 
     glClearColor(0.0f, 0.0f, 1.0f, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
-    SCREEN_GLCHECK();
+    SCREEN_GL_CHECK();
 
     if (!ctx->image->shaderProgram)
     {
         return;
     }
-    SCREEN_GLCHECK();
+    SCREEN_GL_CHECK();
 
     for (u32 i = 0; i < SCREEN_Buffers_MAX; ++i)
     {

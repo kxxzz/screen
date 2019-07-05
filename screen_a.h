@@ -72,9 +72,9 @@
 GLenum SCREEN_glCheck(const char *const file, int const line);
 
 #ifndef NDEBUG
-# define SCREEN_GLCHECK() SCREEN_glCheck(__FILE__, __LINE__)
+# define SCREEN_GL_CHECK() SCREEN_glCheck(__FILE__, __LINE__)
 #else
-# define SCREEN_GLCHECK() SCREEN_glCheck(NULL, -1)
+# define SCREEN_GL_CHECK() SCREEN_glCheck(NULL, -1)
 #endif
 
 
