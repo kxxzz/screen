@@ -62,7 +62,7 @@ GLenum SCREEN_glCheck(const char *const file, int const line)
 static const char* SCREEN_shaderCommonSrcHeader(void)
 {
     static const char* a =
-        "#version 300 es\n"
+        "#version 320 es\n"
         "precision highp float;\n"
         "precision highp int;\n";
     return a;

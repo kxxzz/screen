@@ -152,7 +152,7 @@ int main(int argc, char* argv[])
     }
 
 
-    f32 now1 = (f32)SDL_GetTicks() / 1000.f;
+    f32 now0 = (f32)SDL_GetTicks() / 1000.f;
     f32 lastCheckTime = 0;
     u32 frameCount = 0;
     bool outdated = true;
@@ -243,14 +243,14 @@ int main(int argc, char* argv[])
         }
 
 
-        if (srcFile && watchFlag && (now1 - lastCheckTime > 0.25f))
+        if (srcFile && watchFlag && (now0 - lastCheckTime > 0.25f))
         {
             static char title[255] = "";
-            snprintf(title, sizeof(title), "SCREEN PLAYER%*c FPS: %-2.2f", 16, ' ', (double)frameCount / (now1 - lastCheckTime));
+            snprintf(title, sizeof(title), "SCREEN PLAYER%*c FPS: %-2.2f", 16, ' ', (double)frameCount / (now0 - lastCheckTime));
             SDL_SetWindowTitle(window, title);
             frameCount = 0;
 
-            lastCheckTime = now1;
+            lastCheckTime = now0;
             struct stat st;
             stat(srcFile, &st);
             if (lastMtime != st.st_mtime)
@@ -265,8 +265,8 @@ int main(int argc, char* argv[])
 
 
         f32 now = (f32)SDL_GetTicks() / 1000.f;
-        f32 deltaTime = lazyMode ? 0 : now1 - now;
-        now1 = now;
+        f32 deltaTime = lazyMode ? 0 : now - now0;
+        now0 = now;
         if (!lazyMode || outdated)
         {
             outdated = false;
