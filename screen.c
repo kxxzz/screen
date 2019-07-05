@@ -13,7 +13,7 @@ typedef struct SCREEN_Context
 
     u32 width, height;
     f32 time;
-    bool pointButtonDown[2];
+    bool pointButtonDown;
     int pointX, pointY;
     u32 frame;
 
@@ -286,8 +286,8 @@ static void SCREEN_bufferRunRender(SCREEN_BufferRun* b, SCREEN_Buffer* desc)
         (
             b->uniform_Mouse,
             (f32)ctx->pointX, (f32)ctx->height - ctx->pointY,
-            (ctx->pointButtonDown[0] ? 1.f : 0.f),
-            (ctx->pointButtonDown[1] ? 1.f : 0.f)
+            (ctx->pointButtonDown ? 1.f : 0.f),
+            (ctx->pointButtonDown ? 1.f : 0.f)
         );
     }
     if (b->uniform_Frame >= 0)
@@ -386,23 +386,21 @@ void SCREEN_frame(f32 time)
 
 
 
-void SCREEN_mouseUp(u8 button, int x, int y)
+void SCREEN_mouseUp(int x, int y)
 {
-    assert(button < ARYLEN(ctx->pointButtonDown));
-    ctx->pointButtonDown[button] = false;
-    ctx->pointX = x;
-    ctx->pointY = y;
+    ctx->pointButtonDown = false;
+    //ctx->pointX = x;
+    //ctx->pointY = y;
 }
 
-void SCREEN_mouseDown(u8 button, int x, int y)
+void SCREEN_mouseDown(int x, int y)
 {
-    assert(button < ARYLEN(ctx->pointButtonDown));
-    ctx->pointButtonDown[button] = true;
-    ctx->pointX = x;
-    ctx->pointY = y;
+    ctx->pointButtonDown = true;
+    //ctx->pointX = x;
+    //ctx->pointY = y;
 }
 
-void SCREEN_mouseMotion(u8 button, int x, int y, int dx, int dy)
+void SCREEN_mouseMotion(int x, int y, int dx, int dy)
 {
     ctx->pointX = x;
     ctx->pointY = y;
