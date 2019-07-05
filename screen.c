@@ -166,8 +166,17 @@ void SCREEN_enter(u32 w, u32 h)
     //printf("GL_VERSION  : %s\n", glGetString(GL_VERSION));
     //printf("GL_RENDERER : %s\n", glGetString(GL_RENDERER));
 
-    ctx->pointX = (int)((f32)ctx->pointX / ctx->width * w);
-    ctx->pointY = (int)((f32)ctx->pointY / ctx->height * h);
+    if (!ctx->width || !ctx->height)
+    {
+        ctx->pointX = w / 2;
+        ctx->pointY = h / 2;
+    }
+    else
+    {
+        ctx->pointX = (int)((f32)ctx->pointX / ctx->width * w);
+        ctx->pointY = (int)((f32)ctx->pointY / ctx->height * h);
+    }
+
     ctx->width = w;
     ctx->height = h;
     glViewport(0, 0, w, h);
@@ -236,15 +245,20 @@ void SCREEN_resize(u32 w, u32 h)
     {
         return;
     }
-    ctx->pointX = (int)((f32)ctx->pointX / ctx->width * w);
-    ctx->pointY = (int)((f32)ctx->pointY / ctx->height * h);
+    if (!ctx->width || !ctx->height)
+    {
+        ctx->pointX = w / 2;
+        ctx->pointY = h / 2;
+    }
+    else
+    {
+        ctx->pointX = (int)((f32)ctx->pointX / ctx->width * w);
+        ctx->pointY = (int)((f32)ctx->pointY / ctx->height * h);
+    }
     ctx->width = w;
     ctx->height = h;
     glViewport(0, 0, w, h);
-    SCREEN_GLCHECK();
 
-    glDeleteFramebuffers(1, &ctx->fb);
-    glGenFramebuffers(1, &ctx->fb);
     for (u32 i = 0; i < SCREEN_Buffers_MAX; ++i)
     {
         SCREEN_bufferRunResize(ctx->buffer + i, ctx->scene->buffer + i, false);
