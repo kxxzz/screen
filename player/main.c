@@ -24,7 +24,7 @@
 #include <fileu.h>
 #include <vec.h>
 
-#include <cJSON.h>
+#include <nxjson.h>
 
 
 
@@ -106,7 +106,7 @@ static u32 loadFileDataToBuf(vec_char* dataBuf, const char* filename)
 }
 
 
-static void loadSceneByJson(const char* code, const char* dir, SCREEN_Scene* desc)
+static void loadSceneByJson(char* code, const char* dir, SCREEN_Scene* desc)
 {
     vec_char dataBuf[1] = { 0 };
     char path[PATH_MAX] = "";
@@ -114,23 +114,22 @@ static void loadSceneByJson(const char* code, const char* dir, SCREEN_Scene* des
     bool bufferUsed[SCREEN_Buffers_MAX] = { 0 };
     u32 bufferShaderOff[SCREEN_Buffers_MAX] = { 0 };
 
-    cJSON* root = cJSON_Parse(code);
+    const nx_json* root = nx_json_parse(code, NULL);
     if (!root)
     {
-        const char *error_ptr = cJSON_GetErrorPtr();
         // todo report error
         return;
     }
     {
-        cJSON* shader = cJSON_GetObjectItem(root, "commonShader");
+        const nx_json* shader = nx_json_get(root, "commonShader");
         if (shader)
         {
-            if (!cJSON_IsString(shader))
+            if (shader->type != NX_JSON_STRING)
             {
                 // todo report error
                 goto error;
             }
-            char* filename = cJSON_GetStringValue(shader);
+            const char* filename = shader->text_value;
             snprintf(path, sizeof(path), "%s/%s", dir, filename);
             u32 off = loadFileDataToBuf(dataBuf, path);
             if (-1 == off)
@@ -141,40 +140,29 @@ static void loadSceneByJson(const char* code, const char* dir, SCREEN_Scene* des
             commShaderOff = off;
         }
     }
-    cJSON* buffers = cJSON_GetObjectItem(root, "buffers");
+    const nx_json* buffers = nx_json_get(root, "buffers");
     if (buffers)
     {
-        if (!cJSON_IsArray(buffers))
+        if (buffers->type != NX_JSON_ARRAY)
         {
             // todo report error
             goto error;
         }
-        cJSON *buffer, *channel;
-        u32 bi = 0;
-        cJSON_ArrayForEach(buffer, buffers)
+        for (int bi = 0; bi < buffers->length; ++bi)
         {
-            if (bi >= SCREEN_Buffers_MAX)
+            const nx_json* buffer = nx_json_item(buffers, bi);
+            if (buffer->type != NX_JSON_OBJECT)
             {
                 // todo report error
                 goto error;
             }
-            if (!cJSON_IsObject(buffer) && !cJSON_IsNull(buffer))
+            const nx_json* shader = nx_json_get(buffer, "shader");
+            if (shader->type != NX_JSON_STRING)
             {
                 // todo report error
                 goto error;
             }
-            if (cJSON_IsNull(buffer))
-            {
-                ++bi;
-                continue;
-            }
-            cJSON* shader = cJSON_GetObjectItem(buffer, "shader");
-            if (!cJSON_IsString(shader))
-            {
-                // todo report error
-                goto error;
-            }
-            char* filename = cJSON_GetStringValue(shader);
+            const char* filename = shader->text_value;
             snprintf(path, sizeof(path), "%s/%s", dir, filename);
             u32 off = loadFileDataToBuf(dataBuf, path);
             if (-1 == off)
@@ -182,81 +170,80 @@ static void loadSceneByJson(const char* code, const char* dir, SCREEN_Scene* des
                 // todo report error
                 goto error;
             }
-            bufferShaderOff[bi] = off;
-            bufferUsed[bi] = true;
+            u32 bidx = bi;
+            bufferShaderOff[bidx] = off;
+            bufferUsed[bidx] = true;
 
-            cJSON* channels = cJSON_GetObjectItem(buffer, "channels");
+            const nx_json* channels = nx_json_get(buffer, "channels");
             if (channels)
             {
-                if (!cJSON_IsArray(channels))
+                if (channels->type != NX_JSON_ARRAY)
                 {
                     // todo report error
                     goto error;
                 }
-                u32 ci = 0;
-                cJSON_ArrayForEach(channel, channels)
+                if (channels->length > SCREEN_Channels_MAX)
                 {
-                    if (ci >= SCREEN_Channels_MAX)
+                    // todo report error
+                    goto error;
+                }
+                for (int ci = 0; ci < channels->length; ++ci)
+                {
+                    const nx_json* channel = nx_json_item(channels, ci);
+                    u32 cidx = ci;
+                    if ((channel->type != NX_JSON_OBJECT) && (channel->type != NX_JSON_NULL))
                     {
                         // todo report error
                         goto error;
                     }
-                    if (!cJSON_IsObject(channel) && !cJSON_IsNull(channel))
+                    if (NX_JSON_NULL == channel->type)
                     {
-                        // todo report error
-                        goto error;
-                    }
-                    if (cJSON_IsNull(channel))
-                    {
-                        ++ci;
                         continue;
                     }
-                    cJSON* type = cJSON_GetObjectItem(channel, "type");
-                    if (!cJSON_IsString(type))
+                    const nx_json* type = nx_json_get(channel, "type");
+                    if (type->type != NX_JSON_STRING)
                     {
                         // todo report error
                         goto error;
                     }
-                    char* typeStr = cJSON_GetStringValue(type);
+                    const char* typeStr = type->text_value;
                     if (0 == strcicmp(typeStr, "buffer"))
                     {
-                        desc->buffer[bi].channel[ci].type = SCREEN_ChannelType_Buffer;
+                        desc->buffer[bi].channel[cidx].type = SCREEN_ChannelType_Buffer;
 
-                        cJSON* bufferId = cJSON_GetObjectItem(channel, "buffer");
-                        if (!cJSON_IsNumber(bufferId))
+                        const nx_json* bufferId = nx_json_get(channel, "buffer");
+                        if (bufferId->type != NX_JSON_INTEGER)
                         {
                             // todo report error
                             goto error;
                         }
-                        u32 id = bufferId->valueint;
-                        desc->buffer[bi].channel[ci].buffer = id;
+                        u32 id = (u32)bufferId->int_value;
+                        desc->buffer[bi].channel[cidx].buffer = id;
                     }
                     else
                     {
                         // todo report error
                         goto error;
                     }
-                    ++ci;
                 }
             }
-            ++bi;
         }
     }
 
-    cJSON* image = cJSON_GetObjectItem(root, "image");
-    if (!cJSON_IsObject(image))
+    const nx_json* image = nx_json_get(root, "image");
+    if (image->type != NX_JSON_OBJECT)
     {
         // todo report error
         goto error;
     }
     {
-        cJSON* shader = cJSON_GetObjectItem(image, "shader");
-        if (!cJSON_IsString(shader))
+        const nx_json* shader = nx_json_get(image, "shader");
+        if (shader->type != NX_JSON_STRING)
         {
             // todo report error
             goto error;
         }
-        char* filename = cJSON_GetStringValue(shader);
+        const char* filename = shader->text_value;
         snprintf(path, sizeof(path), "%s/%s", dir, filename);
         u32 off = loadFileDataToBuf(dataBuf, path);
         if (-1 == off)
@@ -266,61 +253,10 @@ static void loadSceneByJson(const char* code, const char* dir, SCREEN_Scene* des
         }
         imageShaderOff = off;
 
-        cJSON* channels = cJSON_GetObjectItem(image, "channels");
+        const nx_json* channels = nx_json_get(image, "channels");
         if (channels)
         {
-            if (!cJSON_IsArray(channels))
-            {
-                // todo report error
-                goto error;
-            }
-            cJSON* channel;
-            u32 ci = 0;
-            cJSON_ArrayForEach(channel, channels)
-            {
-                if (ci >= SCREEN_Channels_MAX)
-                {
-                    // todo report error
-                    goto error;
-                }
-                if (!cJSON_IsObject(channel) && !cJSON_IsNull(channel))
-                {
-                    // todo report error
-                    goto error;
-                }
-                if (cJSON_IsNull(channel))
-                {
-                    ++ci;
-                    continue;
-                }
 
-                cJSON* type = cJSON_GetObjectItem(channel, "type");
-                if (!cJSON_IsString(type))
-                {
-                    // todo report error
-                    goto error;
-                }
-                char* typeStr = cJSON_GetStringValue(type);
-                if (0 == strcicmp(typeStr, "buffer"))
-                {
-                    desc->image.channel[ci].type = SCREEN_ChannelType_Buffer;
-
-                    cJSON* bufferId = cJSON_GetObjectItem(channel, "buffer");
-                    if (!cJSON_IsNumber(bufferId))
-                    {
-                        // todo report error
-                        goto error;
-                    }
-                    u32 id = bufferId->valueint;
-                    desc->image.channel[ci].buffer = id;
-                }
-                else
-                {
-                    // todo report error
-                    goto error;
-                }
-                ++ci;
-            }
         }
     }
     if (commShaderOff != -1)
@@ -339,11 +275,11 @@ static void loadSceneByJson(const char* code, const char* dir, SCREEN_Scene* des
     SCREEN_loadScene(desc);
 
     vec_free(dataBuf);
-    cJSON_Delete(root);
+    nx_json_free(root);
     return;
 error:
     vec_free(dataBuf);
-    cJSON_Delete(root);
+    nx_json_free(root);
 }
 
 
