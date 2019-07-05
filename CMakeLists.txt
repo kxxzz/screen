@@ -70,17 +70,22 @@ source_group (imp FILES ${IMP_SRC_FILES})
 add_library (imp STATIC ${IMP_SRC_FILES})
 
 
-
 file (GLOB SRC_FILES *.h *.c)
 source_group (src FILES ${SRC_FILES})
 add_library (screen ${SRC_FILES})
+
+
+include_directories (scene_loader)
+file (GLOB SCENE_LOADER_SRC_FILES scene_loader/*.h scene_loader/*.c)
+source_group (src FILES ${SCENE_LOADER_SRC_FILES})
+add_library (scene_loader ${SCENE_LOADER_SRC_FILES})
 
 
 
 file (GLOB TESTS_SRC_FILES player/*.h player/*.c)
 source_group (src FILES ${TESTS_SRC_FILES})
 add_executable (player ${TESTS_SRC_FILES})
-target_link_libraries (player screen imp)
+target_link_libraries (player imp screen scene_loader)
 if (WIN32)
 else ()
     target_link_libraries (player m)
