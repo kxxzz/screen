@@ -63,9 +63,12 @@ static const char* SCREEN_shaderCommonSrcHeader(void)
 {
     static const char* a =
         "#version 320 es\n"
+        //"#version 460\n"
+        //"precision mediump float;\n"
+        //"precision mediump int;\n"
         "precision highp float;\n"
-        "precision highp int;\n";
-        "precision highp uint;\n";
+        "precision highp int;\n"
+        ;
     return a;
 }
 
@@ -76,7 +79,8 @@ static const char* SCREEN_shaderVertexSrc(void)
         "void main()\n"
         "{\n"
         "    gl_Position = vPosition;\n"
-        "}\n";
+        "}\n"
+        ;
     return a;
 }
 

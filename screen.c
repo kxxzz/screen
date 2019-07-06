@@ -4,6 +4,8 @@
 
 typedef struct SCREEN_Context
 {
+    GLenum textureInternalFormat;
+
     bool entered;
     SCREEN_BufferRun buffer[SCREEN_Buffers_MAX];
     SCREEN_BufferRun image[1];
@@ -39,6 +41,8 @@ void SCREEN_startup(void)
 #endif
     assert(!ctx);
     ctx = (SCREEN_Context*)zalloc(sizeof(*ctx));
+
+    ctx->textureInternalFormat = GL_RGBA32F;
 }
 
 
@@ -98,7 +102,7 @@ static void SCREEN_bufferRunEnter(SCREEN_BufferRun* b, const SCREEN_Buffer* desc
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA32F, ctx->width, ctx->height);
+        glTexStorage2D(GL_TEXTURE_2D, 1, ctx->textureInternalFormat, ctx->width, ctx->height);
     }
 }
 
@@ -119,7 +123,7 @@ static void SCREEN_bufferRunResize
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, b->texture);
-    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA32F, ctx->width, ctx->height);
+    glTexStorage2D(GL_TEXTURE_2D, 1, ctx->textureInternalFormat, ctx->width, ctx->height);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -245,7 +249,6 @@ static void SCREEN_bufferRunRender(SCREEN_BufferRun* b, SCREEN_Buffer* desc)
         glBindTexture(GL_TEXTURE_2D, texture);
     }
 
-    glBindVertexArray(ctx->va);
     glDrawArrays(GL_TRIANGLES, 0, 6);
     SCREEN_GL_CHECK();
 }
