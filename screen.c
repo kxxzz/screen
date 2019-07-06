@@ -17,7 +17,6 @@ typedef struct SCREEN_Context
     f32 renderScale;
     u32 renderWidth, renderHeight;
     bool imageRenderDirect;
-    float screenToRender;
 
     f32 time;
     f32 timeDelta;
@@ -208,13 +207,14 @@ static void SCREEN_renderPassDevOnRender(SCREEN_RenderPassDev* dev, SCREEN_Rende
     }
     if (dev->uniform_Mouse >= 0)
     {
+        f32 screenToRender = 1.f / ctx->renderScale;
         glUniform4f
         (
             dev->uniform_Mouse,
-            (f32)ctx->pointX * ctx->screenToRender,
-            (f32)(ctx->height - ctx->pointY) * ctx->screenToRender,
-            (f32)ctx->pointStart[0] * ctx->screenToRender,
-            (f32)ctx->pointStart[1] * ctx->screenToRender
+            (f32)ctx->pointX * screenToRender,
+            (f32)(ctx->height - ctx->pointY) * screenToRender,
+            (f32)ctx->pointStart[0] * screenToRender,
+            (f32)ctx->pointStart[1] * screenToRender
         );
     }
     if (dev->uniform_Frame >= 0)
@@ -623,7 +623,6 @@ void SCREEN_setRenderScale(f32 scale)
     {
         ctx->imageRenderDirect = false;
     }
-    ctx->screenToRender = (f32)ctx->renderWidth / (f32)ctx->width;
 }
 
 
