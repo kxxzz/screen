@@ -32,11 +32,6 @@ typedef struct SCREEN_Context
 
     // data buffer
     vec_char sceneDataBuf[1];
-
-    // gpu id cache
-    GLuint curShaderProgram;
-    GLuint curReadFramebuffer;
-    GLuint curDrawFramebuffer;
 } SCREEN_Context;
 
 SCREEN_Context* ctx = NULL;
@@ -81,7 +76,6 @@ static void SCREEN_renderPassDevOnEnter(SCREEN_RenderPassDev* dev, const SCREEN_
 
     GLuint shaderProgram = dev->shaderProgram = SCREEN_buildShaderProgram(ctx->scene->shaderComm, desc->shaderCode);
     assert(shaderProgram);
-    ctx->curShaderProgram = shaderProgram;
 
     dev->uniform_Resolution = glGetUniformLocation(shaderProgram, "iResolution");
     dev->uniform_Time = glGetUniformLocation(shaderProgram, "iTime");
@@ -146,20 +140,12 @@ static void SCREEN_renderPassDevOnResize
 
     if (widthCopy && heightCopy)
     {
-        if (ctx->curReadFramebuffer != ctx->fb)
-        {
-            glBindFramebuffer(GL_READ_FRAMEBUFFER, ctx->fb);
-            ctx->curReadFramebuffer = ctx->fb;
-        }
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, ctx->fb);
         glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture0, 0);
         SCREEN_GL_CHECK();
         assert(GL_FRAMEBUFFER_COMPLETE == glCheckFramebufferStatus(GL_READ_FRAMEBUFFER));
 
-        if (ctx->curDrawFramebuffer != ctx->fb)
-        {
-            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, ctx->fb);
-            ctx->curDrawFramebuffer = ctx->fb;
-        }
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, ctx->fb);
         glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, dev->texture, 0);
         SCREEN_GL_CHECK();
         assert(GL_FRAMEBUFFER_COMPLETE == glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER));
@@ -192,11 +178,7 @@ static void SCREEN_renderPassDevOnRender(SCREEN_RenderPassDev* dev, SCREEN_Rende
     }
     SCREEN_GL_CHECK();
 
-    if (dev->shaderProgram != ctx->curShaderProgram)
-    {
-        ctx->curShaderProgram = dev->shaderProgram;
-        glUseProgram(dev->shaderProgram);
-    }
+    glUseProgram(dev->shaderProgram);
     if (dev->uniform_Resolution >= 0)
     {
         glUniform3f(dev->uniform_Resolution, (f32)ctx->renderWidth, (f32)ctx->renderHeight, 0.f);
@@ -246,21 +228,13 @@ static void SCREEN_renderPassDevOnRender(SCREEN_RenderPassDev* dev, SCREEN_Rende
 
     if (dev->texture)
     {
-        if (ctx->curDrawFramebuffer != ctx->fb)
-        {
-            ctx->curDrawFramebuffer = ctx->fb;
-            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, ctx->fb);
-        }
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, ctx->fb);
         glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, dev->texture, 0);
         //assert(GL_FRAMEBUFFER_COMPLETE == glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER));
     }
     else
     {
-        if (ctx->curDrawFramebuffer != 0)
-        {
-            ctx->curDrawFramebuffer = 0;
-            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-        }
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
     }
     SCREEN_GL_CHECK();
 
@@ -321,10 +295,6 @@ static void SCREEN_leaveScene(void)
         SCREEN_renderPassDevOnLeave(passDev);
     }
     SCREEN_renderPassDevOnLeave(ctx->image);
-
-    ctx->curReadFramebuffer = -1;
-    ctx->curDrawFramebuffer = -1;
-    ctx->curShaderProgram = 0;
 }
 
 
@@ -392,9 +362,7 @@ void SCREEN_enter(u32 w, u32 h)
     }
 
     glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-    ctx->curReadFramebuffer = 0;
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-    ctx->curDrawFramebuffer = 0;
 }
 
 
@@ -409,9 +377,6 @@ void SCREEN_leave(void)
     glDeleteFramebuffers(1, &ctx->fb);
     glDeleteVertexArrays(1, &ctx->va);
     glDeleteBuffers(1, &ctx->vb);
-
-    ctx->curDrawFramebuffer = -1;
-    ctx->curShaderProgram = 0;
 }
 
 
@@ -467,9 +432,7 @@ void SCREEN_resize(u32 w, u32 h)
 
 
     glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-    ctx->curReadFramebuffer = 0;
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-    ctx->curDrawFramebuffer = 0;
 }
 
 
@@ -507,16 +470,9 @@ void SCREEN_frame(f32 dt)
     if (!ctx->imageRenderDirect)
     {
         SCREEN_GL_CHECK();
-        if (ctx->curReadFramebuffer != ctx->fb)
-        {
-            glBindFramebuffer(GL_READ_FRAMEBUFFER, ctx->fb);
-            ctx->curReadFramebuffer = ctx->fb;
-        }
-        if (ctx->curDrawFramebuffer != 0)
-        {
-            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-            ctx->curDrawFramebuffer = 0;
-        }
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, ctx->fb);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+
         //assert(GL_FRAMEBUFFER_COMPLETE == glCheckFramebufferStatus(GL_READ_FRAMEBUFFER));
         //assert(GL_FRAMEBUFFER_COMPLETE == glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER));
         //glBlitFramebuffer
