@@ -508,7 +508,20 @@ void SCREEN_frame(f32 time)
             glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
             ctx->curDrawFramebuffer = 0;
         }
-        glBlitFramebuffer(0, 0, ctx->renderWidth, ctx->renderHeight, 0, 0, ctx->width, ctx->height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+        //assert(GL_FRAMEBUFFER_COMPLETE == glCheckFramebufferStatus(GL_READ_FRAMEBUFFER));
+        //assert(GL_FRAMEBUFFER_COMPLETE == glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER));
+        //glBlitFramebuffer
+        //(
+        //    0, 0, ctx->renderWidth, ctx->renderHeight,
+        //    0, 0, ctx->renderWidth, ctx->renderHeight,
+        //    GL_COLOR_BUFFER_BIT, GL_LINEAR
+        //);
+        glBlitFramebuffer
+        (
+            0, 0, ctx->renderWidth, ctx->renderHeight,
+            0, 0, ctx->width, ctx->height,
+            GL_COLOR_BUFFER_BIT, GL_LINEAR
+        );
         SCREEN_GL_CHECK();
     }
 
