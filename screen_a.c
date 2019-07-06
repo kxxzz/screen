@@ -235,15 +235,15 @@ GLuint SCREEN_buildShaderProgram(const char* shaderComm, const char* shaderMain)
 
 
 
-void SCREEN_bufferRunLeave(SCREEN_BufferRun* b)
+void SCREEN_renderPassDevOnLeave(SCREEN_RenderPassDev* dev)
 {
-    if (!b->entered)
+    if (!dev->entered)
     {
         return;
     }
-    b->entered = false;
-    glDeleteTextures(1, &b->texture);
-    glDeleteProgram(b->shaderProgram);
+    dev->entered = false;
+    glDeleteTextures(1, &dev->texture);
+    glDeleteProgram(dev->shaderProgram);
 }
 
 

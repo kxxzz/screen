@@ -88,7 +88,7 @@ GLuint SCREEN_buildShaderProgram(const char* shaderComm, const char* shaderMain)
 
 
 
-typedef struct SCREEN_BufferRun
+typedef struct SCREEN_RenderPassDev
 {
     bool entered;
 
@@ -103,9 +103,9 @@ typedef struct SCREEN_BufferRun
     GLint uniform_Channel[SCREEN_Channels_MAX];
     GLint uniform_ChannelTime[SCREEN_Channels_MAX];
     GLint uniform_ChannelResolution[SCREEN_Channels_MAX];
-} SCREEN_BufferRun;
+} SCREEN_RenderPassDev;
 
-void SCREEN_bufferRunLeave(SCREEN_BufferRun* b);
+void SCREEN_renderPassDevOnLeave(SCREEN_RenderPassDev* dev);
 
 
 

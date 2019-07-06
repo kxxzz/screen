@@ -65,17 +65,17 @@ typedef struct SCREEN_Channel
     };
 } SCREEN_Channel;
 
-typedef struct SCREEN_Buffer
+typedef struct SCREEN_RenderPass
 {
     SCREEN_Channel channel[SCREEN_Channels_MAX];
     const char* shaderCode;
-} SCREEN_Buffer;
+} SCREEN_RenderPass;
 
 typedef struct SCREEN_Scene
 {
     const char* shaderComm;
-    SCREEN_Buffer buffer[SCREEN_Buffers_MAX];
-    SCREEN_Buffer image;
+    SCREEN_RenderPass buffer[SCREEN_Buffers_MAX];
+    SCREEN_RenderPass image;
 } SCREEN_Scene;
 
 

@@ -49,20 +49,20 @@ static u32 SCREEN_loadFileDataToBuf(vec_char* dataBuf, const char* filename)
 
 
 
-static void SCREEN_loadSceneBufferFromJson
+static void SCREEN_loadScenePassFromJson
 (
-    const nx_json* buffer, const char* dir,
+    const nx_json* pass, const char* dir,
     SCREEN_Scene* desc, vec_char* dataBuf,
     u32* pOff, u32* pBi
 )
 {
     char path[PATH_MAX] = "";
-    if (buffer->type != NX_JSON_OBJECT)
+    if (pass->type != NX_JSON_OBJECT)
     {
         // todo report error
         goto error;
     }
-    const nx_json* shader = nx_json_get(buffer, "shader");
+    const nx_json* shader = nx_json_get(pass, "shader");
     if (shader->type != NX_JSON_STRING)
     {
         // todo report error
@@ -80,7 +80,7 @@ static void SCREEN_loadSceneBufferFromJson
     u32 bi = -1;
     if (pBi)
     {
-        const nx_json* id = nx_json_get(buffer, "id");
+        const nx_json* id = nx_json_get(pass, "id");
         if (id->type != NX_JSON_INTEGER)
         {
             // todo report error
@@ -94,7 +94,7 @@ static void SCREEN_loadSceneBufferFromJson
         }
     }
 
-    const nx_json* channels = nx_json_get(buffer, "channels");
+    const nx_json* channels = nx_json_get(pass, "channels");
     if (channels->type != NX_JSON_NULL)
     {
         if (channels->type != NX_JSON_ARRAY)
@@ -224,7 +224,7 @@ static void SCREEN_loadSceneFromJson(char* code, const char* dir, SCREEN_Scene* 
         {
             const nx_json* buffer = nx_json_item(buffers, i);
             u32 off, bi;
-            SCREEN_loadSceneBufferFromJson(buffer, dir, desc, dataBuf, &off, &bi);
+            SCREEN_loadScenePassFromJson(buffer, dir, desc, dataBuf, &off, &bi);
             if (off != -1)
             {
                 assert(bi != -1);
@@ -235,7 +235,7 @@ static void SCREEN_loadSceneFromJson(char* code, const char* dir, SCREEN_Scene* 
     }
 
     const nx_json* image = nx_json_get(root, "image");
-    SCREEN_loadSceneBufferFromJson(image, dir, desc, dataBuf, &imageShaderOff, NULL);
+    SCREEN_loadScenePassFromJson(image, dir, desc, dataBuf, &imageShaderOff, NULL);
 
     if (commShaderOff != -1)
     {

@@ -7,8 +7,8 @@ typedef struct SCREEN_Context
     GLenum textureInternalFormat;
 
     bool entered;
-    SCREEN_BufferRun buffer[SCREEN_Buffers_MAX];
-    SCREEN_BufferRun image[1];
+    SCREEN_RenderPassDev buffer[SCREEN_Buffers_MAX];
+    SCREEN_RenderPassDev image[1];
     GLuint vb;
     GLuint va;
     GLuint fb;
@@ -61,41 +61,41 @@ void SCREEN_destroy(void)
 
 
 
-static void SCREEN_bufferRunEnter(SCREEN_BufferRun* b, const SCREEN_Buffer* desc, bool noTex)
+static void SCREEN_renderPassDevOnEnter(SCREEN_RenderPassDev* dev, const SCREEN_RenderPass* desc, bool noTex)
 {
-    assert(!b->entered);
-    b->entered = true;
+    assert(!dev->entered);
+    dev->entered = true;
 
-    GLuint shaderProgram = b->shaderProgram = SCREEN_buildShaderProgram(ctx->scene->shaderComm, desc->shaderCode);
+    GLuint shaderProgram = dev->shaderProgram = SCREEN_buildShaderProgram(ctx->scene->shaderComm, desc->shaderCode);
     assert(shaderProgram);
     ctx->curShaderProgram = shaderProgram;
 
-    b->uniform_Resolution = glGetUniformLocation(shaderProgram, "iResolution");
-    b->uniform_Time = glGetUniformLocation(shaderProgram, "iTime");
-    b->uniform_TimeDelta = glGetUniformLocation(shaderProgram, "iTimeDelta");
-    b->uniform_Mouse = glGetUniformLocation(shaderProgram, "iMouse");
-    b->uniform_Frame = glGetUniformLocation(shaderProgram, "iFrame");
+    dev->uniform_Resolution = glGetUniformLocation(shaderProgram, "iResolution");
+    dev->uniform_Time = glGetUniformLocation(shaderProgram, "iTime");
+    dev->uniform_TimeDelta = glGetUniformLocation(shaderProgram, "iTimeDelta");
+    dev->uniform_Mouse = glGetUniformLocation(shaderProgram, "iMouse");
+    dev->uniform_Frame = glGetUniformLocation(shaderProgram, "iFrame");
 
     for (u32 i = 0; i < SCREEN_Channels_MAX; ++i)
     {
         char name[4096] = "";
 
         snprintf(name, sizeof(name), "iChannel%u", i);
-        b->uniform_Channel[i] = glGetUniformLocation(shaderProgram, name);
+        dev->uniform_Channel[i] = glGetUniformLocation(shaderProgram, name);
 
         snprintf(name, sizeof(name), "iChannelTime[%u]", i);
-        b->uniform_ChannelTime[i] = glGetUniformLocation(shaderProgram, name);
+        dev->uniform_ChannelTime[i] = glGetUniformLocation(shaderProgram, name);
 
         snprintf(name, sizeof(name), "iChannelResolution[%u]", i);
-        b->uniform_ChannelResolution[i] = glGetUniformLocation(shaderProgram, name);
+        dev->uniform_ChannelResolution[i] = glGetUniformLocation(shaderProgram, name);
     }
 
     if (!noTex)
     {
-        glGenTextures(1, &b->texture);
+        glGenTextures(1, &dev->texture);
 
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, b->texture);
+        glBindTexture(GL_TEXTURE_2D, dev->texture);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -109,20 +109,20 @@ static void SCREEN_bufferRunEnter(SCREEN_BufferRun* b, const SCREEN_Buffer* desc
 
 
 
-static void SCREEN_bufferRunResize
+static void SCREEN_renderPassDevOnResize
 (
-    SCREEN_BufferRun* b, const SCREEN_Buffer* desc, bool noTex, u32 widthCopy, u32 heightCopy
+    SCREEN_RenderPassDev* dev, const SCREEN_RenderPass* desc, bool noTex, u32 widthCopy, u32 heightCopy
 )
 {
     if (noTex)
     {
         return;
     }
-    GLuint texture0 = b->texture;
-    glGenTextures(1, &b->texture);
+    GLuint texture0 = dev->texture;
+    glGenTextures(1, &dev->texture);
 
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, b->texture);
+    glBindTexture(GL_TEXTURE_2D, dev->texture);
     glTexStorage2D(GL_TEXTURE_2D, 1, ctx->textureInternalFormat, ctx->width, ctx->height);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
@@ -143,7 +143,7 @@ static void SCREEN_bufferRunResize
         }
 
         glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture0, 0);
-        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, b->texture, 0);
+        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, dev->texture, 0);
         glBlitFramebuffer(0, 0, widthCopy, heightCopy, 0, 0, widthCopy, heightCopy, GL_COLOR_BUFFER_BIT, GL_NEAREST);
         SCREEN_GL_CHECK();
 
@@ -160,69 +160,69 @@ static void SCREEN_bufferRunResize
 
 
 
-static void SCREEN_bufferRunRender(SCREEN_BufferRun* b, SCREEN_Buffer* desc)
+static void SCREEN_renderPassDevOnRender(SCREEN_RenderPassDev* dev, SCREEN_RenderPass* desc)
 {
-    if (!b->shaderProgram)
+    if (!dev->shaderProgram)
     {
         return;
     }
-    if (b->shaderProgram != ctx->curShaderProgram)
+    if (dev->shaderProgram != ctx->curShaderProgram)
     {
-        ctx->curShaderProgram = b->shaderProgram;
-        glUseProgram(b->shaderProgram);
+        ctx->curShaderProgram = dev->shaderProgram;
+        glUseProgram(dev->shaderProgram);
     }
-    if (b->uniform_Resolution >= 0)
+    if (dev->uniform_Resolution >= 0)
     {
-        glUniform3f(b->uniform_Resolution, (f32)ctx->width, (f32)ctx->height, 0.f);
+        glUniform3f(dev->uniform_Resolution, (f32)ctx->width, (f32)ctx->height, 0.f);
 
     }
-    if (b->uniform_Time >= 0)
+    if (dev->uniform_Time >= 0)
     {
-        glUniform1f(b->uniform_Time, ctx->time);
+        glUniform1f(dev->uniform_Time, ctx->time);
     }
-    if (b->uniform_TimeDelta >= 0)
+    if (dev->uniform_TimeDelta >= 0)
     {
-        glUniform1f(b->uniform_TimeDelta, ctx->timeDelta);
+        glUniform1f(dev->uniform_TimeDelta, ctx->timeDelta);
     }
-    if (b->uniform_Mouse >= 0)
+    if (dev->uniform_Mouse >= 0)
     {
         glUniform4f
         (
-            b->uniform_Mouse,
+            dev->uniform_Mouse,
             (f32)ctx->pointX, (f32)(ctx->height - ctx->pointY),
             (f32)ctx->pointStart[0], (f32)ctx->pointStart[1]
         );
     }
-    if (b->uniform_Frame >= 0)
+    if (dev->uniform_Frame >= 0)
     {
-        glUniform1i(b->uniform_Frame, ctx->frame);
+        glUniform1i(dev->uniform_Frame, ctx->frame);
     }
 
     for (u32 i = 0; i < SCREEN_Channels_MAX; ++i)
     {
-        if (b->uniform_Channel[i] >= 0)
+        if (dev->uniform_Channel[i] >= 0)
         {
-            glUniform1i(b->uniform_Channel[i], i);
+            glUniform1i(dev->uniform_Channel[i], i);
         }
-        if (b->uniform_ChannelTime[i] >= 0)
+        if (dev->uniform_ChannelTime[i] >= 0)
         {
-            glUniform1f(b->uniform_ChannelTime[i], ctx->time);
+            glUniform1f(dev->uniform_ChannelTime[i], ctx->time);
         }
-        if (b->uniform_ChannelResolution[i] >= 0)
+        if (dev->uniform_ChannelResolution[i] >= 0)
         {
-            glUniform3f(b->uniform_ChannelResolution[i], (f32)ctx->width, (f32)ctx->height, 0.f);
+            glUniform3f(dev->uniform_ChannelResolution[i], (f32)ctx->width, (f32)ctx->height, 0.f);
         }
     }
 
 
-    if (b->texture)
+    if (dev->texture)
     {
         if (ctx->curFramebuffer != ctx->fb)
         {
             ctx->curFramebuffer = ctx->fb;
             glBindFramebuffer(GL_DRAW_FRAMEBUFFER, ctx->fb);
         }
-        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, b->texture, 0);
+        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, dev->texture, 0);
         //assert(GL_FRAMEBUFFER_COMPLETE == glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER));
     }
     else
@@ -276,10 +276,10 @@ static void SCREEN_enterScene(void)
         {
             continue;
         }
-        SCREEN_BufferRun* bufRun = ctx->buffer + i;
-        SCREEN_bufferRunEnter(bufRun, ctx->scene->buffer + i, false);
+        SCREEN_RenderPassDev* passDev = ctx->buffer + i;
+        SCREEN_renderPassDevOnEnter(passDev, ctx->scene->buffer + i, false);
     }
-    SCREEN_bufferRunEnter(ctx->image, &ctx->scene->image, true);
+    SCREEN_renderPassDevOnEnter(ctx->image, &ctx->scene->image, true);
 
     SCREEN_GL_CHECK();
 }
@@ -288,10 +288,10 @@ static void SCREEN_leaveScene(void)
 {
     for (u32 i = 0; i < SCREEN_Buffers_MAX; ++i)
     {
-        SCREEN_BufferRun* bufRun = ctx->buffer + i;
-        SCREEN_bufferRunLeave(bufRun);
+        SCREEN_RenderPassDev* passDev = ctx->buffer + i;
+        SCREEN_renderPassDevOnLeave(passDev);
     }
-    SCREEN_bufferRunLeave(ctx->image);
+    SCREEN_renderPassDevOnLeave(ctx->image);
 }
 
 
@@ -420,9 +420,9 @@ void SCREEN_resize(u32 w, u32 h)
 
     for (u32 i = 0; i < SCREEN_Buffers_MAX; ++i)
     {
-        SCREEN_bufferRunResize(ctx->buffer + i, ctx->scene->buffer + i, false, widthCopy, heightCopy);
+        SCREEN_renderPassDevOnResize(ctx->buffer + i, ctx->scene->buffer + i, false, widthCopy, heightCopy);
     }
-    SCREEN_bufferRunResize(ctx->image, &ctx->scene->image, true, 0, 0);
+    SCREEN_renderPassDevOnResize(ctx->image, &ctx->scene->image, true, 0, 0);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     ctx->curFramebuffer = 0;
@@ -458,9 +458,9 @@ void SCREEN_frame(f32 time)
 
     for (u32 i = 0; i < SCREEN_Buffers_MAX; ++i)
     {
-        SCREEN_bufferRunRender(ctx->buffer + i, ctx->scene->buffer + i);
+        SCREEN_renderPassDevOnRender(ctx->buffer + i, ctx->scene->buffer + i);
     }
-    SCREEN_bufferRunRender(ctx->image, &ctx->scene->image);
+    SCREEN_renderPassDevOnRender(ctx->image, &ctx->scene->image);
 
     ctx->frame += 1;
 }
@@ -521,10 +521,10 @@ static void SCREEN_loadSceneData(const SCREEN_Scene* srcScene)
     }
     for (u32 bi = 0; bi < SCREEN_Buffers_MAX; ++bi)
     {
-        const SCREEN_Buffer* srcBuffer = srcScene->buffer + bi;
+        const SCREEN_RenderPass* srcBuffer = srcScene->buffer + bi;
         if (srcBuffer->shaderCode)
         {
-            SCREEN_Buffer* dstBuffer = dstScene->buffer + bi;
+            SCREEN_RenderPass* dstBuffer = dstScene->buffer + bi;
             dstBuffer->shaderCode = ctx->sceneDataBuf->data + ctx->sceneDataBuf->length;
             u32 n = (u32)strlen(srcBuffer->shaderCode) + 1;
             vec_pusharr(ctx->sceneDataBuf, srcBuffer->shaderCode, n);
