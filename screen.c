@@ -16,6 +16,7 @@ typedef struct SCREEN_Context
     u32 width, height;
     f32 renderScale;
     u32 renderWidth, renderHeight;
+    bool imageRenderDirect;
     f32 time;
     f32 timeDelta;
     int pointX, pointY;
@@ -27,7 +28,8 @@ typedef struct SCREEN_Context
     SCREEN_Scene scene[1];
 
     GLuint curShaderProgram;
-    GLuint curFramebuffer;
+    GLuint curReadFramebuffer;
+    GLuint curDrawFramebuffer;
 } SCREEN_Context;
 
 SCREEN_Context* ctx = NULL;
@@ -45,7 +47,7 @@ void SCREEN_startup(void)
     ctx = (SCREEN_Context*)zalloc(sizeof(*ctx));
 
     ctx->textureInternalFormat = GL_RGBA32F;
-    ctx->renderScale = 1.f;
+    ctx->renderScale = 0.75f;
 }
 
 
@@ -136,20 +138,31 @@ static void SCREEN_renderPassDevOnResize
 
     if (widthCopy && heightCopy)
     {
-        glBindFramebuffer(GL_FRAMEBUFFER, ctx->fb);
-        ctx->curFramebuffer = ctx->fb;
+        if (ctx->curReadFramebuffer != ctx->fb)
+        {
+            glBindFramebuffer(GL_READ_FRAMEBUFFER, ctx->fb);
+            ctx->curReadFramebuffer = ctx->fb;
+        }
+        glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture0, 0);
+        SCREEN_GL_CHECK();
+        //assert(GL_FRAMEBUFFER_COMPLETE == glCheckFramebufferStatus(GL_READ_FRAMEBUFFER));
+
+        if (ctx->curDrawFramebuffer != ctx->fb)
+        {
+            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, ctx->fb);
+            ctx->curDrawFramebuffer = ctx->fb;
+        }
+        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, dev->texture, 0);
+        SCREEN_GL_CHECK();
+        //assert(GL_FRAMEBUFFER_COMPLETE == glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER));
 
         {
             const GLenum bufs[] = { GL_COLOR_ATTACHMENT1 };
             glDrawBuffers(ARYLEN(bufs), bufs);
             SCREEN_GL_CHECK();
         }
-
-        glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture0, 0);
-        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, dev->texture, 0);
         glBlitFramebuffer(0, 0, widthCopy, heightCopy, 0, 0, widthCopy, heightCopy, GL_COLOR_BUFFER_BIT, GL_NEAREST);
         SCREEN_GL_CHECK();
-
         {
             const GLenum bufs[] = { GL_COLOR_ATTACHMENT0 };
             glDrawBuffers(ARYLEN(bufs), bufs);
@@ -220,9 +233,9 @@ static void SCREEN_renderPassDevOnRender(SCREEN_RenderPassDev* dev, SCREEN_Rende
 
     if (dev->texture)
     {
-        if (ctx->curFramebuffer != ctx->fb)
+        if (ctx->curDrawFramebuffer != ctx->fb)
         {
-            ctx->curFramebuffer = ctx->fb;
+            ctx->curDrawFramebuffer = ctx->fb;
             glBindFramebuffer(GL_DRAW_FRAMEBUFFER, ctx->fb);
         }
         glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, dev->texture, 0);
@@ -230,9 +243,9 @@ static void SCREEN_renderPassDevOnRender(SCREEN_RenderPassDev* dev, SCREEN_Rende
     }
     else
     {
-        if (ctx->curFramebuffer != 0)
+        if (ctx->curDrawFramebuffer != 0)
         {
-            ctx->curFramebuffer = 0;
+            ctx->curDrawFramebuffer = 0;
             glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
         }
     }
@@ -282,7 +295,7 @@ static void SCREEN_enterScene(void)
         SCREEN_RenderPassDev* passDev = ctx->buffer + i;
         SCREEN_renderPassDevOnEnter(passDev, ctx->scene->buffer + i, false);
     }
-    SCREEN_renderPassDevOnEnter(ctx->image, &ctx->scene->image, true);
+    SCREEN_renderPassDevOnEnter(ctx->image, &ctx->scene->image, ctx->imageRenderDirect);
 
     SCREEN_GL_CHECK();
 }
@@ -362,6 +375,11 @@ void SCREEN_enter(u32 w, u32 h)
     {
         SCREEN_enterScene();
     }
+
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+    ctx->curReadFramebuffer = 0;
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+    ctx->curDrawFramebuffer = 0;
 }
 
 
@@ -377,7 +395,7 @@ void SCREEN_leave(void)
     glDeleteVertexArrays(1, &ctx->va);
     glDeleteBuffers(1, &ctx->vb);
 
-    ctx->curFramebuffer = -1;
+    ctx->curDrawFramebuffer = -1;
     ctx->curShaderProgram = 0;
 }
 
@@ -433,10 +451,13 @@ void SCREEN_resize(u32 w, u32 h)
     {
         SCREEN_renderPassDevOnResize(ctx->buffer + i, ctx->scene->buffer + i, false, widthCopy, heightCopy);
     }
-    SCREEN_renderPassDevOnResize(ctx->image, &ctx->scene->image, true, 0, 0);
+    SCREEN_renderPassDevOnResize(ctx->image, &ctx->scene->image, ctx->imageRenderDirect, 0, 0);
 
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    ctx->curFramebuffer = 0;
+
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+    ctx->curReadFramebuffer = 0;
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+    ctx->curDrawFramebuffer = 0;
 }
 
 
@@ -473,6 +494,23 @@ void SCREEN_frame(f32 time)
         SCREEN_renderPassDevOnRender(ctx->buffer + i, ctx->scene->buffer + i);
     }
     SCREEN_renderPassDevOnRender(ctx->image, &ctx->scene->image);
+
+    if (!ctx->imageRenderDirect)
+    {
+        SCREEN_GL_CHECK();
+        if (ctx->curReadFramebuffer != ctx->fb)
+        {
+            glBindFramebuffer(GL_READ_FRAMEBUFFER, ctx->fb);
+            ctx->curReadFramebuffer = ctx->fb;
+        }
+        if (ctx->curDrawFramebuffer != 0)
+        {
+            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+            ctx->curDrawFramebuffer = 0;
+        }
+        glBlitFramebuffer(0, 0, ctx->renderWidth, ctx->renderHeight, 0, 0, ctx->width, ctx->height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+        SCREEN_GL_CHECK();
+    }
 
     ctx->frame += 1;
 }
@@ -560,6 +598,14 @@ void SCREEN_setRenderScale(f32 scale)
     {
         ctx->renderWidth = (u32)ceil(n * a);
         ctx->renderHeight = (u32)ceil(n);
+    }
+    if ((ctx->width == ctx->renderWidth) && (ctx->height == ctx->renderHeight))
+    {
+        ctx->imageRenderDirect = true;
+    }
+    else
+    {
+        ctx->imageRenderDirect = false;
     }
 }
 

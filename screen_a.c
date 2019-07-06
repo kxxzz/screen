@@ -242,7 +242,10 @@ void SCREEN_renderPassDevOnLeave(SCREEN_RenderPassDev* dev)
         return;
     }
     dev->entered = false;
-    glDeleteTextures(1, &dev->texture);
+    if (dev->texture)
+    {
+        glDeleteTextures(1, &dev->texture);
+    }
     glDeleteProgram(dev->shaderProgram);
 }
 
