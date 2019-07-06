@@ -2,10 +2,19 @@
 
 
 
+
 typedef struct SCREEN_Context
 {
+    // screen context
     GLenum textureInternalFormat;
+    u32 width, height;
+    f32 renderScale;
+    u32 renderWidth, renderHeight;
+    bool imageRenderDirect;
+    bool sceneLoaded;
+    SCREEN_Scene scene[1];
 
+    // gpu runtime
     bool entered;
     SCREEN_RenderPassDev buffer[SCREEN_Buffers_MAX];
     SCREEN_RenderPassDev image[1];
@@ -13,24 +22,18 @@ typedef struct SCREEN_Context
     GLuint va;
     GLuint fb;
 
-    u32 width, height;
-    f32 renderScale;
-    u32 renderWidth, renderHeight;
-    bool imageRenderDirect;
-
+    // scene context
+    u32 frame;
     f32 time;
     f32 timeDelta;
-
     // screen space
     int pointX, pointY;
     int pointStart[2];
 
-    u32 frame;
-
-    bool sceneLoaded;
+    // data buffer
     vec_char sceneDataBuf[1];
-    SCREEN_Scene scene[1];
 
+    // gpu id cache
     GLuint curShaderProgram;
     GLuint curReadFramebuffer;
     GLuint curDrawFramebuffer;
@@ -477,15 +480,12 @@ void SCREEN_resize(u32 w, u32 h)
 
 
 
-void SCREEN_frame(f32 time)
+void SCREEN_frame(f32 dt)
 {
     assert(ctx->entered);
 
-    if (ctx->time > 0)
-    {
-        ctx->timeDelta = time - ctx->time;
-    }
-    ctx->time = time;
+    ctx->timeDelta = dt;
+    ctx->time += dt;
 
     glViewport(0, 0, ctx->renderWidth, ctx->renderHeight);
     glClearColor(0.0f, 0.0f, 1.0f, 1.0);
@@ -753,6 +753,12 @@ bool SCREEN_loadScene(const SCREEN_Scene* scene)
         SCREEN_enterScene();
     }
     ctx->frame = 0;
+    ctx->time = 0;
+    ctx->timeDelta = 0;
+    ctx->pointX = 0;
+    ctx->pointY = ctx->height;
+    ctx->pointStart[0] = ctx->pointX;
+    ctx->pointStart[1] = ctx->pointY;
     return true;
 }
 

@@ -135,7 +135,6 @@ int main(int argc, char* argv[])
     u32 intervalMode = 2;
     bool fullscreen = false;
     bool lazyMode = false;
-    f32 sceneTime = 0;
 
 
     static const int IntervalTable[] = { 0, 1, -1 };
@@ -192,7 +191,6 @@ int main(int argc, char* argv[])
                 //    window
                 //);
                 watchFlag = false;
-                sceneTime = 0;
                 SCREEN_loadSceneFile(path);
                 SDL_free(path);
                 break;
@@ -282,7 +280,6 @@ int main(int argc, char* argv[])
                 if (lastMtime != st.st_mtime)
                 {
                     printf("[CHANGE] \"%s\" [%s]\n", srcFile, nowStr(timeBuf));
-                    sceneTime = 0;
                     SCREEN_loadSceneFile(srcFile);
                 }
                 lastMtime = st.st_mtime;
@@ -298,8 +295,7 @@ int main(int argc, char* argv[])
         {
             outdated = false;
             ++frameCount;
-            sceneTime += deltaTime;
-            SCREEN_frame(sceneTime);
+            SCREEN_frame(deltaTime);
 
             SDL_GL_SwapWindow(window);
             // SDL_Delay(1);

@@ -31,7 +31,7 @@ void SCREEN_leave(void);
 void SCREEN_resize(u32 w, u32 h);
 
 
-void SCREEN_frame(f32 time);
+void SCREEN_frame(f32 dt);
 
 
 void SCREEN_mouseUp(int x, int y);
