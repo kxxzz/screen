@@ -111,7 +111,7 @@ static void SCREEN_loadScenePassFromJson
         {
             const nx_json* channel = nx_json_item(channels, ci);
             u32 cidx = ci;
-            if ((channel->type != NX_JSON_OBJECT) && (channel->type != NX_JSON_NULL))
+            if ((channel->type != NX_JSON_ARRAY) && (channel->type != NX_JSON_NULL))
             {
                 // todo report error
                 goto error;
@@ -120,14 +120,19 @@ static void SCREEN_loadScenePassFromJson
             {
                 continue;
             }
-            const nx_json* type = nx_json_get(channel, "type");
+            if (channel->length != 2)
+            {
+                // todo report error
+                goto error;
+            }
+            const nx_json* type = nx_json_item(channel, 0);
             if (type->type != NX_JSON_STRING)
             {
                 // todo report error
                 goto error;
             }
-            const char* typeStr = type->text_value;
-            if (0 == strcicmp(typeStr, "buffer"))
+            const char* typeText = type->text_value;
+            if (0 == strcicmp(typeText, "pass"))
             {
                 if (pBi)
                 {
@@ -138,7 +143,7 @@ static void SCREEN_loadScenePassFromJson
                     desc->image.channel[cidx].type = SCREEN_ChannelType_Buffer;
                 }
 
-                const nx_json* bufferId = nx_json_get(channel, "buffer");
+                const nx_json* bufferId = nx_json_item(channel, 1);
                 if (bufferId->type != NX_JSON_INTEGER)
                 {
                     // todo report error
