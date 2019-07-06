@@ -17,10 +17,15 @@ typedef struct SCREEN_Context
     f32 renderScale;
     u32 renderWidth, renderHeight;
     bool imageRenderDirect;
+    float screenToRender;
+
     f32 time;
     f32 timeDelta;
+
+    // screen space
     int pointX, pointY;
     int pointStart[2];
+
     u32 frame;
 
     bool sceneLoaded;
@@ -47,7 +52,8 @@ void SCREEN_startup(void)
     ctx = (SCREEN_Context*)zalloc(sizeof(*ctx));
 
     ctx->textureInternalFormat = GL_RGBA32F;
-    ctx->renderScale = 0.75f;
+    ctx->renderScale = 1.f;
+    //ctx->renderScale = 0.75f;
 }
 
 
@@ -205,8 +211,10 @@ static void SCREEN_renderPassDevOnRender(SCREEN_RenderPassDev* dev, SCREEN_Rende
         glUniform4f
         (
             dev->uniform_Mouse,
-            (f32)ctx->pointX, (f32)(ctx->height - ctx->pointY),
-            (f32)ctx->pointStart[0], (f32)ctx->pointStart[1]
+            (f32)ctx->pointX * ctx->screenToRender,
+            (f32)(ctx->height - ctx->pointY) * ctx->screenToRender,
+            (f32)ctx->pointStart[0] * ctx->screenToRender,
+            (f32)ctx->pointStart[1] * ctx->screenToRender
         );
     }
     if (dev->uniform_Frame >= 0)
@@ -328,14 +336,12 @@ void SCREEN_enter(u32 w, u32 h)
     //printf("GL_RENDERER : %s\n", glGetString(GL_RENDERER));
 
     assert(w && h);
+
+    ctx->pointY = h;
     if (ctx->width && ctx->height)
     {
         ctx->pointX = (int)((f32)ctx->pointX / ctx->width * w);
         ctx->pointY = (int)((f32)ctx->pointY / ctx->height * h);
-    }
-    else
-    {
-        ctx->pointY = h;
     }
     ctx->width = w;
     ctx->height = h;
@@ -427,14 +433,11 @@ void SCREEN_resize(u32 w, u32 h)
     //SCREEN_enter(w, h);
     //return;
 
+    ctx->pointY = h;
     if (ctx->width && ctx->height)
     {
         ctx->pointX = (int)((f32)ctx->pointX / ctx->width * w);
         ctx->pointY = (int)((f32)ctx->pointY / ctx->height * h);
-    }
-    else
-    {
-        ctx->pointY = h;
     }
     ctx->width = w;
     ctx->height = h;
@@ -541,16 +544,16 @@ void SCREEN_mouseUp(int x, int y)
 {
     ctx->pointStart[0] = -ctx->pointStart[0];
     ctx->pointStart[1] = -ctx->pointStart[1];
-    //ctx->pointX = x;
-    //ctx->pointY = y;
+    ctx->pointX = x;
+    ctx->pointY = y;
 }
 
 void SCREEN_mouseDown(int x, int y)
 {
     ctx->pointStart[0] = x;
     ctx->pointStart[1] = y;
-    //ctx->pointX = x;
-    //ctx->pointY = y;
+    ctx->pointX = x;
+    ctx->pointY = y;
 }
 
 void SCREEN_mouseMotion(int x, int y)
@@ -620,6 +623,7 @@ void SCREEN_setRenderScale(f32 scale)
     {
         ctx->imageRenderDirect = false;
     }
+    ctx->screenToRender = (f32)ctx->renderWidth / (f32)ctx->width;
 }
 
 

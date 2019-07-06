@@ -114,7 +114,7 @@ int main(int argc, char* argv[])
     SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
     // must 0 for glBlitFramebuffer works
     SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
@@ -188,18 +188,24 @@ int main(int argc, char* argv[])
             }
             case SDL_MOUSEBUTTONUP:
             {
-                outdated = true;
-                //SDL_SetRelativeMouseMode(false);
+                if (e.motion.state > 0)
+                {
+                    outdated = true;
+                    //SDL_SetRelativeMouseMode(false);
 
-                SCREEN_mouseUp(e.button.x, e.button.y);
+                    SCREEN_mouseUp(e.button.x, e.button.y);
+                }
                 break;
             }
             case SDL_MOUSEBUTTONDOWN:
             {
-                outdated = true;
-                //SDL_SetRelativeMouseMode(true);
+                if (e.motion.state > 0)
+                {
+                    outdated = true;
+                    //SDL_SetRelativeMouseMode(true);
 
-                SCREEN_mouseDown(e.button.x, e.button.y);
+                    SCREEN_mouseDown(e.button.x, e.button.y);
+                }
                 break;
             }
             case SDL_MOUSEMOTION:
@@ -274,9 +280,10 @@ int main(int argc, char* argv[])
             ++frameCount;
             sceneTime += deltaTime;
             SCREEN_frame(sceneTime);
+
+            SDL_GL_SwapWindow(window);
+            // SDL_Delay(1);
         }
-        SDL_GL_SwapWindow(window);
-        // SDL_Delay(1);
     }
 
 
