@@ -49,8 +49,8 @@ void SCREEN_startup(void)
     ctx = (SCREEN_Context*)zalloc(sizeof(*ctx));
 
     ctx->textureInternalFormat = GL_RGBA32F;
-    ctx->renderScale = 1.f;
-    //ctx->renderScale = 0.75f;
+    //ctx->renderScale = 1.f;
+    ctx->renderScale = 0.8f;
 }
 
 
@@ -121,7 +121,15 @@ static void SCREEN_renderPassDevOnResize
     SCREEN_RenderPassDev* dev, const SCREEN_RenderPass* desc, bool noTex, u32 widthCopy, u32 heightCopy
 )
 {
+    if (!dev->entered)
+    {
+        return;
+    }
     if (noTex)
+    {
+        return;
+    }
+    if (!dev->texture)
     {
         return;
     }
@@ -172,10 +180,11 @@ static void SCREEN_renderPassDevOnResize
 
 static void SCREEN_renderPassDevOnRender(SCREEN_RenderPassDev* dev, SCREEN_RenderPass* desc)
 {
-    if (!dev->shaderProgram)
+    if (!dev->entered)
     {
         return;
     }
+    assert(dev->shaderProgram);
     SCREEN_GL_CHECK();
 
     glUseProgram(dev->shaderProgram);
