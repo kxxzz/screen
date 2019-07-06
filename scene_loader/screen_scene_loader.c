@@ -38,7 +38,7 @@ static u32 SCREEN_loadFileDataToBuf(vec_char* dataBuf, const char* filename)
         return -1;
     }
     u32 offset = dataBuf->length;
-    vec_resize(dataBuf, dataBuf->length + size + 1);
+    vec_resize(dataBuf, offset + size + 1);
     size = FILEU_readFile(filename, dataBuf->data + offset, size);
     dataBuf->data[offset + size] = 0;
     return offset;
@@ -274,7 +274,7 @@ error:
 
 
 
-SCREEN_LoadSceneFileError SCREEN_loadSceneFromFile(const char* filename)
+SCREEN_LoadSceneFileError SCREEN_loadSceneFile(const char* filename)
 {
     SCREEN_Scene desc[1] = { 0 };
     if (FILEU_fileExist(filename))

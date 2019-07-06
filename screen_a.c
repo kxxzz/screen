@@ -247,6 +247,7 @@ void SCREEN_renderPassDevOnLeave(SCREEN_RenderPassDev* dev)
         glDeleteTextures(1, &dev->texture);
     }
     glDeleteProgram(dev->shaderProgram);
+    memset(dev, 0, sizeof(*dev));
 }
 
 

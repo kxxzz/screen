@@ -149,7 +149,7 @@ int main(int argc, char* argv[])
         struct stat st;
         stat(srcFile, &st);
         lastMtime = st.st_mtime;
-        SCREEN_loadSceneFromFile(srcFile);
+        SCREEN_loadSceneFile(srcFile);
     }
 
 
@@ -179,6 +179,22 @@ int main(int argc, char* argv[])
                     break;
                 }
                 }
+                break;
+            }
+            case SDL_DROPFILE:
+            {
+                char* path = e.drop.file;
+                // Shows directory of dropped file
+                //SDL_ShowSimpleMessageBox(
+                //    SDL_MESSAGEBOX_INFORMATION,
+                //    "File dropped on window",
+                //    path,
+                //    window
+                //);
+                watchFlag = false;
+                sceneTime = 0;
+                SCREEN_loadSceneFile(path);
+                SDL_free(path);
                 break;
             }
             case SDL_QUIT:
@@ -250,7 +266,7 @@ int main(int argc, char* argv[])
         }
 
 
-        if (srcFile && watchFlag && (now0 - lastCheckTime > 0.25f))
+        if (srcFile && (now0 - lastCheckTime > 0.25f))
         {
             static char title[255] = "";
             snprintf(title, sizeof(title), "SCREEN PLAYER%*c FPS: %-2.2f", 16, ' ', (double)frameCount / (now0 - lastCheckTime));
@@ -258,15 +274,19 @@ int main(int argc, char* argv[])
             frameCount = 0;
 
             lastCheckTime = now0;
-            struct stat st;
-            stat(srcFile, &st);
-            if (lastMtime != st.st_mtime)
+
+            if (watchFlag)
             {
-                printf("[CHANGE] \"%s\" [%s]\n", srcFile, nowStr(timeBuf));
-                sceneTime = 0;
-                SCREEN_loadSceneFromFile(srcFile);
+                struct stat st;
+                stat(srcFile, &st);
+                if (lastMtime != st.st_mtime)
+                {
+                    printf("[CHANGE] \"%s\" [%s]\n", srcFile, nowStr(timeBuf));
+                    sceneTime = 0;
+                    SCREEN_loadSceneFile(srcFile);
+                }
+                lastMtime = st.st_mtime;
             }
-            lastMtime = st.st_mtime;
         }
 
 

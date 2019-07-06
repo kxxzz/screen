@@ -150,7 +150,7 @@ static void SCREEN_renderPassDevOnResize
         }
         glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture0, 0);
         SCREEN_GL_CHECK();
-        //assert(GL_FRAMEBUFFER_COMPLETE == glCheckFramebufferStatus(GL_READ_FRAMEBUFFER));
+        assert(GL_FRAMEBUFFER_COMPLETE == glCheckFramebufferStatus(GL_READ_FRAMEBUFFER));
 
         if (ctx->curDrawFramebuffer != ctx->fb)
         {
@@ -159,7 +159,7 @@ static void SCREEN_renderPassDevOnResize
         }
         glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, dev->texture, 0);
         SCREEN_GL_CHECK();
-        //assert(GL_FRAMEBUFFER_COMPLETE == glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER));
+        assert(GL_FRAMEBUFFER_COMPLETE == glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER));
 
         {
             const GLenum bufs[] = { GL_COLOR_ATTACHMENT1 };
@@ -187,6 +187,8 @@ static void SCREEN_renderPassDevOnRender(SCREEN_RenderPassDev* dev, SCREEN_Rende
     {
         return;
     }
+    SCREEN_GL_CHECK();
+
     if (dev->shaderProgram != ctx->curShaderProgram)
     {
         ctx->curShaderProgram = dev->shaderProgram;
@@ -237,7 +239,7 @@ static void SCREEN_renderPassDevOnRender(SCREEN_RenderPassDev* dev, SCREEN_Rende
             glUniform3f(dev->uniform_ChannelResolution[i], (f32)ctx->renderWidth, (f32)ctx->renderHeight, 0.f);
         }
     }
-
+    SCREEN_GL_CHECK();
 
     if (dev->texture)
     {
@@ -316,6 +318,10 @@ static void SCREEN_leaveScene(void)
         SCREEN_renderPassDevOnLeave(passDev);
     }
     SCREEN_renderPassDevOnLeave(ctx->image);
+
+    ctx->curReadFramebuffer = -1;
+    ctx->curDrawFramebuffer = -1;
+    ctx->curShaderProgram = 0;
 }
 
 
@@ -746,6 +752,7 @@ bool SCREEN_loadScene(const SCREEN_Scene* scene)
     {
         SCREEN_enterScene();
     }
+    ctx->frame = 0;
     return true;
 }
 
@@ -758,6 +765,7 @@ void SCREEN_unloadScene(void)
     }
     ctx->sceneLoaded = false;
     vec_resize(ctx->sceneDataBuf, 0);
+    memset(ctx->scene, 0, sizeof(ctx->scene));
     if (ctx->entered)
     {
         SCREEN_leaveScene();

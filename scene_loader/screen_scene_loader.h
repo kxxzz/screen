@@ -19,7 +19,7 @@ typedef enum SCREEN_LoadSceneFileError
 } SCREEN_LoadSceneFileError;
 
 
-SCREEN_LoadSceneFileError SCREEN_loadSceneFromFile(const char* filename);
+SCREEN_LoadSceneFileError SCREEN_loadSceneFile(const char* filename);
 
 
 
