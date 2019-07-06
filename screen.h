@@ -39,6 +39,15 @@ void SCREEN_mouseDown(int x, int y);
 void SCREEN_mouseMotion(int x, int y);
 
 
+u32 SCREEN_screenWidth(void);
+u32 SCREEN_screenHeight(void);
+
+u32 SCREEN_renderWidth(void);
+u32 SCREEN_renderHeight(void);
+
+void SCREEN_setRenderSize(u32 w, u32 h);
+
+
 
 
 

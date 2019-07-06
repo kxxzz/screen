@@ -14,6 +14,7 @@ typedef struct SCREEN_Context
     GLuint fb;
 
     u32 width, height;
+    u32 renderWidth, renderHeight;
     f32 time;
     f32 timeDelta;
     int pointX, pointY;
@@ -495,6 +496,81 @@ void SCREEN_mouseMotion(int x, int y)
     ctx->pointX = x;
     ctx->pointY = y;
 }
+
+
+
+
+
+
+
+
+
+u32 SCREEN_screenWidth(void)
+{
+    return ctx->width;
+}
+
+u32 SCREEN_screenHeight(void)
+{
+    return ctx->height;
+}
+
+u32 SCREEN_renderWidth(void)
+{
+    return ctx->renderWidth;
+}
+
+u32 SCREEN_renderHeight(void)
+{
+    return ctx->renderHeight;
+}
+
+void SCREEN_setRenderSize(u32 w, u32 h)
+{
+    ctx->width = w;
+    ctx->height = h;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
