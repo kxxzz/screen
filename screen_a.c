@@ -65,6 +65,7 @@ static const char* SCREEN_shaderCommonSrcHeader(void)
         "#version 320 es\n"
         "precision highp float;\n"
         "precision highp int;\n";
+        "precision highp uint;\n";
     return a;
 }
 
