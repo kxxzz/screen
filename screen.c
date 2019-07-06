@@ -14,6 +14,7 @@ typedef struct SCREEN_Context
     GLuint fb;
 
     u32 width, height;
+    f32 renderScale;
     u32 renderWidth, renderHeight;
     f32 time;
     f32 timeDelta;
@@ -525,10 +526,31 @@ u32 SCREEN_renderHeight(void)
     return ctx->renderHeight;
 }
 
-void SCREEN_setRenderSize(u32 w, u32 h)
+f32 SCREEN_renderScale(void)
 {
-    ctx->width = w;
-    ctx->height = h;
+    return ctx->renderScale;
+}
+
+void SCREEN_setRenderScale(f32 scale)
+{
+    f32 v = (f32)max(ctx->width, ctx->height);
+    f32 a = (f32)ctx->width / (f32)ctx->height;
+
+    f32 n = v * scale;
+    n = max(1, n);
+    n = min(8192, n);
+    scale = ctx->renderScale = n / v;
+
+    if (a > 1.f)
+    {
+        ctx->renderWidth = (u32)ceil(n);
+        ctx->renderHeight = (u32)ceil(n / a);
+    }
+    else
+    {
+        ctx->renderWidth = (u32)ceil(n * a);
+        ctx->renderHeight = (u32)ceil(n);
+    }
 }
 
 

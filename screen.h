@@ -45,7 +45,9 @@ u32 SCREEN_screenHeight(void);
 u32 SCREEN_renderWidth(void);
 u32 SCREEN_renderHeight(void);
 
-void SCREEN_setRenderSize(u32 w, u32 h);
+f32 SCREEN_renderScale(void);
+void SCREEN_setRenderScale(f32 scale);
+
 
 
 
