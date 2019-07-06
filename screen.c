@@ -45,6 +45,7 @@ void SCREEN_startup(void)
     ctx = (SCREEN_Context*)zalloc(sizeof(*ctx));
 
     ctx->textureInternalFormat = GL_RGBA32F;
+    ctx->renderScale = 1.f;
 }
 
 
@@ -104,7 +105,7 @@ static void SCREEN_renderPassDevOnEnter(SCREEN_RenderPassDev* dev, const SCREEN_
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexStorage2D(GL_TEXTURE_2D, 1, ctx->textureInternalFormat, ctx->width, ctx->height);
+        glTexStorage2D(GL_TEXTURE_2D, 1, ctx->textureInternalFormat, ctx->renderWidth, ctx->renderHeight);
     }
 }
 
@@ -125,7 +126,7 @@ static void SCREEN_renderPassDevOnResize
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, dev->texture);
-    glTexStorage2D(GL_TEXTURE_2D, 1, ctx->textureInternalFormat, ctx->width, ctx->height);
+    glTexStorage2D(GL_TEXTURE_2D, 1, ctx->textureInternalFormat, ctx->renderWidth, ctx->renderHeight);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -175,7 +176,7 @@ static void SCREEN_renderPassDevOnRender(SCREEN_RenderPassDev* dev, SCREEN_Rende
     }
     if (dev->uniform_Resolution >= 0)
     {
-        glUniform3f(dev->uniform_Resolution, (f32)ctx->width, (f32)ctx->height, 0.f);
+        glUniform3f(dev->uniform_Resolution, (f32)ctx->renderWidth, (f32)ctx->renderHeight, 0.f);
 
     }
     if (dev->uniform_Time >= 0)
@@ -212,7 +213,7 @@ static void SCREEN_renderPassDevOnRender(SCREEN_RenderPassDev* dev, SCREEN_Rende
         }
         if (dev->uniform_ChannelResolution[i] >= 0)
         {
-            glUniform3f(dev->uniform_ChannelResolution[i], (f32)ctx->width, (f32)ctx->height, 0.f);
+            glUniform3f(dev->uniform_ChannelResolution[i], (f32)ctx->renderWidth, (f32)ctx->renderHeight, 0.f);
         }
     }
 
@@ -325,7 +326,10 @@ void SCREEN_enter(u32 w, u32 h)
     }
     ctx->width = w;
     ctx->height = h;
-    glViewport(0, 0, w, h);
+
+
+    SCREEN_setRenderScale(ctx->renderScale);
+
 
     static const GLfloat vertices[] =
     {
@@ -405,8 +409,6 @@ void SCREEN_resize(u32 w, u32 h)
     //SCREEN_enter(w, h);
     //return;
 
-    u32 widthCopy = min(ctx->width, w);
-    u32 heightCopy = min(ctx->height, h);
     if (ctx->width && ctx->height)
     {
         ctx->pointX = (int)((f32)ctx->pointX / ctx->width * w);
@@ -418,7 +420,14 @@ void SCREEN_resize(u32 w, u32 h)
     }
     ctx->width = w;
     ctx->height = h;
-    glViewport(0, 0, w, h);
+
+
+    u32 widthCopy = ctx->renderWidth;
+    u32 heightCopy = ctx->renderHeight;
+    SCREEN_setRenderScale(ctx->renderScale);
+    widthCopy = min(ctx->renderWidth, widthCopy);
+    heightCopy = min(ctx->renderHeight, heightCopy);
+
 
     for (u32 i = 0; i < SCREEN_Buffers_MAX; ++i)
     {
@@ -448,6 +457,7 @@ void SCREEN_frame(f32 time)
     }
     ctx->time = time;
 
+    glViewport(0, 0, ctx->renderWidth, ctx->renderHeight);
     glClearColor(0.0f, 0.0f, 1.0f, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
     SCREEN_GL_CHECK();
