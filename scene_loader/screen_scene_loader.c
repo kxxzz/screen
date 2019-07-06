@@ -1,3 +1,4 @@
+#include "screen_scene_loader.h"
 #include "screen_a.h"
 
 #include <fileu.h>
@@ -273,51 +274,87 @@ error:
 
 
 
-void SCREEN_loadSceneFromFile(const char* filename)
+SCREEN_LoadSceneFileError SCREEN_loadSceneFromFile(const char* filename)
 {
     SCREEN_Scene desc[1] = { 0 };
     if (FILEU_fileExist(filename))
     {
-        if (0 == strcicmp(FILEU_filenameExt(filename), "frag"))
+        if (FILEU_dirExist(filename))
         {
-            u32 size = FILEU_readFile(filename, NULL, 0);
-            if ((-1 == size) || !size)
-            {
-                // todo report error
-                return;
-            }
-            char* buf = malloc(size + 1);
-            size = FILEU_readFile(filename, buf, size);
-            buf[size] = 0;
-            desc->image.shaderCode = buf;
-            SCREEN_loadScene(desc);
-            free(buf);
-        }
-        else if (0 == strcicmp(FILEU_filenameExt(filename), "json"))
-        {
-            u32 size = FILEU_readFile(filename, NULL, 0);
-            if ((-1 == size) || !size)
-            {
-                // todo report error
-                return;
-            }
-            char* buf = malloc(size + 1);
-            size = FILEU_readFile(filename, buf, size);
-            buf[size] = 0;
+            char path[PATH_MAX] = "";
+            snprintf(path, sizeof(path), "%s/%s", filename, "index.json");
 
-            char dir[PATH_MAX];
-            FILEU_getDirName(dir, filename, sizeof(dir));
-            SCREEN_loadSceneFromJson(buf, dir, desc);
-            free(buf);
+            if (FILEU_fileExist(path))
+            {
+                u32 size = FILEU_readFile(path, NULL, 0);
+                if ((-1 == size) || !size)
+                {
+                    // todo report error
+                    return SCREEN_LoadSceneFileError_FileInvalid;
+                }
+                char* buf = malloc(size + 1);
+                size = FILEU_readFile(path, buf, size);
+                buf[size] = 0;
+
+                char dir[PATH_MAX];
+                FILEU_getDirName(dir, path, sizeof(dir));
+                SCREEN_loadSceneFromJson(buf, dir, desc);
+                free(buf);
+                return SCREEN_LoadSceneFileError_NONE;
+            }
+            else
+            {
+                // todo report error
+                return SCREEN_LoadSceneFileError_NoEntryFile;
+            }
         }
-    }
-    else if (FILEU_dirExist(filename))
-    {
-        // todo
+        else
+        {
+            if (0 == strcicmp(FILEU_filenameExt(filename), "frag"))
+            {
+                u32 size = FILEU_readFile(filename, NULL, 0);
+                if ((-1 == size) || !size)
+                {
+                    // todo report error
+                    return SCREEN_LoadSceneFileError_FileInvalid;
+                }
+                char* buf = malloc(size + 1);
+                size = FILEU_readFile(filename, buf, size);
+                buf[size] = 0;
+                desc->image.shaderCode = buf;
+                SCREEN_loadScene(desc);
+                free(buf);
+                return SCREEN_LoadSceneFileError_NONE;
+            }
+            else if (0 == strcicmp(FILEU_filenameExt(filename), "json"))
+            {
+                u32 size = FILEU_readFile(filename, NULL, 0);
+                if ((-1 == size) || !size)
+                {
+                    // todo report error
+                    return SCREEN_LoadSceneFileError_FileInvalid;
+                }
+                char* buf = malloc(size + 1);
+                size = FILEU_readFile(filename, buf, size);
+                buf[size] = 0;
+
+                char dir[PATH_MAX];
+                FILEU_getDirName(dir, filename, sizeof(dir));
+                SCREEN_loadSceneFromJson(buf, dir, desc);
+                free(buf);
+                return SCREEN_LoadSceneFileError_NONE;
+            }
+            else
+            {
+                // todo report error
+                return SCREEN_LoadSceneFileError_FileInvalid;
+            }
+        }
     }
     else
     {
         // todo report error
+        return SCREEN_LoadSceneFileError_NoFile;
     }
 }
 
