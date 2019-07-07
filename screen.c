@@ -5,10 +5,12 @@
 
 typedef struct SCREEN_Context
 {
+    // screen config
+    f32 renderScale;
+
     // screen context
     GLenum textureInternalFormat;
     u32 width, height;
-    f32 renderScale;
     u32 renderWidth, renderHeight;
     bool imageRenderDirect;
     bool sceneLoaded;

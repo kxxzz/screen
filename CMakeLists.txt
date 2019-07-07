@@ -81,11 +81,17 @@ source_group (src FILES ${SCENE_LOADER_SRC_FILES})
 add_library (scene_loader ${SCENE_LOADER_SRC_FILES})
 
 
+include_directories (config_loader)
+file (GLOB CONFIG_LOADER_SRC_FILES config_loader/*.h config_loader/*.c)
+source_group (src FILES ${CONFIG_LOADER_SRC_FILES})
+add_library (config_loader ${CONFIG_LOADER_SRC_FILES})
+
+
 
 file (GLOB TESTS_SRC_FILES player/*.h player/*.c)
 source_group (src FILES ${TESTS_SRC_FILES})
 add_executable (player ${TESTS_SRC_FILES})
-target_link_libraries (player imp screen scene_loader)
+target_link_libraries (player imp screen scene_loader config_loader)
 if (WIN32)
 else ()
     target_link_libraries (player m)
