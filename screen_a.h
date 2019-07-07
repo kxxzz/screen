@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <ctype.h>
 
 #include <vec.h>
 
@@ -36,6 +37,18 @@
 
 #define zalloc(sz) calloc(1, sz)
 
+
+
+
+
+static int strcicmp(const char* a, const char* b)
+{
+    for (;; ++a, ++b)
+    {
+        int n = tolower(*a) - tolower(*b);
+        if (n || !*a || !*b) return n;
+    }
+}
 
 
 

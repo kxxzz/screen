@@ -7,22 +7,12 @@
 
 
 
+
+
 enum
 {
     PATH_MAX = 4096,
 };
-
-static int strcicmp(const char* a, const char* b)
-{
-    for (;; ++a, ++b)
-    {
-        int n = tolower(*a) - tolower(*b);
-        if (n || !*a || !*b) return n;
-    }
-}
-
-
-
 
 
 
