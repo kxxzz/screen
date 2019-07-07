@@ -13,6 +13,7 @@ typedef enum SCREEN_LoadSceneFileError
 
     SCREEN_LoadSceneFileError_NoFile,
     SCREEN_LoadSceneFileError_NoEntryFile,
+    SCREEN_LoadSceneFileError_FileUnkExt,
     SCREEN_LoadSceneFileError_FileInvalid,
 
     SCREEN_NumLoadSceneFileErrors
