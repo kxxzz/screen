@@ -124,21 +124,13 @@ static void SCREEN_renderPassDevOnResize
     SCREEN_RenderPassDev* dev, const SCREEN_RenderPass* desc, bool noTex, u32 widthCopy, u32 heightCopy
 )
 {
-    if (!dev->entered)
-    {
-        return;
-    }
-    if (noTex)
+    if (!dev->entered || noTex)
     {
         if (dev->texture)
         {
             glDeleteTextures(1, &dev->texture);
             dev->texture = 0;
         }
-        return;
-    }
-    if (!dev->texture)
-    {
         return;
     }
     GLuint texture0 = dev->texture;
@@ -156,6 +148,7 @@ static void SCREEN_renderPassDevOnResize
 
     if (widthCopy && heightCopy)
     {
+        assert(texture0);
         glBindFramebuffer(GL_READ_FRAMEBUFFER, ctx->fb);
         glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture0, 0);
         SCREEN_GL_CHECK();
@@ -179,7 +172,10 @@ static void SCREEN_renderPassDevOnResize
             SCREEN_GL_CHECK();
         }
     }
-    glDeleteTextures(1, &texture0);
+    if (texture0)
+    {
+        glDeleteTextures(1, &texture0);
+    }
 }
 
 
@@ -536,8 +532,8 @@ void SCREEN_frame(f32 dt)
         glBindFramebuffer(GL_READ_FRAMEBUFFER, ctx->fb);
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 
-        //assert(GL_FRAMEBUFFER_COMPLETE == glCheckFramebufferStatus(GL_READ_FRAMEBUFFER));
-        //assert(GL_FRAMEBUFFER_COMPLETE == glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER));
+        assert(GL_FRAMEBUFFER_COMPLETE == glCheckFramebufferStatus(GL_READ_FRAMEBUFFER));
+        assert(GL_FRAMEBUFFER_COMPLETE == glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER));
         //glBlitFramebuffer
         //(
         //    0, 0, ctx->renderWidth, ctx->renderHeight,
