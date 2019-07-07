@@ -210,7 +210,7 @@ static void SCREEN_renderPassDevOnRender(SCREEN_RenderPassDev* dev, SCREEN_Rende
     }
     if (dev->uniform_Mouse >= 0)
     {
-        f32 screenToRender = 1.f / ctx->renderScale;
+        f32 screenToRender = ctx->renderScale;
         glUniform4f
         (
             dev->uniform_Mouse,
