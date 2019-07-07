@@ -147,6 +147,10 @@ int main(int argc, char* argv[])
     time_t configMtimeLast;
     if (sceneFile)
     {
+        char* sceneFile0 = sceneFile;
+        sceneFile = malloc(strlen(sceneFile0) + 1);
+        memcpy(sceneFile, sceneFile0, strlen(sceneFile0) + 1);
+
         struct stat st;
         stat(sceneFile, &st);
         sceneMtimeLast = st.st_mtime;
@@ -199,9 +203,10 @@ int main(int argc, char* argv[])
                 //    path,
                 //    window
                 //);
-                watchFlag = false;
-                SCREEN_loadSceneFile(path);
+                sceneFile = realloc(sceneFile, strlen(path) + 1);
+                memcpy(sceneFile, path, strlen(path) + 1);
                 SDL_free(path);
+                SCREEN_loadSceneFile(sceneFile);
                 break;
             }
             case SDL_QUIT:
@@ -325,6 +330,7 @@ int main(int argc, char* argv[])
     }
 
 
+    free(sceneFile);
     SCREEN_destroy();
     SDL_GL_DeleteContext(context);
     SDL_DestroyWindow(window);

@@ -246,11 +246,6 @@ static void SCREEN_renderPassDevOnRender(SCREEN_RenderPassDev* dev, SCREEN_Rende
     {
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, ctx->fb);
         glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, dev->texture, 0);
-        //{
-        //    const GLenum bufs[] = { GL_COLOR_ATTACHMENT0 };
-        //    glDrawBuffers(ARYLEN(bufs), bufs);
-        //    SCREEN_GL_CHECK();
-        //}
         //assert(GL_FRAMEBUFFER_COMPLETE == glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER));
     }
     else
