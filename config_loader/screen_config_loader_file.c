@@ -19,26 +19,16 @@ SCREEN_LoadConfigFileError SCREEN_loadConfigFromJson(char* code)
         // todo report error
         return SCREEN_LoadConfigFileError_FileInvalid;
     }
-    const nx_json* renderScale = nx_json_get(root, "renderScale");
-    if (renderScale->type != NX_JSON_NULL)
+    const nx_json* renderSize = nx_json_get(root, "renderSize");
+    if (renderSize->type != NX_JSON_NULL)
     {
-        if ((renderScale->type != NX_JSON_INTEGER) &&
-            (renderScale->type != NX_JSON_DOUBLE))
+        if (renderSize->type != NX_JSON_INTEGER)
         {
             // todo report error
             goto error;
         }
-        f32 scale;
-        if (NX_JSON_DOUBLE == renderScale->type)
-        {
-            scale = (f32)renderScale->dbl_value;
-        }
-        else
-        {
-            assert(NX_JSON_INTEGER == renderScale->type);
-            scale = (f32)renderScale->int_value;
-        }
-        SCREEN_setRenderScale(scale);
+        u32 size = (u32)renderSize->int_value;
+        SCREEN_setRenderSize(size);
     }
 
     nx_json_free(root);

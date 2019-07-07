@@ -6,11 +6,12 @@
 typedef struct SCREEN_Context
 {
     // screen config
-    f32 renderScale;
+    u32 renderSize;
 
     // screen context
     GLenum textureInternalFormat;
     u32 width, height;
+    f32 screenToRender;
     u32 renderWidth, renderHeight;
     bool imageRenderDirect;
     bool sceneLoaded;
@@ -51,8 +52,7 @@ void SCREEN_startup(void)
     ctx = (SCREEN_Context*)zalloc(sizeof(*ctx));
 
     ctx->textureInternalFormat = GL_RGBA32F;
-    //ctx->renderScale = 1.f;
-    ctx->renderScale = 0.8f;
+    ctx->renderSize = 900;
 }
 
 
@@ -210,7 +210,7 @@ static void SCREEN_renderPassDevOnRender(SCREEN_RenderPassDev* dev, SCREEN_Rende
     }
     if (dev->uniform_Mouse >= 0)
     {
-        f32 screenToRender = ctx->renderScale;
+        f32 screenToRender = ctx->screenToRender;
         glUniform4f
         (
             dev->uniform_Mouse,
@@ -323,15 +323,17 @@ static void SCREEN_leaveScene(void)
 
 
 
-static void SCREEN_calcRenderScale(f32 scale)
+static void SCREEN_calcSceneToRender(void)
 {
+    f32 screenToRender = (f32)ctx->renderSize / (f32)min(ctx->width, ctx->height);
+
     f32 v = (f32)max(ctx->width, ctx->height);
     f32 a = (f32)ctx->width / (f32)ctx->height;
 
-    f32 n = v * scale;
+    f32 n = v * screenToRender;
     n = max(1, n);
     n = min(8192, n);
-    scale = ctx->renderScale = n / v;
+    screenToRender = ctx->screenToRender = n / v;
 
     if (a > 1.f)
     {
@@ -388,7 +390,7 @@ void SCREEN_enter(u32 w, u32 h)
     ctx->height = h;
 
 
-    SCREEN_calcRenderScale(ctx->renderScale);
+    SCREEN_calcSceneToRender();
 
 
     static const GLfloat vertices[] =
@@ -483,7 +485,7 @@ void SCREEN_resize(u32 w, u32 h)
     ctx->width = w;
     ctx->height = h;
 
-    SCREEN_setRenderScale(ctx->renderScale);
+    SCREEN_setRenderSize(ctx->renderSize);
 }
 
 
@@ -605,15 +607,16 @@ u32 SCREEN_renderHeight(void)
 
 f32 SCREEN_renderScale(void)
 {
-    return ctx->renderScale;
+    return ctx->screenToRender;
 }
 
-void SCREEN_setRenderScale(f32 scale)
+void SCREEN_setRenderSize(u32 size)
 {
     u32 renderWidth0 = ctx->renderWidth;
     u32 renderHeight0 = ctx->renderHeight;
 
-    SCREEN_calcRenderScale(scale);
+    ctx->renderSize = size;
+    SCREEN_calcSceneToRender();
 
     if ((ctx->renderWidth != renderWidth0) || (ctx->renderHeight != renderHeight0))
     {
