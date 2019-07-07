@@ -89,13 +89,14 @@ int main(int argc, char* argv[])
     char timeBuf[TimeStrBuf_MAX];
 
 
-    char* srcFile = NULL;
+    char* sceneFile = NULL;
     int watchFlag = false;
     struct argparse_option options[] =
     {
         OPT_HELP(),
         //OPT_GROUP("Basic options"),
-        OPT_STRING('f', "file", &srcFile, "file to open"),
+        OPT_STRING('s', "scene", &sceneFile, "scene file to open"),
+        OPT_STRING('c', "config", &sceneFile, "config file to open"),
         OPT_BOOLEAN('w', "watch", &watchFlag, "watch file and reload it when it changes"),
         OPT_END(),
     };
@@ -141,13 +142,13 @@ int main(int argc, char* argv[])
     assert(0 == r);
 
 
-    time_t lastMtime;
-    if (srcFile)
+    time_t sceneMtimeLast;
+    if (sceneFile)
     {
         struct stat st;
-        stat(srcFile, &st);
-        lastMtime = st.st_mtime;
-        SCREEN_loadSceneFile(srcFile);
+        stat(sceneFile, &st);
+        sceneMtimeLast = st.st_mtime;
+        SCREEN_loadSceneFile(sceneFile);
     }
 
 
@@ -263,7 +264,7 @@ int main(int argc, char* argv[])
         }
 
 
-        if (srcFile && (now0 - lastCheckTime > 0.25f))
+        if (sceneFile && (now0 - lastCheckTime > 0.25f))
         {
             static char title[255] = "";
             snprintf(title, sizeof(title), "SCREEN PLAYER%*c FPS: %-2.2f", 16, ' ', (double)frameCount / (now0 - lastCheckTime));
@@ -275,13 +276,13 @@ int main(int argc, char* argv[])
             if (watchFlag)
             {
                 struct stat st;
-                stat(srcFile, &st);
-                if (lastMtime != st.st_mtime)
+                stat(sceneFile, &st);
+                if (sceneMtimeLast != st.st_mtime)
                 {
-                    printf("[CHANGE] \"%s\" [%s]\n", srcFile, nowStr(timeBuf));
-                    SCREEN_loadSceneFile(srcFile);
+                    printf("[CHANGE] \"%s\" [%s]\n", sceneFile, nowStr(timeBuf));
+                    SCREEN_loadSceneFile(sceneFile);
                 }
-                lastMtime = st.st_mtime;
+                sceneMtimeLast = st.st_mtime;
             }
         }
 
