@@ -605,17 +605,18 @@ u32 SCREEN_renderHeight(void)
     return ctx->renderHeight;
 }
 
-f32 SCREEN_renderScale(void)
+u32 SCREEN_renderSize(void)
 {
-    return ctx->screenToRender;
+    return ctx->renderSize;
 }
 
 void SCREEN_setRenderSize(u32 size)
 {
+    ctx->renderSize = size;
+
     u32 renderWidth0 = ctx->renderWidth;
     u32 renderHeight0 = ctx->renderHeight;
 
-    ctx->renderSize = size;
     SCREEN_calcSceneToRender();
 
     if ((ctx->renderWidth != renderWidth0) || (ctx->renderHeight != renderHeight0))
