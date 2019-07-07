@@ -2,6 +2,8 @@ cmake_minimum_required (VERSION 3.5)
 project (SCREEN)
 
 
+set_property (GLOBAL PROPERTY USE_FOLDERS ON)
+
 set (CMAKE_C_STANDARD 11)
 set (CMAKE_CXX_STANDARD 11)
 find_package (Threads REQUIRED)
@@ -11,7 +13,6 @@ list (APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}")
 include (ExternalProject)
 include (FeatureSummary)
 include (CMakeDependentOption)
-
 
 
 set (IMPLIB_DIR "imp")
@@ -73,19 +74,21 @@ add_library (imp STATIC ${IMP_SRC_FILES})
 file (GLOB SRC_FILES *.h *.c)
 source_group (src FILES ${SRC_FILES})
 add_library (screen ${SRC_FILES})
+set_target_properties (screen PROPERTIES FOLDER screen)
 
 
 include_directories (scene_loader)
 file (GLOB SCENE_LOADER_SRC_FILES scene_loader/*.h scene_loader/*.c)
 source_group (src FILES ${SCENE_LOADER_SRC_FILES})
 add_library (scene_loader ${SCENE_LOADER_SRC_FILES})
+set_target_properties (scene_loader PROPERTIES FOLDER screen/loaders)
 
 
 include_directories (config_loader)
 file (GLOB CONFIG_LOADER_SRC_FILES config_loader/*.h config_loader/*.c)
 source_group (src FILES ${CONFIG_LOADER_SRC_FILES})
 add_library (config_loader ${CONFIG_LOADER_SRC_FILES})
-
+set_target_properties (config_loader PROPERTIES FOLDER screen/loaders)
 
 
 file (GLOB TESTS_SRC_FILES player/*.h player/*.c)
