@@ -237,7 +237,7 @@ int main(int argc, char* argv[])
                 if (SDLK_BACKSPACE == e.key.keysym.sym)
                 {
                     fullscreen = !fullscreen;
-                    SDL_SetWindowFullscreen(window, fullscreen ? SDL_WINDOW_FULLSCREEN : 0);
+                    SDL_SetWindowFullscreen(window, fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
                 }
                 if (SDLK_TAB == e.key.keysym.sym)
                 {

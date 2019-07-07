@@ -20,8 +20,6 @@ typedef double f64;
 
 
 
-
-
 void SCREEN_startup(void);
 void SCREEN_destroy(void);
 

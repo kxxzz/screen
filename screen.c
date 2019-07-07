@@ -325,11 +325,14 @@ void SCREEN_enter(u32 w, u32 h)
 
     assert(w && h);
 
-    ctx->pointY = h;
     if (ctx->width && ctx->height)
     {
         ctx->pointX = (int)((f32)ctx->pointX / ctx->width * w);
         ctx->pointY = (int)((f32)ctx->pointY / ctx->height * h);
+    }
+    else
+    {
+        ctx->pointY = h;
     }
     ctx->width = w;
     ctx->height = h;
@@ -416,11 +419,14 @@ void SCREEN_resize(u32 w, u32 h)
     //SCREEN_enter(w, h);
     //return;
 
-    ctx->pointY = h;
     if (ctx->width && ctx->height)
     {
         ctx->pointX = (int)((f32)ctx->pointX / ctx->width * w);
         ctx->pointY = (int)((f32)ctx->pointY / ctx->height * h);
+    }
+    else
+    {
+        ctx->pointY = h;
     }
     ctx->width = w;
     ctx->height = h;
