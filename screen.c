@@ -129,6 +129,11 @@ static void SCREEN_renderPassDevOnResize
     }
     if (noTex)
     {
+        if (dev->texture)
+        {
+            glDeleteTextures(1, &dev->texture);
+            dev->texture = 0;
+        }
         return;
     }
     if (!dev->texture)
@@ -241,6 +246,11 @@ static void SCREEN_renderPassDevOnRender(SCREEN_RenderPassDev* dev, SCREEN_Rende
     {
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, ctx->fb);
         glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, dev->texture, 0);
+        //{
+        //    const GLenum bufs[] = { GL_COLOR_ATTACHMENT0 };
+        //    glDrawBuffers(ARYLEN(bufs), bufs);
+        //    SCREEN_GL_CHECK();
+        //}
         //assert(GL_FRAMEBUFFER_COMPLETE == glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER));
     }
     else
@@ -317,6 +327,47 @@ static void SCREEN_leaveScene(void)
 
 
 
+
+static void SCREEN_calcRenderScale(f32 scale)
+{
+    f32 v = (f32)max(ctx->width, ctx->height);
+    f32 a = (f32)ctx->width / (f32)ctx->height;
+
+    f32 n = v * scale;
+    n = max(1, n);
+    n = min(8192, n);
+    scale = ctx->renderScale = n / v;
+
+    if (a > 1.f)
+    {
+        ctx->renderWidth = (u32)ceil(n);
+        ctx->renderHeight = (u32)ceil(n / a);
+    }
+    else
+    {
+        ctx->renderWidth = (u32)ceil(n * a);
+        ctx->renderHeight = (u32)ceil(n);
+    }
+    if ((ctx->width == ctx->renderWidth) && (ctx->height == ctx->renderHeight))
+    {
+        ctx->imageRenderDirect = true;
+    }
+    else
+    {
+        ctx->imageRenderDirect = false;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
 void SCREEN_enter(u32 w, u32 h)
 {
     assert(!ctx->entered);
@@ -342,7 +393,7 @@ void SCREEN_enter(u32 w, u32 h)
     ctx->height = h;
 
 
-    SCREEN_setRenderScale(ctx->renderScale);
+    SCREEN_calcRenderScale(ctx->renderScale);
 
 
     static const GLfloat vertices[] =
@@ -437,23 +488,7 @@ void SCREEN_resize(u32 w, u32 h)
     ctx->width = w;
     ctx->height = h;
 
-
-    u32 widthCopy = ctx->renderWidth;
-    u32 heightCopy = ctx->renderHeight;
     SCREEN_setRenderScale(ctx->renderScale);
-    widthCopy = min(ctx->renderWidth, widthCopy);
-    heightCopy = min(ctx->renderHeight, heightCopy);
-
-
-    for (u32 i = 0; i < SCREEN_Buffers_MAX; ++i)
-    {
-        SCREEN_renderPassDevOnResize(ctx->buffer + i, ctx->scene->buffer + i, false, widthCopy, heightCopy);
-    }
-    SCREEN_renderPassDevOnResize(ctx->image, &ctx->scene->image, ctx->imageRenderDirect, 0, 0);
-
-
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 }
 
 
@@ -580,31 +615,24 @@ f32 SCREEN_renderScale(void)
 
 void SCREEN_setRenderScale(f32 scale)
 {
-    f32 v = (f32)max(ctx->width, ctx->height);
-    f32 a = (f32)ctx->width / (f32)ctx->height;
+    u32 renderWidth0 = ctx->renderWidth;
+    u32 renderHeight0 = ctx->renderHeight;
 
-    f32 n = v * scale;
-    n = max(1, n);
-    n = min(8192, n);
-    scale = ctx->renderScale = n / v;
+    SCREEN_calcRenderScale(scale);
 
-    if (a > 1.f)
+    if ((ctx->renderWidth != renderWidth0) || (ctx->renderHeight != renderHeight0))
     {
-        ctx->renderWidth = (u32)ceil(n);
-        ctx->renderHeight = (u32)ceil(n / a);
-    }
-    else
-    {
-        ctx->renderWidth = (u32)ceil(n * a);
-        ctx->renderHeight = (u32)ceil(n);
-    }
-    if ((ctx->width == ctx->renderWidth) && (ctx->height == ctx->renderHeight))
-    {
-        ctx->imageRenderDirect = true;
-    }
-    else
-    {
-        ctx->imageRenderDirect = false;
+        u32 widthCopy = min(ctx->renderWidth, renderWidth0);
+        u32 heightCopy = min(ctx->renderHeight, renderHeight0);
+
+        for (u32 i = 0; i < SCREEN_Buffers_MAX; ++i)
+        {
+            SCREEN_renderPassDevOnResize(ctx->buffer + i, ctx->scene->buffer + i, false, widthCopy, heightCopy);
+        }
+        SCREEN_renderPassDevOnResize(ctx->image, &ctx->scene->image, ctx->imageRenderDirect, 0, 0);
+
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
     }
 }
 

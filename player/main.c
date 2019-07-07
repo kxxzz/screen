@@ -22,7 +22,7 @@
 
 #include <screen.h>
 #include <screen_scene_loader_file.h>
-
+#include <screen_config_loader_file.h>
 
 
 
@@ -90,13 +90,14 @@ int main(int argc, char* argv[])
 
 
     char* sceneFile = NULL;
+    char* configFile = NULL;
     int watchFlag = false;
     struct argparse_option options[] =
     {
         OPT_HELP(),
         //OPT_GROUP("Basic options"),
         OPT_STRING('s', "scene", &sceneFile, "scene file to open"),
-        OPT_STRING('c', "config", &sceneFile, "config file to open"),
+        OPT_STRING('c', "config", &configFile, "config file to open"),
         OPT_BOOLEAN('w', "watch", &watchFlag, "watch file and reload it when it changes"),
         OPT_END(),
     };
@@ -143,12 +144,20 @@ int main(int argc, char* argv[])
 
 
     time_t sceneMtimeLast;
+    time_t configMtimeLast;
     if (sceneFile)
     {
         struct stat st;
         stat(sceneFile, &st);
         sceneMtimeLast = st.st_mtime;
         SCREEN_loadSceneFile(sceneFile);
+    }
+    if (configFile)
+    {
+        struct stat st;
+        stat(configFile, &st);
+        configMtimeLast = st.st_mtime;
+        SCREEN_loadConfigFile(configFile);
     }
 
 
@@ -276,13 +285,26 @@ int main(int argc, char* argv[])
             if (watchFlag)
             {
                 struct stat st;
-                stat(sceneFile, &st);
-                if (sceneMtimeLast != st.st_mtime)
+                if (sceneFile)
                 {
-                    printf("[CHANGE] \"%s\" [%s]\n", sceneFile, nowStr(timeBuf));
-                    SCREEN_loadSceneFile(sceneFile);
+                    stat(sceneFile, &st);
+                    if (sceneMtimeLast != st.st_mtime)
+                    {
+                        printf("[SCENE CHANGE] \"%s\" [%s]\n", sceneFile, nowStr(timeBuf));
+                        SCREEN_loadSceneFile(sceneFile);
+                    }
+                    sceneMtimeLast = st.st_mtime;
                 }
-                sceneMtimeLast = st.st_mtime;
+                if (configFile)
+                {
+                    stat(configFile, &st);
+                    if (configMtimeLast != st.st_mtime)
+                    {
+                        printf("[CONFIG CHANGE] \"%s\" [%s]\n", configFile, nowStr(timeBuf));
+                        SCREEN_loadConfigFile(configFile);
+                    }
+                    configMtimeLast = st.st_mtime;
+                }
             }
         }
 
