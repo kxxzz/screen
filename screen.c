@@ -329,6 +329,8 @@ void SCREEN_enter(u32 w, u32 h)
     {
         ctx->pointX = (int)((f32)ctx->pointX / ctx->width * w);
         ctx->pointY = (int)((f32)ctx->pointY / ctx->height * h);
+        //ctx->pointStart[0] = -ctx->pointX;
+        //ctx->pointStart[1] = -ctx->pointY;
     }
     else
     {
@@ -423,6 +425,8 @@ void SCREEN_resize(u32 w, u32 h)
     {
         ctx->pointX = (int)((f32)ctx->pointX / ctx->width * w);
         ctx->pointY = (int)((f32)ctx->pointY / ctx->height * h);
+        //ctx->pointStart[0] = -ctx->pointX;
+        //ctx->pointStart[1] = -ctx->pointY;
     }
     else
     {
