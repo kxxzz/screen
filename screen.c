@@ -6,7 +6,7 @@
 typedef struct SCREEN_Context
 {
     // screen config
-    u32 renderSize;
+    SCREEN_RenderSize renderSize[1];
 
     // screen context
     GLenum textureInternalFormat;
@@ -52,7 +52,8 @@ void SCREEN_startup(void)
     ctx = (SCREEN_Context*)zalloc(sizeof(*ctx));
 
     ctx->textureInternalFormat = GL_RGBA32F;
-    ctx->renderSize = 900;
+    SCREEN_RenderSize renderSize = { SCREEN_RenderSizeMode_Scale, .scale = 1 };
+    ctx->renderSize[0] = renderSize;
 }
 
 
@@ -325,7 +326,16 @@ static void SCREEN_leaveScene(void)
 
 static void SCREEN_calcSceneToRender(void)
 {
-    f32 screenToRender = (f32)ctx->renderSize / (f32)min(ctx->width, ctx->height);
+    f32 screenToRender;
+    if (SCREEN_RenderSizeMode_Fixed == ctx->renderSize->mode)
+    {
+        screenToRender = (f32)ctx->renderSize->size / (f32)min(ctx->width, ctx->height);
+    }
+    else
+    {
+        assert(SCREEN_RenderSizeMode_Scale == ctx->renderSize->mode);
+        screenToRender = ctx->renderSize->scale;
+    }
 
     f32 v = (f32)max(ctx->width, ctx->height);
     f32 a = (f32)ctx->width / (f32)ctx->height;
@@ -605,14 +615,14 @@ u32 SCREEN_renderHeight(void)
     return ctx->renderHeight;
 }
 
-u32 SCREEN_renderSize(void)
+const SCREEN_RenderSize* SCREEN_renderSize(void)
 {
     return ctx->renderSize;
 }
 
-void SCREEN_setRenderSize(u32 size)
+void SCREEN_setRenderSize(const SCREEN_RenderSize* rs)
 {
-    ctx->renderSize = size;
+    ctx->renderSize[0] = rs[0];
 
     u32 renderWidth0 = ctx->renderWidth;
     u32 renderHeight0 = ctx->renderHeight;

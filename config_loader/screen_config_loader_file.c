@@ -19,8 +19,32 @@ SCREEN_LoadConfigFileError SCREEN_loadConfigFromJson(char* code)
         // todo report error
         return SCREEN_LoadConfigFileError_FileInvalid;
     }
+
+    const nx_json* renderScale = nx_json_get(root, "renderScale");
     const nx_json* renderSize = nx_json_get(root, "renderSize");
-    if (renderSize->type != NX_JSON_NULL)
+
+    if  ((renderScale->type != NX_JSON_NULL) && (NX_JSON_NULL == renderSize->type))
+    {
+        if ((renderScale->type != NX_JSON_INTEGER) &&
+            (renderScale->type != NX_JSON_DOUBLE))
+        {
+            // todo report error
+            goto error;
+        }
+        f32 scale;
+        if (NX_JSON_DOUBLE == renderScale->type)
+        {
+            scale = (f32)renderScale->dbl_value;
+        }
+        else
+        {
+            assert(NX_JSON_INTEGER == renderScale->type);
+            scale = (f32)renderScale->int_value;
+        }
+        SCREEN_RenderSize rs = { SCREEN_RenderSizeMode_Scale, .scale = scale };
+        SCREEN_setRenderSize(&rs);
+    }
+    else if ((renderSize->type != NX_JSON_NULL) && (NX_JSON_NULL == renderScale->type))
     {
         if (renderSize->type != NX_JSON_INTEGER)
         {
@@ -28,7 +52,13 @@ SCREEN_LoadConfigFileError SCREEN_loadConfigFromJson(char* code)
             goto error;
         }
         u32 size = (u32)renderSize->int_value;
-        SCREEN_setRenderSize(size);
+        SCREEN_RenderSize rs = { SCREEN_RenderSizeMode_Fixed, .size = size };
+        SCREEN_setRenderSize(&rs);
+    }
+    else
+    {
+        // todo report error
+        goto error;
     }
 
     nx_json_free(root);

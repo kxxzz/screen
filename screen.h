@@ -43,8 +43,25 @@ u32 SCREEN_screenHeight(void);
 u32 SCREEN_renderWidth(void);
 u32 SCREEN_renderHeight(void);
 
-u32 SCREEN_renderSize(void);
-void SCREEN_setRenderSize(u32 size);
+
+typedef enum SCREEN_RenderSizeMode
+{
+    SCREEN_RenderSizeMode_Scale = 0,
+    SCREEN_RenderSizeMode_Fixed,
+} SCREEN_RenderSizeMode;
+
+typedef struct SCREEN_RenderSize
+{
+    SCREEN_RenderSizeMode mode;
+    union
+    {
+        f32 scale;
+        u32 size;
+    };
+} SCREEN_RenderSize;
+
+const SCREEN_RenderSize* SCREEN_renderSize(void);
+void SCREEN_setRenderSize(const SCREEN_RenderSize* rs);
 
 
 
