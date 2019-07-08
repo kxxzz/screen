@@ -78,23 +78,23 @@ typedef enum SCREEN_DataType
 
 
 
-typedef enum SCREEN_TextureType
+typedef enum SCREEN_AssetType
 {
-    SCREEN_TextureType_1D,
-    SCREEN_TextureType_2D,
-    SCREEN_TextureType_3D,
-    SCREEN_TextureType_Cube,
-    SCREEN_TextureTypeCount
-} SCREEN_TextureType;
+    SCREEN_AssetType_1D,
+    SCREEN_AssetType_2D,
+    SCREEN_AssetType_3D,
+    SCREEN_AssetType_Cube,
+    SCREEN_AssetTypeCount
+} SCREEN_AssetType;
 
-typedef struct SCREEN_Texture
+typedef struct SCREEN_Asset
 {
-    SCREEN_TextureType type;
+    SCREEN_AssetType type;
     u32 perElmChannels;
     SCREEN_DataType dataType;
     u32 size[3];
     const u8* data;
-} SCREEN_Texture;
+} SCREEN_Asset;
 
 
 
@@ -106,7 +106,7 @@ enum
 {
     SCREEN_Channels_MAX = 4,
     SCREEN_Buffer2Ds_MAX = 4,
-    SCREEN_Textures_MAX = 8,
+    SCREEN_Assets_MAX = 8,
 };
 
 typedef enum SCREEN_ChannelType
@@ -114,7 +114,7 @@ typedef enum SCREEN_ChannelType
     SCREEN_ChannelType_Unused = 0,
     SCREEN_ChannelType_Buffer2D,
     SCREEN_ChannelType_Keyboard,
-    SCREEN_ChannelType_Texture,
+    SCREEN_ChannelType_Asset,
     SCREEN_ChannelTypeCount
 } SCREEN_ChannelType;
 
@@ -124,6 +124,7 @@ typedef struct SCREEN_Channel
     union
     {
         u32 buffer2d;
+        u32 asset;
     };
 } SCREEN_Channel;
 
@@ -135,7 +136,7 @@ typedef struct SCREEN_RenderPass
 
 typedef struct SCREEN_Scene
 {
-    SCREEN_Texture texture[SCREEN_Textures_MAX];
+    SCREEN_Asset asset[SCREEN_Assets_MAX];
     const char* shaderCommon;
     SCREEN_RenderPass buffer2d[SCREEN_Buffer2Ds_MAX];
     SCREEN_RenderPass image;
