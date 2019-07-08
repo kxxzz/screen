@@ -4,6 +4,8 @@
 
 #include "screen.h"
 
+#include <vec.h>
+
 
 
 
@@ -20,11 +22,7 @@ typedef enum SCREEN_LoadSceneFileError
 } SCREEN_LoadSceneFileError;
 
 
-SCREEN_LoadSceneFileError SCREEN_loadSceneFile(const char* filename);
-
-
-
-
+SCREEN_LoadSceneFileError SCREEN_loadSceneFile(const char* filename, vec_char* pathBuf);
 
 
 

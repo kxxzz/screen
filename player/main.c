@@ -154,7 +154,7 @@ int main(int argc, char* argv[])
         struct stat st;
         stat(sceneFile, &st);
         sceneMtimeLast = st.st_mtime;
-        SCREEN_loadSceneFile(sceneFile);
+        SCREEN_loadSceneFile(sceneFile, NULL);
     }
     if (configFile)
     {
@@ -206,7 +206,7 @@ int main(int argc, char* argv[])
                 sceneFile = realloc(sceneFile, strlen(path) + 1);
                 memcpy(sceneFile, path, strlen(path) + 1);
                 SDL_free(path);
-                SCREEN_loadSceneFile(sceneFile);
+                SCREEN_loadSceneFile(sceneFile, NULL);
                 break;
             }
             case SDL_QUIT:
@@ -296,7 +296,7 @@ int main(int argc, char* argv[])
                     if (sceneMtimeLast != st.st_mtime)
                     {
                         printf("[SCENE CHANGE] \"%s\" [%s]\n", sceneFile, nowStr(timeBuf));
-                        SCREEN_loadSceneFile(sceneFile);
+                        SCREEN_loadSceneFile(sceneFile, NULL);
                     }
                     sceneMtimeLast = st.st_mtime;
                 }

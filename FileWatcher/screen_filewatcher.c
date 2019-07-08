@@ -25,9 +25,10 @@ typedef struct SCREEN_WatchContext
 {
     bool hasSceneFile;
     bool hasConfigFile;
-    SCREEN_WatchFile sceneEntryFile[1];
-    SCREEN_WatchFileVec sceneDepFiles[1];
+    SCREEN_WatchFileVec sceneFiles[1];
     SCREEN_WatchFile configFile[1];
+    vec_char pathBuf[1];
+    u32 sceneFileIndex;
 } SCREEN_WatchContext;
 
 static SCREEN_WatchContext* ctx = NULL;
@@ -44,7 +45,8 @@ void SCREEN_watchStartup(void)
 
 void SCREEN_watchDestroy(void)
 {
-    vec_free(ctx->sceneDepFiles);
+    vec_free(ctx->pathBuf);
+    vec_free(ctx->sceneFiles);
     free(ctx);
     ctx = NULL;
 }
@@ -95,15 +97,20 @@ void SCREEN_watchScreenFileStart(const char* filename)
     }
     ctx->hasSceneFile = true;
 
-    SCREEN_WatchFile* sceneEntryFile = ctx->sceneEntryFile;
-    SCREEN_WatchFileVec* sceneDepFiles = ctx->sceneDepFiles;
+    SCREEN_WatchFileVec* sceneFiles = ctx->sceneFiles;
+    assert(0 == sceneFiles->length);
+    vec_char* pathBuf = ctx->pathBuf;
+    vec_resize(pathBuf, 0);
     
-    SCREEN_watchFileInit(sceneEntryFile, filename);
-    // todo
-    for (u32 i = 0; i < sceneDepFiles->length; ++i)
+    SCREEN_loadSceneFile(filename, pathBuf);
+
+    for (u32 off = 0; off < pathBuf->length;)
     {
-        SCREEN_WatchFile* wf = sceneDepFiles->data + i;
-        SCREEN_watchFileInit(wf, NULL);
+        vec_resize(sceneFiles, sceneFiles->length + 1);
+        SCREEN_WatchFile* wf = &vec_last(sceneFiles);
+        SCREEN_watchFileInit(wf, pathBuf->data + off);
+        off += (u32)strlen(pathBuf->data + off);
+        assert(off <= pathBuf->length);
     }
 }
 
@@ -139,7 +146,7 @@ void SCREEN_watchScreenFileStop(void)
         return;
     }
     ctx->hasSceneFile = false;
-    vec_resize(ctx->sceneDepFiles, 0);
+    vec_resize(ctx->sceneFiles, 0);
 }
 
 
@@ -171,27 +178,18 @@ void SCREEN_watchFilesRefresh(void)
     bool modified = false;
     if (ctx->hasSceneFile)
     {
-        SCREEN_WatchFile* sceneEntryFile = ctx->sceneEntryFile;
-        SCREEN_WatchFileVec* sceneDepFiles = ctx->sceneDepFiles;
+        SCREEN_WatchFileVec* sceneFiles = ctx->sceneFiles;
+        vec_char* pathBuf = ctx->pathBuf;
+        vec_resize(pathBuf, 0);
 
-        u32 n = 1 + sceneDepFiles->length;
-        for (u32 i = 0; i < n; ++i)
-        {
-            if (0 == n)
-            {
-                modified = SCREEN_watchFileCheckModify(sceneEntryFile);
-                if (modified) break;
-            }
-            else
-            {
-                modified = SCREEN_watchFileCheckModify(sceneDepFiles->data + i + 1);
-                if (modified) break;
-            }
-        }
+        ctx->sceneFileIndex = (ctx->sceneFileIndex + 1) % sceneFiles->length;
+
+        modified = SCREEN_watchFileCheckModify(sceneFiles->data + ctx->sceneFileIndex);
+
         if (modified)
         {
             // todo report
-            SCREEN_loadSceneFile(sceneEntryFile->path);
+            SCREEN_loadSceneFile(sceneFiles->data[0].path, pathBuf);
         }
     }
     if (ctx->hasConfigFile)
