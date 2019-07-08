@@ -198,7 +198,20 @@ void SCREEN_fwtchUpdate(void)
         if (modified)
         {
             // todo report
-            SCREEN_loadSceneFile(sceneFiles->data[0].path, pathBuf);
+            SCREEN_LoadFileError err = SCREEN_loadSceneFile(sceneFiles->data[0].path, pathBuf);
+            if (!err)
+            {
+                vec_resize(sceneFiles, 0);
+                vec_resize(pathBuf, 0);
+                for (u32 off = 0; off < pathBuf->length;)
+                {
+                    vec_resize(sceneFiles, sceneFiles->length + 1);
+                    SCREEN_FwtchFile* wf = &vec_last(sceneFiles);
+                    SCREEN_fwtchFileInit(wf, pathBuf->data + off);
+                    off += (u32)strlen(pathBuf->data + off) + 1;
+                    assert(off <= pathBuf->length);
+                }
+            }
         }
     }
     if (ctx->hasConfigFile)
@@ -208,7 +221,11 @@ void SCREEN_fwtchUpdate(void)
         if (modified)
         {
             // todo report
-            SCREEN_loadConfigFile(configFile->path);
+            SCREEN_LoadFileError err = SCREEN_loadConfigFile(configFile->path);
+            if (!err)
+            {
+                SCREEN_fwtchFileInit(configFile, configFile->path);
+            }
         }
     }
 }
