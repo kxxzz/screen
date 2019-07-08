@@ -67,19 +67,55 @@ void SCREEN_setRenderSize(const SCREEN_RenderSize* rs);
 
 
 
+typedef enum SCREEN_DataType
+{
+    SCREEN_DataType_S8,
+    SCREEN_DataType_U8,
+    SCREEN_DataType_F16,
+    SCREEN_DataType_F32,
+    SCREEN_DataTypeCount
+} SCREEN_DataType;
+
+
+
+typedef enum SCREEN_TextureType
+{
+    SCREEN_TextureType_1D,
+    SCREEN_TextureType_2D,
+    SCREEN_TextureType_3D,
+    SCREEN_TextureType_Cube,
+    SCREEN_TextureTypeCount
+} SCREEN_TextureType;
+
+typedef struct SCREEN_Texture
+{
+    SCREEN_TextureType type;
+    u32 perElmChannels;
+    SCREEN_DataType dataType;
+    u32 size[3];
+    const u8* data;
+} SCREEN_Texture;
+
+
+
+
 
 
 
 enum
 {
     SCREEN_Channels_MAX = 4,
-    SCREEN_Buffers_MAX = 4,
+    SCREEN_Buffer2Ds_MAX = 4,
+    SCREEN_Textures_MAX = 8,
 };
 
 typedef enum SCREEN_ChannelType
 {
     SCREEN_ChannelType_Unused = 0,
-    SCREEN_ChannelType_Buffer,
+    SCREEN_ChannelType_Buffer2D,
+    SCREEN_ChannelType_Keyboard,
+    SCREEN_ChannelType_Texture,
+    SCREEN_ChannelTypeCount
 } SCREEN_ChannelType;
 
 typedef struct SCREEN_Channel
@@ -87,7 +123,7 @@ typedef struct SCREEN_Channel
     SCREEN_ChannelType type;
     union
     {
-        u32 buffer;
+        u32 buffer2d;
     };
 } SCREEN_Channel;
 
@@ -99,8 +135,9 @@ typedef struct SCREEN_RenderPass
 
 typedef struct SCREEN_Scene
 {
-    const char* shaderComm;
-    SCREEN_RenderPass buffer[SCREEN_Buffers_MAX];
+    SCREEN_Texture texture[SCREEN_Textures_MAX];
+    const char* shaderCommon;
+    SCREEN_RenderPass buffer2d[SCREEN_Buffer2Ds_MAX];
     SCREEN_RenderPass image;
 } SCREEN_Scene;
 

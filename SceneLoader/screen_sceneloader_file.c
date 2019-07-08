@@ -125,11 +125,11 @@ static void SCREEN_loadScenePassFromJson
             {
                 if (pBi)
                 {
-                    desc->buffer[bi].channel[cidx].type = SCREEN_ChannelType_Buffer;
+                    desc->buffer2d[bi].channel[cidx].type = SCREEN_ChannelType_Buffer2D;
                 }
                 else
                 {
-                    desc->image.channel[cidx].type = SCREEN_ChannelType_Buffer;
+                    desc->image.channel[cidx].type = SCREEN_ChannelType_Buffer2D;
                 }
 
                 const nx_json* bufferId = nx_json_item(channel, 1);
@@ -141,11 +141,11 @@ static void SCREEN_loadScenePassFromJson
                 u32 id = (u32)bufferId->int_value;
                 if (pBi)
                 {
-                    desc->buffer[bi].channel[cidx].buffer = id;
+                    desc->buffer2d[bi].channel[cidx].buffer2d = id;
                 }
                 else
                 {
-                    desc->image.channel[cidx].buffer = id;
+                    desc->image.channel[cidx].buffer2d = id;
                 }
             }
             else
@@ -177,8 +177,8 @@ static SCREEN_LoadFileError SCREEN_loadSceneFromJson(char* code, const char* dir
     vec_char dataBuf[1] = { 0 };
     char path[SCREEN_PATH_MAX] = "";
     u32 commShaderOff = -1, imageShaderOff = -1;
-    bool bufferUsed[SCREEN_Buffers_MAX] = { 0 };
-    u32 bufferShaderOff[SCREEN_Buffers_MAX] = { 0 };
+    bool bufferUsed[SCREEN_Buffer2Ds_MAX] = { 0 };
+    u32 bufferShaderOff[SCREEN_Buffer2Ds_MAX] = { 0 };
 
     const nx_json* root = nx_json_parse(code, NULL);
     if (!root)
@@ -233,13 +233,13 @@ static SCREEN_LoadFileError SCREEN_loadSceneFromJson(char* code, const char* dir
 
     if (commShaderOff != -1)
     {
-        desc->shaderComm = dataBuf->data + commShaderOff;
+        desc->shaderCommon = dataBuf->data + commShaderOff;
     }
-    for (u32 i = 0; i < SCREEN_Buffers_MAX; ++i)
+    for (u32 i = 0; i < SCREEN_Buffer2Ds_MAX; ++i)
     {
         if (bufferUsed[i])
         {
-            desc->buffer[i].shaderCode = dataBuf->data + bufferShaderOff[i];
+            desc->buffer2d[i].shaderCode = dataBuf->data + bufferShaderOff[i];
         }
     }
     desc->image.shaderCode = dataBuf->data + imageShaderOff;

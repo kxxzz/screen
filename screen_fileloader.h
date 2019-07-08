@@ -22,7 +22,7 @@ typedef enum SCREEN_LoadFileError
     SCREEN_LoadFileError_FileUnkExt,
     SCREEN_LoadFileError_FileInvalid,
 
-    SCREEN_NumLoadFileErrors
+    SCREEN_LoadFileErrorCount
 } SCREEN_LoadFileError;
 
 
