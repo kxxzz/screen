@@ -102,15 +102,17 @@ void SCREEN_watchScreenFileStart(const char* filename)
     vec_char* pathBuf = ctx->pathBuf;
     vec_resize(pathBuf, 0);
     
-    SCREEN_loadSceneFile(filename, pathBuf);
-
-    for (u32 off = 0; off < pathBuf->length;)
+    SCREEN_LoadSceneFileError err = SCREEN_loadSceneFile(filename, pathBuf);
+    if (SCREEN_LoadSceneFileError_NONE == err)
     {
-        vec_resize(sceneFiles, sceneFiles->length + 1);
-        SCREEN_WatchFile* wf = &vec_last(sceneFiles);
-        SCREEN_watchFileInit(wf, pathBuf->data + off);
-        off += (u32)strlen(pathBuf->data + off) + 1;
-        assert(off <= pathBuf->length);
+        for (u32 off = 0; off < pathBuf->length;)
+        {
+            vec_resize(sceneFiles, sceneFiles->length + 1);
+            SCREEN_WatchFile* wf = &vec_last(sceneFiles);
+            SCREEN_watchFileInit(wf, pathBuf->data + off);
+            off += (u32)strlen(pathBuf->data + off) + 1;
+            assert(off <= pathBuf->length);
+        }
     }
 }
 
@@ -128,9 +130,12 @@ void SCREEN_watchConfigFileStart(const char* filename)
         SCREEN_watchConfigFileStop();
     }
     ctx->hasConfigFile = true;
-
-    SCREEN_WatchFile* configFile = ctx->configFile;
-    SCREEN_watchFileInit(configFile, filename);
+    SCREEN_LoadConfigFileError err = SCREEN_loadConfigFile(filename);
+    if (SCREEN_LoadConfigFileError_NONE == err)
+    {
+        SCREEN_WatchFile* configFile = ctx->configFile;
+        SCREEN_watchFileInit(configFile, filename);
+    }
 }
 
 
