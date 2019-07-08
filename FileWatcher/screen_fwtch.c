@@ -195,13 +195,11 @@ void SCREEN_fwtchUpdate(void)
         vec_char* pathBuf = ctx->pathBuf;
         vec_resize(pathBuf, 0);
 
-        ctx->sceneFileIndex = (ctx->sceneFileIndex + 1) % sceneFiles->length;
-
         modified = SCREEN_fwtchFileCheckModify(sceneFiles->data + ctx->sceneFileIndex);
-
         if (modified)
         {
             // todo report
+            printf("[SCENE CHANGE] \"%s\"\n", sceneFiles->data[ctx->sceneFileIndex].path);
             SCREEN_LoadFileError err = SCREEN_loadSceneFile(sceneFiles->data[0].path, pathBuf);
             if (!err)
             {
@@ -216,6 +214,7 @@ void SCREEN_fwtchUpdate(void)
                 }
             }
         }
+        ctx->sceneFileIndex = (ctx->sceneFileIndex + 1) % sceneFiles->length;
     }
     if (ctx->hasConfigFile)
     {
@@ -224,6 +223,7 @@ void SCREEN_fwtchUpdate(void)
         if (modified)
         {
             // todo report
+            printf("[CONFIG CHANGE] \"%s\"\n", configFile->path);
             SCREEN_LoadFileError err = SCREEN_loadConfigFile(configFile->path);
             if (!err)
             {
