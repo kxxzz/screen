@@ -6,6 +6,8 @@
 
 
 
+void SCREEN_watchStartup(void);
+void SCREEN_watchDestroy(void);
 
 void SCREEN_watchScreenFileStart(const char* filename);
 void SCREEN_watchConfigFileStart(const char* filename);

@@ -37,7 +37,7 @@ typedef struct SCREEN_Context
     vec_char sceneDataBuf[1];
 } SCREEN_Context;
 
-SCREEN_Context* ctx = NULL;
+static SCREEN_Context* ctx = NULL;
 
 
 

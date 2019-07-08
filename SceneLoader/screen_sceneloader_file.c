@@ -9,14 +9,6 @@
 
 
 
-enum
-{
-    PATH_MAX = 4096,
-};
-
-
-
-
 
 
 static u32 SCREEN_loadFileDataToBuf(vec_char* dataBuf, const char* filename)
@@ -47,7 +39,7 @@ static void SCREEN_loadScenePassFromJson
     u32* pOff, u32* pBi
 )
 {
-    char path[PATH_MAX] = "";
+    char path[SCREEN_PATH_MAX] = "";
     if (pass->type != NX_JSON_OBJECT)
     {
         // todo report error
@@ -177,7 +169,7 @@ error:
 static SCREEN_LoadSceneFileError SCREEN_loadSceneFromJson(char* code, const char* dir, SCREEN_Scene* desc)
 {
     vec_char dataBuf[1] = { 0 };
-    char path[PATH_MAX] = "";
+    char path[SCREEN_PATH_MAX] = "";
     u32 commShaderOff = -1, imageShaderOff = -1;
     bool bufferUsed[SCREEN_Buffers_MAX] = { 0 };
     u32 bufferShaderOff[SCREEN_Buffers_MAX] = { 0 };
@@ -272,7 +264,7 @@ SCREEN_LoadSceneFileError SCREEN_loadSceneFile(const char* filename)
     {
         if (FILEU_dirExist(filename))
         {
-            char path[PATH_MAX] = "";
+            char path[SCREEN_PATH_MAX] = "";
             snprintf(path, sizeof(path), "%s/%s", filename, "index.json");
 
             if (FILEU_fileExist(path))
@@ -287,7 +279,7 @@ SCREEN_LoadSceneFileError SCREEN_loadSceneFile(const char* filename)
                 size = FILEU_readFile(path, buf, size);
                 buf[size] = 0;
 
-                char dir[PATH_MAX];
+                char dir[SCREEN_PATH_MAX];
                 FILEU_getDirName(dir, path, sizeof(dir));
                 SCREEN_LoadSceneFileError r = SCREEN_loadSceneFromJson(buf, dir, desc);
                 free(buf);
@@ -333,7 +325,7 @@ SCREEN_LoadSceneFileError SCREEN_loadSceneFile(const char* filename)
                 size = FILEU_readFile(filename, buf, size);
                 buf[size] = 0;
 
-                char dir[PATH_MAX];
+                char dir[SCREEN_PATH_MAX];
                 FILEU_getDirName(dir, filename, sizeof(dir));
                 SCREEN_LoadSceneFileError r = SCREEN_loadSceneFromJson(buf, dir, desc);
                 free(buf);
