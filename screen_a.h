@@ -77,10 +77,6 @@ static char* stzncpy(char* dst, char const* src, u32 len)
 
 
 
-enum
-{
-    SCREEN_PATH_MAX = 512,
-};
 
 
 

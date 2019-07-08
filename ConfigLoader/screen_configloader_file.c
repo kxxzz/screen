@@ -11,13 +11,13 @@
 
 
 
-SCREEN_LoadConfigFileError SCREEN_loadConfigFromJson(char* code)
+SCREEN_LoadFileError SCREEN_loadConfigFromJson(char* code)
 {
     const nx_json* root = nx_json_parse(code, NULL);
     if (!root)
     {
         // todo report error
-        return SCREEN_LoadConfigFileError_FileInvalid;
+        return SCREEN_LoadFileError_FileInvalid;
     }
 
     const nx_json* renderScale = nx_json_get(root, "renderScale");
@@ -62,16 +62,16 @@ SCREEN_LoadConfigFileError SCREEN_loadConfigFromJson(char* code)
     }
 
     nx_json_free(root);
-    return SCREEN_LoadConfigFileError_NONE;
+    return SCREEN_LoadFileError_NONE;
 error:
     nx_json_free(root);
-    return SCREEN_LoadConfigFileError_FileInvalid;
+    return SCREEN_LoadFileError_FileInvalid;
 }
 
 
 
 
-SCREEN_LoadConfigFileError SCREEN_loadConfigFile(const char* filename)
+SCREEN_LoadFileError SCREEN_loadConfigFile(const char* filename)
 {
     if (FILEU_fileExist(filename))
     {
@@ -81,26 +81,26 @@ SCREEN_LoadConfigFileError SCREEN_loadConfigFile(const char* filename)
             if ((-1 == size) || !size)
             {
                 // todo report error
-                return SCREEN_LoadConfigFileError_FileInvalid;
+                return SCREEN_LoadFileError_FileInvalid;
             }
             char* buf = malloc(size + 1);
             size = FILEU_readFile(filename, buf, size);
             buf[size] = 0;
 
-            SCREEN_LoadConfigFileError r = SCREEN_loadConfigFromJson(buf);
+            SCREEN_LoadFileError r = SCREEN_loadConfigFromJson(buf);
             free(buf);
             return r;
         }
         else
         {
             // todo report error
-            return SCREEN_LoadConfigFileError_FileUnkExt;
+            return SCREEN_LoadFileError_FileUnkExt;
         }
     }
     else
     {
         // todo report error
-        return SCREEN_LoadConfigFileError_NoFile;
+        return SCREEN_LoadFileError_NoFile;
     }
 }
 

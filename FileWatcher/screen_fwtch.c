@@ -1,4 +1,4 @@
-#include "screen_watcher.h"
+#include "screen_fwtch.h"
 #include "screen_sceneloader_file.h"
 #include "screen_configloader_file.h"
 #include "screen_a.h"
@@ -10,40 +10,40 @@
 
 
 
-typedef struct SCREEN_WatchFile
+typedef struct SCREEN_FwtchFile
 {
     char path[SCREEN_PATH_MAX];
     time_t mtimeLast;
-} SCREEN_WatchFile;
+} SCREEN_FwtchFile;
 
-typedef vec_t(SCREEN_WatchFile) SCREEN_WatchFileVec;
-
-
+typedef vec_t(SCREEN_FwtchFile) SCREEN_FwtchFileVec;
 
 
-typedef struct SCREEN_WatchContext
+
+
+typedef struct SCREEN_FwtchContext
 {
     bool hasSceneFile;
     bool hasConfigFile;
-    SCREEN_WatchFileVec sceneFiles[1];
-    SCREEN_WatchFile configFile[1];
+    SCREEN_FwtchFileVec sceneFiles[1];
+    SCREEN_FwtchFile configFile[1];
     vec_char pathBuf[1];
     u32 sceneFileIndex;
-} SCREEN_WatchContext;
+} SCREEN_FwtchContext;
 
-static SCREEN_WatchContext* ctx = NULL;
-
-
+static SCREEN_FwtchContext* ctx = NULL;
 
 
 
-void SCREEN_watchStartup(void)
+
+
+void SCREEN_fwtchStartup(void)
 {
     assert(!ctx);
-    ctx = zalloc(sizeof(SCREEN_WatchContext));
+    ctx = zalloc(sizeof(SCREEN_FwtchContext));
 }
 
-void SCREEN_watchDestroy(void)
+void SCREEN_fwtchDestroy(void)
 {
     vec_free(ctx->pathBuf);
     vec_free(ctx->sceneFiles);
@@ -59,7 +59,7 @@ void SCREEN_watchDestroy(void)
 
 
 
-static void SCREEN_watchFileInit(SCREEN_WatchFile* wf, const char* path)
+static void SCREEN_fwtchFileInit(SCREEN_FwtchFile* wf, const char* path)
 {
     stzncpy(wf->path, path, SCREEN_PATH_MAX);
     struct stat st;
@@ -67,7 +67,7 @@ static void SCREEN_watchFileInit(SCREEN_WatchFile* wf, const char* path)
     wf->mtimeLast = st.st_mtime;
 }
 
-static bool SCREEN_watchFileCheckModify(SCREEN_WatchFile* wf)
+static bool SCREEN_fwtchFileCheckModify(SCREEN_FwtchFile* wf)
 {
     struct stat st;
     stat(wf->path, &st);
@@ -88,32 +88,34 @@ static bool SCREEN_watchFileCheckModify(SCREEN_WatchFile* wf)
 
 
 
-void SCREEN_watchScreenFileStart(const char* filename)
+SCREEN_LoadFileError SCREEN_fwtchScreenBind(const char* filename)
 {
     assert(ctx);
     if (ctx->hasSceneFile)
     {
-        SCREEN_watchScreenFileStop();
+        SCREEN_fwtchScreenUnbind();
     }
     ctx->hasSceneFile = true;
 
-    SCREEN_WatchFileVec* sceneFiles = ctx->sceneFiles;
+    SCREEN_FwtchFileVec* sceneFiles = ctx->sceneFiles;
     assert(0 == sceneFiles->length);
     vec_char* pathBuf = ctx->pathBuf;
     vec_resize(pathBuf, 0);
     
-    SCREEN_LoadSceneFileError err = SCREEN_loadSceneFile(filename, pathBuf);
-    if (SCREEN_LoadSceneFileError_NONE == err)
+    SCREEN_LoadFileError err = SCREEN_loadSceneFile(filename, pathBuf);
+    if (err)
     {
-        for (u32 off = 0; off < pathBuf->length;)
-        {
-            vec_resize(sceneFiles, sceneFiles->length + 1);
-            SCREEN_WatchFile* wf = &vec_last(sceneFiles);
-            SCREEN_watchFileInit(wf, pathBuf->data + off);
-            off += (u32)strlen(pathBuf->data + off) + 1;
-            assert(off <= pathBuf->length);
-        }
+        return err;
     }
+    for (u32 off = 0; off < pathBuf->length;)
+    {
+        vec_resize(sceneFiles, sceneFiles->length + 1);
+        SCREEN_FwtchFile* wf = &vec_last(sceneFiles);
+        SCREEN_fwtchFileInit(wf, pathBuf->data + off);
+        off += (u32)strlen(pathBuf->data + off) + 1;
+        assert(off <= pathBuf->length);
+    }
+    return SCREEN_LoadFileError_NONE;
 }
 
 
@@ -122,20 +124,22 @@ void SCREEN_watchScreenFileStart(const char* filename)
 
 
 
-void SCREEN_watchConfigFileStart(const char* filename)
+SCREEN_LoadFileError SCREEN_fwtchConfigBind(const char* filename)
 {
     assert(ctx);
     if (ctx->hasConfigFile)
     {
-        SCREEN_watchConfigFileStop();
+        SCREEN_fwtchConfigUnbind();
     }
     ctx->hasConfigFile = true;
-    SCREEN_LoadConfigFileError err = SCREEN_loadConfigFile(filename);
-    if (SCREEN_LoadConfigFileError_NONE == err)
+    SCREEN_LoadFileError err = SCREEN_loadConfigFile(filename);
+    if (err)
     {
-        SCREEN_WatchFile* configFile = ctx->configFile;
-        SCREEN_watchFileInit(configFile, filename);
+        return err;
     }
+    SCREEN_FwtchFile* configFile = ctx->configFile;
+    SCREEN_fwtchFileInit(configFile, filename);
+    return SCREEN_LoadFileError_NONE;
 }
 
 
@@ -144,7 +148,7 @@ void SCREEN_watchConfigFileStart(const char* filename)
 
 
 
-void SCREEN_watchScreenFileStop(void)
+void SCREEN_fwtchScreenUnbind(void)
 {
     if (!ctx->hasSceneFile)
     {
@@ -159,7 +163,7 @@ void SCREEN_watchScreenFileStop(void)
 
 
 
-void SCREEN_watchConfigFileStop(void)
+void SCREEN_fwtchConfigUnbind(void)
 {
     if (!ctx->hasConfigFile)
     {
@@ -177,19 +181,19 @@ void SCREEN_watchConfigFileStop(void)
 
 
 
-void SCREEN_watchUpdate(void)
+void SCREEN_fwtchUpdate(void)
 {
     assert(ctx);
     bool modified = false;
     if (ctx->hasSceneFile)
     {
-        SCREEN_WatchFileVec* sceneFiles = ctx->sceneFiles;
+        SCREEN_FwtchFileVec* sceneFiles = ctx->sceneFiles;
         vec_char* pathBuf = ctx->pathBuf;
         vec_resize(pathBuf, 0);
 
         ctx->sceneFileIndex = (ctx->sceneFileIndex + 1) % sceneFiles->length;
 
-        modified = SCREEN_watchFileCheckModify(sceneFiles->data + ctx->sceneFileIndex);
+        modified = SCREEN_fwtchFileCheckModify(sceneFiles->data + ctx->sceneFileIndex);
 
         if (modified)
         {
@@ -199,8 +203,8 @@ void SCREEN_watchUpdate(void)
     }
     if (ctx->hasConfigFile)
     {
-        SCREEN_WatchFile* configFile = ctx->configFile;
-        modified = SCREEN_watchFileCheckModify(configFile);
+        SCREEN_FwtchFile* configFile = ctx->configFile;
+        modified = SCREEN_fwtchFileCheckModify(configFile);
         if (modified)
         {
             // todo report

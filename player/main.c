@@ -23,7 +23,7 @@
 #include <screen.h>
 #include <screen_sceneloader_file.h>
 #include <screen_configloader_file.h>
-#include <screen_watcher.h>
+#include <screen_fwtch.h>
 
 
 
@@ -146,7 +146,7 @@ int main(int argc, char* argv[])
 
     if (watchFlag)
     {
-        SCREEN_watchStartup();
+        SCREEN_fwtchStartup();
     }
     if (sceneFile)
     {
@@ -156,7 +156,7 @@ int main(int argc, char* argv[])
 
         if (watchFlag)
         {
-            SCREEN_watchScreenFileStart(sceneFile);
+            SCREEN_fwtchScreenBind(sceneFile);
         }
         else
         {
@@ -167,7 +167,7 @@ int main(int argc, char* argv[])
     {
         if (watchFlag)
         {
-            SCREEN_watchConfigFileStart(configFile);
+            SCREEN_fwtchConfigBind(configFile);
         }
         else
         {
@@ -219,7 +219,7 @@ int main(int argc, char* argv[])
                 SDL_free(path);
                 if (watchFlag)
                 {
-                    SCREEN_watchScreenFileStart(sceneFile);
+                    SCREEN_fwtchScreenBind(sceneFile);
                 }
                 else
                 {
@@ -307,7 +307,7 @@ int main(int argc, char* argv[])
 
             if (watchFlag)
             {
-                SCREEN_watchUpdate();
+                SCREEN_fwtchUpdate();
             }
         }
 
@@ -330,7 +330,7 @@ int main(int argc, char* argv[])
 
     if (watchFlag)
     {
-        SCREEN_watchDestroy();
+        SCREEN_fwtchDestroy();
     }
     free(sceneFile);
     SCREEN_destroy();

@@ -172,7 +172,7 @@ error:
 
 
 
-static SCREEN_LoadSceneFileError SCREEN_loadSceneFromJson(char* code, const char* dir, SCREEN_Scene* desc, vec_char* pathBuf)
+static SCREEN_LoadFileError SCREEN_loadSceneFromJson(char* code, const char* dir, SCREEN_Scene* desc, vec_char* pathBuf)
 {
     vec_char dataBuf[1] = { 0 };
     char path[SCREEN_PATH_MAX] = "";
@@ -184,7 +184,7 @@ static SCREEN_LoadSceneFileError SCREEN_loadSceneFromJson(char* code, const char
     if (!root)
     {
         // todo report error
-        return SCREEN_LoadSceneFileError_FileInvalid;
+        return SCREEN_LoadFileError_FileInvalid;
     }
     {
         const nx_json* shader = nx_json_get(root, "commonShader");
@@ -248,11 +248,11 @@ static SCREEN_LoadSceneFileError SCREEN_loadSceneFromJson(char* code, const char
 
     vec_free(dataBuf);
     nx_json_free(root);
-    return SCREEN_LoadSceneFileError_NONE;
+    return SCREEN_LoadFileError_NONE;
 error:
     vec_free(dataBuf);
     nx_json_free(root);
-    return SCREEN_LoadSceneFileError_FileInvalid;
+    return SCREEN_LoadFileError_FileInvalid;
 }
 
 
@@ -263,7 +263,7 @@ error:
 
 
 
-SCREEN_LoadSceneFileError SCREEN_loadSceneFile(const char* filename, vec_char* pathBuf)
+SCREEN_LoadFileError SCREEN_loadSceneFile(const char* filename, vec_char* pathBuf)
 {
     SCREEN_Scene desc[1] = { 0 };
     if (FILEU_fileExist(filename))
@@ -279,7 +279,7 @@ SCREEN_LoadSceneFileError SCREEN_loadSceneFile(const char* filename, vec_char* p
                 if ((-1 == size) || !size)
                 {
                     // todo report error
-                    return SCREEN_LoadSceneFileError_FileInvalid;
+                    return SCREEN_LoadFileError_FileInvalid;
                 }
                 char* buf = malloc(size + 1);
                 size = FILEU_readFile(path, buf, size);
@@ -292,14 +292,14 @@ SCREEN_LoadSceneFileError SCREEN_loadSceneFile(const char* filename, vec_char* p
 
                 char dir[SCREEN_PATH_MAX];
                 FILEU_getDirName(dir, path, sizeof(dir));
-                SCREEN_LoadSceneFileError r = SCREEN_loadSceneFromJson(buf, dir, desc, pathBuf);
+                SCREEN_LoadFileError r = SCREEN_loadSceneFromJson(buf, dir, desc, pathBuf);
                 free(buf);
                 return r;
             }
             else
             {
                 // todo report error
-                return SCREEN_LoadSceneFileError_NoEntryFile;
+                return SCREEN_LoadFileError_NoEntryFile;
             }
         }
         else
@@ -314,7 +314,7 @@ SCREEN_LoadSceneFileError SCREEN_loadSceneFile(const char* filename, vec_char* p
                 if ((-1 == size) || !size)
                 {
                     // todo report error
-                    return SCREEN_LoadSceneFileError_FileInvalid;
+                    return SCREEN_LoadFileError_FileInvalid;
                 }
                 char* buf = malloc(size + 1);
                 size = FILEU_readFile(filename, buf, size);
@@ -328,7 +328,7 @@ SCREEN_LoadSceneFileError SCREEN_loadSceneFile(const char* filename, vec_char* p
                 desc->image.shaderCode = buf;
                 bool r = SCREEN_loadScene(desc);
                 free(buf);
-                return r ? SCREEN_LoadSceneFileError_NONE : SCREEN_LoadSceneFileError_FileInvalid;
+                return r ? SCREEN_LoadFileError_NONE : SCREEN_LoadFileError_FileInvalid;
             }
             else if (0 == strcicmp(FILEU_filenameExt(filename), "json"))
             {
@@ -336,7 +336,7 @@ SCREEN_LoadSceneFileError SCREEN_loadSceneFile(const char* filename, vec_char* p
                 if ((-1 == size) || !size)
                 {
                     // todo report error
-                    return SCREEN_LoadSceneFileError_FileInvalid;
+                    return SCREEN_LoadFileError_FileInvalid;
                 }
                 char* buf = malloc(size + 1);
                 size = FILEU_readFile(filename, buf, size);
@@ -349,21 +349,21 @@ SCREEN_LoadSceneFileError SCREEN_loadSceneFile(const char* filename, vec_char* p
 
                 char dir[SCREEN_PATH_MAX];
                 FILEU_getDirName(dir, filename, sizeof(dir));
-                SCREEN_LoadSceneFileError r = SCREEN_loadSceneFromJson(buf, dir, desc, pathBuf);
+                SCREEN_LoadFileError r = SCREEN_loadSceneFromJson(buf, dir, desc, pathBuf);
                 free(buf);
                 return r;
             }
             else
             {
                 // todo report error
-                return SCREEN_LoadSceneFileError_FileUnkExt;
+                return SCREEN_LoadFileError_FileUnkExt;
             }
         }
     }
     else
     {
         // todo report error
-        return SCREEN_LoadSceneFileError_NoFile;
+        return SCREEN_LoadFileError_NoFile;
     }
 }
 
