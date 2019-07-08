@@ -190,6 +190,7 @@ void SCREEN_watchFilesRefresh(void)
         }
         if (modified)
         {
+            // todo report
             SCREEN_loadSceneFile(sceneEntryFile->path);
         }
     }
@@ -199,6 +200,7 @@ void SCREEN_watchFilesRefresh(void)
         modified = SCREEN_watchFileCheckModify(configFile);
         if (modified)
         {
+            // todo report
             SCREEN_loadConfigFile(configFile->path);
         }
     }
