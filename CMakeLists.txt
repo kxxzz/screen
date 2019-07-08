@@ -77,24 +77,34 @@ add_library (screen ${SRC_FILES})
 set_target_properties (screen PROPERTIES FOLDER screen)
 
 
-include_directories (scene_loader)
-file (GLOB SCENE_LOADER_SRC_FILES scene_loader/*.h scene_loader/*.c)
+include_directories (SceneLoader)
+file (GLOB SCENE_LOADER_SRC_FILES SceneLoader/*.h SceneLoader/*.c)
 source_group (src FILES ${SCENE_LOADER_SRC_FILES})
-add_library (scene_loader ${SCENE_LOADER_SRC_FILES})
-set_target_properties (scene_loader PROPERTIES FOLDER screen/loaders)
+add_library (ScreenSceneLoader ${SCENE_LOADER_SRC_FILES})
+set_target_properties (ScreenSceneLoader PROPERTIES FOLDER screen/loaders)
 
 
-include_directories (config_loader)
-file (GLOB CONFIG_LOADER_SRC_FILES config_loader/*.h config_loader/*.c)
+include_directories (ConfigLoader)
+file (GLOB CONFIG_LOADER_SRC_FILES ConfigLoader/*.h ConfigLoader/*.c)
 source_group (src FILES ${CONFIG_LOADER_SRC_FILES})
-add_library (config_loader ${CONFIG_LOADER_SRC_FILES})
-set_target_properties (config_loader PROPERTIES FOLDER screen/loaders)
+add_library (ScreenConfigLoader ${CONFIG_LOADER_SRC_FILES})
+set_target_properties (ScreenConfigLoader PROPERTIES FOLDER screen/loaders)
+
+
+include_directories (FileWatcher)
+file (GLOB FILEWATCHER_SRC_FILES FileWatcher/*.h FileWatcher/*.c)
+source_group (src FILES ${FILEWATCHER_SRC_FILES})
+add_library (ScreenFileWatcher ${FILEWATCHER_SRC_FILES})
+set_target_properties (ScreenFileWatcher PROPERTIES FOLDER screen)
 
 
 file (GLOB TESTS_SRC_FILES player/*.h player/*.c)
 source_group (src FILES ${TESTS_SRC_FILES})
 add_executable (player ${TESTS_SRC_FILES})
-target_link_libraries (player imp screen scene_loader config_loader)
+target_link_libraries (player
+    imp screen
+    ScreenSceneLoader ScreenConfigLoader ScreenFileWatcher
+    )
 if (WIN32)
 else ()
     target_link_libraries (player m)
