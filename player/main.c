@@ -23,6 +23,7 @@
 #include <screen.h>
 #include <screen_sceneloader_file.h>
 #include <screen_configloader_file.h>
+#include <screen_watcher.h>
 
 
 
@@ -143,25 +144,35 @@ int main(int argc, char* argv[])
     assert(0 == r);
 
 
-    time_t sceneMtimeLast;
-    time_t configMtimeLast;
+    if (watchFlag)
+    {
+        SCREEN_watchStartup();
+    }
     if (sceneFile)
     {
         char* sceneFile0 = sceneFile;
         sceneFile = malloc(strlen(sceneFile0) + 1);
         memcpy(sceneFile, sceneFile0, strlen(sceneFile0) + 1);
 
-        struct stat st;
-        stat(sceneFile, &st);
-        sceneMtimeLast = st.st_mtime;
-        SCREEN_loadSceneFile(sceneFile, NULL);
+        if (watchFlag)
+        {
+            SCREEN_watchScreenFileStart(sceneFile);
+        }
+        else
+        {
+            SCREEN_loadSceneFile(sceneFile, NULL);
+        }
     }
     if (configFile)
     {
-        struct stat st;
-        stat(configFile, &st);
-        configMtimeLast = st.st_mtime;
-        SCREEN_loadConfigFile(configFile);
+        if (watchFlag)
+        {
+            SCREEN_watchConfigFileStart(configFile);
+        }
+        else
+        {
+            SCREEN_loadConfigFile(configFile);
+        }
     }
 
 
@@ -206,7 +217,14 @@ int main(int argc, char* argv[])
                 sceneFile = realloc(sceneFile, strlen(path) + 1);
                 memcpy(sceneFile, path, strlen(path) + 1);
                 SDL_free(path);
-                SCREEN_loadSceneFile(sceneFile, NULL);
+                if (watchFlag)
+                {
+                    SCREEN_watchScreenFileStart(sceneFile);
+                }
+                else
+                {
+                    SCREEN_loadSceneFile(sceneFile, NULL);
+                }
                 break;
             }
             case SDL_QUIT:
@@ -289,27 +307,7 @@ int main(int argc, char* argv[])
 
             if (watchFlag)
             {
-                struct stat st;
-                if (sceneFile)
-                {
-                    stat(sceneFile, &st);
-                    if (sceneMtimeLast != st.st_mtime)
-                    {
-                        printf("[SCENE CHANGE] \"%s\" [%s]\n", sceneFile, nowStr(timeBuf));
-                        SCREEN_loadSceneFile(sceneFile, NULL);
-                    }
-                    sceneMtimeLast = st.st_mtime;
-                }
-                if (configFile)
-                {
-                    stat(configFile, &st);
-                    if (configMtimeLast != st.st_mtime)
-                    {
-                        printf("[CONFIG CHANGE] \"%s\" [%s]\n", configFile, nowStr(timeBuf));
-                        SCREEN_loadConfigFile(configFile);
-                    }
-                    configMtimeLast = st.st_mtime;
-                }
+                SCREEN_watchUpdate();
             }
         }
 
@@ -330,6 +328,10 @@ int main(int argc, char* argv[])
     }
 
 
+    if (watchFlag)
+    {
+        SCREEN_watchDestroy();
+    }
     free(sceneFile);
     SCREEN_destroy();
     SDL_GL_DeleteContext(context);

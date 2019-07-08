@@ -1,4 +1,4 @@
-#include "screen_filewatcher.h"
+#include "screen_watcher.h"
 #include "screen_sceneloader_file.h"
 #include "screen_configloader_file.h"
 #include "screen_a.h"
@@ -109,7 +109,7 @@ void SCREEN_watchScreenFileStart(const char* filename)
         vec_resize(sceneFiles, sceneFiles->length + 1);
         SCREEN_WatchFile* wf = &vec_last(sceneFiles);
         SCREEN_watchFileInit(wf, pathBuf->data + off);
-        off += (u32)strlen(pathBuf->data + off);
+        off += (u32)strlen(pathBuf->data + off) + 1;
         assert(off <= pathBuf->length);
     }
 }
@@ -172,7 +172,7 @@ void SCREEN_watchConfigFileStop(void)
 
 
 
-void SCREEN_watchFilesRefresh(void)
+void SCREEN_watchUpdate(void)
 {
     assert(ctx);
     bool modified = false;
