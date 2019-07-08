@@ -91,6 +91,15 @@ static bool SCREEN_fwtchFileCheckModify(SCREEN_FwtchFile* wf)
 SCREEN_LoadFileError SCREEN_fwtchScreenBind(const char* filename)
 {
     assert(ctx);
+    vec_char* pathBuf = ctx->pathBuf;
+    vec_resize(pathBuf, 0);
+
+    SCREEN_LoadFileError err = SCREEN_loadSceneFile(filename, pathBuf);
+    if (err)
+    {
+        return err;
+    }
+
     if (ctx->hasSceneFile)
     {
         SCREEN_fwtchScreenUnbind();
@@ -99,14 +108,7 @@ SCREEN_LoadFileError SCREEN_fwtchScreenBind(const char* filename)
 
     SCREEN_FwtchFileVec* sceneFiles = ctx->sceneFiles;
     assert(0 == sceneFiles->length);
-    vec_char* pathBuf = ctx->pathBuf;
-    vec_resize(pathBuf, 0);
-    
-    SCREEN_LoadFileError err = SCREEN_loadSceneFile(filename, pathBuf);
-    if (err)
-    {
-        return err;
-    }
+
     for (u32 off = 0; off < pathBuf->length;)
     {
         vec_resize(sceneFiles, sceneFiles->length + 1);
@@ -127,16 +129,18 @@ SCREEN_LoadFileError SCREEN_fwtchScreenBind(const char* filename)
 SCREEN_LoadFileError SCREEN_fwtchConfigBind(const char* filename)
 {
     assert(ctx);
-    if (ctx->hasConfigFile)
-    {
-        SCREEN_fwtchConfigUnbind();
-    }
-    ctx->hasConfigFile = true;
     SCREEN_LoadFileError err = SCREEN_loadConfigFile(filename);
     if (err)
     {
         return err;
     }
+
+    if (ctx->hasConfigFile)
+    {
+        SCREEN_fwtchConfigUnbind();
+    }
+    ctx->hasConfigFile = true;
+
     SCREEN_FwtchFile* configFile = ctx->configFile;
     SCREEN_fwtchFileInit(configFile, filename);
     return SCREEN_LoadFileError_NONE;
@@ -202,7 +206,6 @@ void SCREEN_fwtchUpdate(void)
             if (!err)
             {
                 vec_resize(sceneFiles, 0);
-                vec_resize(pathBuf, 0);
                 for (u32 off = 0; off < pathBuf->length;)
                 {
                     vec_resize(sceneFiles, sceneFiles->length + 1);
