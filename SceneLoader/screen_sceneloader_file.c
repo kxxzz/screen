@@ -109,7 +109,7 @@ static void SCREEN_loadScenePassFromJson
             {
                 continue;
             }
-            if (channel->length != 2)
+            if (!channel->length)
             {
                 // todo report error
                 goto error;
@@ -151,7 +151,7 @@ static void SCREEN_loadScenePassFromJson
             else
             {
                 // todo report error
-                goto error;
+                continue;
             }
         }
     }
@@ -224,6 +224,11 @@ static SCREEN_LoadFileError SCREEN_loadSceneFromJson(char* code, const char* dir
                 assert(bi != -1);
                 bufferShaderOff[bi] = off;
                 bufferUsed[bi] = true;
+            }
+            else
+            {
+                // todo report error
+                goto error;
             }
         }
     }

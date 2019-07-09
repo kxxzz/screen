@@ -701,12 +701,18 @@ static void SCREEN_loadSceneData(const SCREEN_Scene* srcScene)
     u32 dataSize = SCREEN_calcSceneDataSize(srcScene);
     vec_reserve(ctx->sceneDataBuf, dataSize);
 
+    for (u32 ai = 0; ai < SCREEN_Assets_MAX; ++ai)
+    {
+        // todo
+    }
+
     if (srcScene->shaderCommon)
     {
         dstScene->shaderCommon = ctx->sceneDataBuf->data + ctx->sceneDataBuf->length;
         u32 n = (u32)strlen(srcScene->shaderCommon) + 1;
         vec_pusharr(ctx->sceneDataBuf, srcScene->shaderCommon, n);
     }
+
     for (u32 bi = 0; bi < SCREEN_Buffer2Ds_MAX; ++bi)
     {
         const SCREEN_RenderPass* srcBuffer = srcScene->buffer2d + bi;
@@ -723,6 +729,7 @@ static void SCREEN_loadSceneData(const SCREEN_Scene* srcScene)
             }
         }
     }
+
     if (srcScene->image.shaderCode)
     {
         dstScene->image.shaderCode = ctx->sceneDataBuf->data + ctx->sceneDataBuf->length;
