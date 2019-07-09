@@ -24,6 +24,7 @@
 #include <screen_sceneloader_file.h>
 #include <screen_configloader_file.h>
 #include <screen_fwtch.h>
+#include <screen_utils_sdl.h>
 
 
 

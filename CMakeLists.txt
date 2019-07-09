@@ -98,12 +98,20 @@ add_library (ScreenFileWatcher ${FILEWATCHER_SRC_FILES})
 set_target_properties (ScreenFileWatcher PROPERTIES FOLDER screen)
 
 
+include_directories (Utils)
+file (GLOB UTILS_SRC_FILES Utils/*.h Utils/*.c)
+source_group (src FILES ${UTILS_SRC_FILES})
+add_library (ScreenUtils ${UTILS_SRC_FILES})
+set_target_properties (ScreenUtils PROPERTIES FOLDER screen)
+
+
+
 file (GLOB TESTS_SRC_FILES player/*.h player/*.c)
 source_group (src FILES ${TESTS_SRC_FILES})
 add_executable (player ${TESTS_SRC_FILES})
 target_link_libraries (player
     imp screen
-    ScreenSceneLoader ScreenConfigLoader ScreenFileWatcher
+    ScreenSceneLoader ScreenConfigLoader ScreenFileWatcher ScreenUtils
     )
 if (WIN32)
 else ()
