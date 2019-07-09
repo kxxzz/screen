@@ -285,6 +285,10 @@ int main(int argc, char* argv[])
                 {
                     lazyMode = !lazyMode;
                 }
+                if (SDLK_ESCAPE == e.key.keysym.sym)
+                {
+                    SCREEN_sceneReset();
+                }
                 SCREEN_Key k = SCREEN_keyFromSdlKeysym(&e.key.keysym);
                 SCREEN_keyDown(k);
                 break;

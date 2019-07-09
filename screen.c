@@ -42,7 +42,6 @@ typedef struct SCREEN_Context
     GLuint vb;
     GLuint va;
     GLuint fb;
-    u8 keyboardState[SCREEN_KeyboardStateCount][SCREEN_KeyCount];
     GLuint texKeyboard;
 
     // scene context
@@ -52,6 +51,7 @@ typedef struct SCREEN_Context
     // screen space
     int pointX, pointY;
     int pointStart[2];
+    u8 keyboardState[SCREEN_KeyboardStateCount][SCREEN_KeyCount];
 
     // data buffer
     vec_char sceneDataBuf[1];
@@ -559,6 +559,41 @@ void SCREEN_resize(u32 w, u32 h)
 
 
 
+
+
+static void SCREEN_sceneStateReset(void)
+{
+    assert(ctx->entered);
+
+    ctx->frame = 0;
+    ctx->time = 0;
+    ctx->timeDelta = 0;
+    ctx->pointX = 0;
+    ctx->pointY = ctx->height;
+    ctx->pointStart[0] = ctx->pointX;
+    ctx->pointStart[1] = ctx->pointY;
+
+    memset(ctx->keyboardState, 0, sizeof(ctx->keyboardState));
+}
+
+
+
+
+
+
+
+void SCREEN_sceneReset(void)
+{
+    assert(ctx->entered);
+    SCREEN_leaveScene();
+    SCREEN_enterScene();
+    SCREEN_sceneStateReset();
+}
+
+
+
+
+
 void SCREEN_frame(f32 dt)
 {
     assert(ctx->entered);
@@ -869,13 +904,7 @@ bool SCREEN_loadScene(const SCREEN_Scene* scene)
     {
         SCREEN_enterScene();
     }
-    ctx->frame = 0;
-    ctx->time = 0;
-    ctx->timeDelta = 0;
-    ctx->pointX = 0;
-    ctx->pointY = ctx->height;
-    ctx->pointStart[0] = ctx->pointX;
-    ctx->pointStart[1] = ctx->pointY;
+    SCREEN_sceneStateReset();
     return true;
 }
 
