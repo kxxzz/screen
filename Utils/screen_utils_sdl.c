@@ -15,6 +15,9 @@ SCREEN_Key SCREEN_keyFromSdlKeysym(const SDL_Keysym* keysym)
         return SCREEN_Key_BACKSPACE;
     case SDLK_TAB:
         return SCREEN_Key_TAB;
+    case SDLK_CLEAR:
+        return SCREEN_Key_CLEAR;
+    case SDLK_RETURN:
     case SDLK_KP_ENTER:
         return SCREEN_Key_ENTER;
     case SDLK_LSHIFT:
@@ -140,7 +143,7 @@ SCREEN_Key SCREEN_keyFromSdlKeysym(const SDL_Keysym* keysym)
         return SCREEN_Key_LEFT_META;
     case SDLK_RGUI:
         return SCREEN_Key_RIGHT_META;
-    case SDLK_SELECT:
+    case SDLK_APPLICATION:
         return SCREEN_Key_SELECT;
 
 
@@ -172,7 +175,7 @@ SCREEN_Key SCREEN_keyFromSdlKeysym(const SDL_Keysym* keysym)
         return SCREEN_Key_ADD;
     case SDLK_KP_MINUS:
         return SCREEN_Key_SUBTRACT;
-    case SDLK_KP_DECIMAL:
+    case SDLK_KP_PERIOD:
         return SCREEN_Key_DECIMAL;
     case SDLK_KP_DIVIDE:
         return SCREEN_Key_DIVIDE;
@@ -214,7 +217,7 @@ SCREEN_Key SCREEN_keyFromSdlKeysym(const SDL_Keysym* keysym)
         return SCREEN_Key_EQUALS;
     case SDLK_COMMA:
         return SCREEN_Key_COMMA;
-    case SDLK_UNDERSCORE:
+    case SDLK_MINUS:
         return SCREEN_Key_DASH;
     case SDLK_PERIOD:
         return SCREEN_Key_PERIOD;

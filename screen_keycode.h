@@ -8,6 +8,7 @@ typedef enum SCREEN_Key
 
     SCREEN_Key_BACKSPACE = 8,
     SCREEN_Key_TAB = 9,
+    SCREEN_Key_CLEAR = 12,
     SCREEN_Key_ENTER = 13,
     SCREEN_Key_SHIFT = 16,
     SCREEN_Key_CTRL = 17,
