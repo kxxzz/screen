@@ -306,14 +306,17 @@ int main(int argc, char* argv[])
         }
 
 
-        if (sceneFile && (now0 - lastCheckTime > 0.25f))
+        f32 now = (f32)SDL_GetTicks() / 1000.f;
+
+
+        if (sceneFile && (now - lastCheckTime > 0.25f))
         {
             static char title[255] = "";
-            snprintf(title, sizeof(title), "SCREEN PLAYER%*c FPS: %-2.2f", 16, ' ', (double)frameCount / (now0 - lastCheckTime));
+            snprintf(title, sizeof(title), "SCREEN PLAYER%*c FPS: %-2.2f", 16, ' ', (double)frameCount / (now - lastCheckTime));
             SDL_SetWindowTitle(window, title);
             frameCount = 0;
 
-            lastCheckTime = now0;
+            lastCheckTime = now;
 
             if (watchFlag)
             {
@@ -322,14 +325,12 @@ int main(int argc, char* argv[])
         }
 
 
-        f32 now = (f32)SDL_GetTicks() / 1000.f;
-        float deltaTime = now - now0;
-        now0 = now;
-
-
         if (!stopped || outdated)
         {
             outdated = false;
+
+            float deltaTime = now - now0;
+            now0 = now;
 
             ++frameCount;
             SCREEN_frame(deltaTime);
