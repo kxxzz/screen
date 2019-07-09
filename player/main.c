@@ -291,6 +291,7 @@ int main(int argc, char* argv[])
             }
             case SDL_KEYUP:
             {
+                outdated = true;
                 SCREEN_Key k = SCREEN_keyFromSdlKeysym(&e.key.keysym);
                 SCREEN_keyUp(k);
                 break;
