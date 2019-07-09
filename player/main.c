@@ -329,11 +329,11 @@ int main(int argc, char* argv[])
         {
             outdated = false;
 
-            float deltaTime = now - now0;
+            float deltaTime = stopped ? (f32)(1.0 / 60.0) : (now - now0);
             now0 = now;
 
             ++frameCount;
-            SCREEN_frame(deltaTime);
+            SCREEN_frame(deltaTime, stopped);
 
             SDL_GL_SwapWindow(window);
             // SDL_Delay(1);

@@ -646,12 +646,15 @@ void SCREEN_sceneReset(void)
 
 
 
-void SCREEN_frame(f32 dt)
+void SCREEN_frame(f32 dt, bool stopped)
 {
     assert(ctx->entered);
 
     ctx->timeDelta = dt;
-    ctx->time += dt;
+    if (!stopped)
+    {
+        ctx->time += dt;
+    }
 
 
     glViewport(0, 0, ctx->renderWidth, ctx->renderHeight);

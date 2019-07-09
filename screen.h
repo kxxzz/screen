@@ -34,7 +34,7 @@ void SCREEN_resize(u32 w, u32 h);
 
 
 void SCREEN_sceneReset(void);
-void SCREEN_frame(f32 dt);
+void SCREEN_frame(f32 dt, bool stopped);
 
 
 void SCREEN_mouseUp(s32 x, s32 y);
