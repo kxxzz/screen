@@ -2,6 +2,24 @@
 
 
 
+typedef enum SCREEN_KeyboardTextureRow
+{
+    SCREEN_KeyboardTextureRow_KeyDown = 0,
+    SCREEN_KeyboardTextureRow_KeyPress,
+    SCREEN_KeyboardTextureRow_KeyToggle,
+    SCREEN_KeyboardTextureRowCount
+} SCREEN_KeyboardTextureRow;
+
+
+enum
+{
+    SCREEN_KeyboardTextureFormat = GL_R8I,
+    SCREEN_KeyboardTextureDataFormat = GL_RED_INTEGER,
+    SCREEN_KeyboardTextureDataType = GL_BYTE,
+};
+
+
+
 
 typedef struct SCREEN_Context
 {
@@ -24,6 +42,8 @@ typedef struct SCREEN_Context
     GLuint vb;
     GLuint va;
     GLuint fb;
+    s8 texKeyboardData[SCREEN_KeyboardTextureRowCount][SCREEN_KeyCount];
+    GLuint texKeyboard;
 
     // scene context
     u32 frame;
@@ -272,6 +292,8 @@ static void SCREEN_renderPassDevOnRender(SCREEN_RenderPassDev* dev, SCREEN_Rende
         }
         case SCREEN_ChannelType_Keyboard:
         {
+            glActiveTexture(GL_TEXTURE0 + i);
+            glBindTexture(GL_TEXTURE_2D, ctx->texKeyboard);
             break;
         }
         default:
@@ -441,6 +463,26 @@ void SCREEN_enter(u32 w, u32 h)
     glGenFramebuffers(1, &ctx->fb);
 
 
+    {
+        glGenTextures(1, &ctx->texKeyboard);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, ctx->texKeyboard);
+        glTexStorage2D
+        (
+            GL_TEXTURE_2D, 1, SCREEN_KeyboardTextureFormat, SCREEN_KeyCount, SCREEN_KeyboardTextureRowCount
+        );
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+        SCREEN_GL_CHECK();
+    }
+
+
     if (ctx->sceneLoaded)
     {
         SCREEN_enterScene();
@@ -527,13 +569,28 @@ void SCREEN_frame(f32 dt)
     glViewport(0, 0, ctx->renderWidth, ctx->renderHeight);
     glClearColor(0.0f, 0.0f, 1.0f, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
-    SCREEN_GL_CHECK();
 
     if (!ctx->image->shaderProgram)
     {
         return;
     }
     SCREEN_GL_CHECK();
+
+    {
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, ctx->texKeyboard);
+        glTexSubImage2D
+        (
+            GL_TEXTURE_2D, 0, 0, 0,
+            SCREEN_KeyCount, SCREEN_KeyboardTextureRowCount,
+            SCREEN_KeyboardTextureDataFormat, SCREEN_KeyboardTextureDataType,
+            ctx->texKeyboardData
+        );
+        SCREEN_GL_CHECK();
+
+        memset(ctx->texKeyboardData + SCREEN_KeyboardTextureRow_KeyPress, 0, sizeof(sizeof(ctx->texKeyboardData[0])));
+    }
+
 
     for (u32 i = 0; i < SCREEN_Buffer2Ds_MAX; ++i)
     {
@@ -576,7 +633,7 @@ void SCREEN_frame(f32 dt)
 
 
 
-void SCREEN_mouseUp(int x, int y)
+void SCREEN_mouseUp(s32 x, s32 y)
 {
     ctx->pointStart[0] = -ctx->pointStart[0];
     ctx->pointStart[1] = -ctx->pointStart[1];
@@ -584,7 +641,7 @@ void SCREEN_mouseUp(int x, int y)
     ctx->pointY = y;
 }
 
-void SCREEN_mouseDown(int x, int y)
+void SCREEN_mouseDown(s32 x, s32 y)
 {
     ctx->pointStart[0] = x;
     ctx->pointStart[1] = y;
@@ -592,10 +649,29 @@ void SCREEN_mouseDown(int x, int y)
     ctx->pointY = y;
 }
 
-void SCREEN_mouseMotion(int x, int y)
+void SCREEN_mouseMotion(s32 x, s32 y)
 {
     ctx->pointX = x;
     ctx->pointY = y;
+}
+
+
+
+void SCREEN_keyUp(SCREEN_Key k)
+{
+    assert(k < SCREEN_KeyCount);
+    ctx->texKeyboardData[SCREEN_KeyboardTextureRow_KeyDown][k] = false;
+    ctx->texKeyboardData[SCREEN_KeyboardTextureRow_KeyPress][k] = false;
+}
+
+
+void SCREEN_keyDown(SCREEN_Key k)
+{
+    assert(k < SCREEN_KeyCount);
+    ctx->texKeyboardData[SCREEN_KeyboardTextureRow_KeyDown][k] = true;
+    ctx->texKeyboardData[SCREEN_KeyboardTextureRow_KeyPress][k] = true;
+    ctx->texKeyboardData[SCREEN_KeyboardTextureRow_KeyToggle][k] =
+        !ctx->texKeyboardData[SCREEN_KeyboardTextureRow_KeyToggle][k];
 }
 
 

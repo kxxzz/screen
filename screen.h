@@ -20,6 +20,10 @@ typedef double f64;
 
 
 
+#include "screen_keycode.h"
+
+
+
 void SCREEN_startup(void);
 void SCREEN_destroy(void);
 
@@ -32,9 +36,12 @@ void SCREEN_resize(u32 w, u32 h);
 void SCREEN_frame(f32 dt);
 
 
-void SCREEN_mouseUp(int x, int y);
-void SCREEN_mouseDown(int x, int y);
-void SCREEN_mouseMotion(int x, int y);
+void SCREEN_mouseUp(s32 x, s32 y);
+void SCREEN_mouseDown(s32 x, s32 y);
+void SCREEN_mouseMotion(s32 x, s32 y);
+
+void SCREEN_keyUp(SCREEN_Key k);
+void SCREEN_keyDown(SCREEN_Key k);
 
 
 u32 SCREEN_screenWidth(void);
@@ -63,6 +70,15 @@ typedef struct SCREEN_RenderSize
 const SCREEN_RenderSize* SCREEN_renderSize(void);
 void SCREEN_setRenderSize(const SCREEN_RenderSize* rs);
 
+
+
+
+enum
+{
+    SCREEN_Channels_MAX = 4,
+    SCREEN_Buffer2Ds_MAX = 4,
+    SCREEN_Assets_MAX = 8,
+};
 
 
 
@@ -99,15 +115,6 @@ typedef struct SCREEN_Asset
 
 
 
-
-
-
-enum
-{
-    SCREEN_Channels_MAX = 4,
-    SCREEN_Buffer2Ds_MAX = 4,
-    SCREEN_Assets_MAX = 8,
-};
 
 typedef enum SCREEN_ChannelType
 {

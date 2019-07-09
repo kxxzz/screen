@@ -280,7 +280,7 @@ int main(int argc, char* argv[])
                         // todo
                     }
                 }
-                if (SDLK_SPACE == e.key.keysym.sym)
+                if (SDLK_F1 == e.key.keysym.sym)
                 {
                     lazyMode = !lazyMode;
                 }
