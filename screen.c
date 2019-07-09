@@ -157,7 +157,11 @@ static void SCREEN_renderPassDevOnResize
 {
     if (!dev->entered || noTex)
     {
-        assert(!dev->texture);
+        if (dev->texture)
+        {
+            glDeleteTextures(1, &dev->texture);
+            dev->texture = 0;
+        }
         return;
     }
     u32 w = ctx->renderWidth;
