@@ -137,7 +137,7 @@ int main(int argc, char* argv[])
 
     u32 intervalMode = 2;
     bool fullscreen = false;
-    bool lazyMode = false;
+    bool stopped = false;
 
 
     static const int IntervalTable[] = { 0, 1, -1 };
@@ -283,7 +283,7 @@ int main(int argc, char* argv[])
                 }
                 if (SDLK_F1 == e.key.keysym.sym)
                 {
-                    lazyMode = !lazyMode;
+                    stopped = !stopped;
                 }
                 if (SDLK_ESCAPE == e.key.keysym.sym)
                 {
@@ -322,15 +322,17 @@ int main(int argc, char* argv[])
         }
 
 
-
         f32 now = (f32)SDL_GetTicks() / 1000.f;
-        f32 deltaTime = lazyMode ? 0 : now - now0;
+        float deltaTime = now - now0;
         now0 = now;
-        if (!lazyMode || outdated)
+
+
+        if (!stopped || outdated)
         {
             outdated = false;
+
             ++frameCount;
-            SCREEN_frame(deltaTime);
+            SCREEN_frame(deltaTime, stopped);
 
             SDL_GL_SwapWindow(window);
             // SDL_Delay(1);
