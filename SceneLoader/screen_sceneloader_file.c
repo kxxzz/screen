@@ -83,6 +83,16 @@ static void SCREEN_loadScenePassFromJson
         }
     }
 
+    SCREEN_RenderPass* renderPass;
+    if (pBi)
+    {
+        renderPass = desc->buffer2d + bi;
+    }
+    else
+    {
+        renderPass = &desc->image;
+    }
+
     const nx_json* channels = nx_json_get(pass, "channels");
     if (channels->type != NX_JSON_NULL)
     {
@@ -123,15 +133,7 @@ static void SCREEN_loadScenePassFromJson
             const char* typeText = type->text_value;
             if (0 == strcicmp(typeText, "pass"))
             {
-                if (pBi)
-                {
-                    desc->buffer2d[bi].channel[cidx].type = SCREEN_ChannelType_Buffer2D;
-                }
-                else
-                {
-                    desc->image.channel[cidx].type = SCREEN_ChannelType_Buffer2D;
-                }
-
+                renderPass->channel[cidx].type = SCREEN_ChannelType_Buffer2D;
                 const nx_json* bufferId = nx_json_item(channel, 1);
                 if (bufferId->type != NX_JSON_INTEGER)
                 {
@@ -139,14 +141,11 @@ static void SCREEN_loadScenePassFromJson
                     goto error;
                 }
                 u32 id = (u32)bufferId->int_value;
-                if (pBi)
-                {
-                    desc->buffer2d[bi].channel[cidx].buffer2d = id;
-                }
-                else
-                {
-                    desc->image.channel[cidx].buffer2d = id;
-                }
+                renderPass->channel[cidx].buffer2d = id;
+            }
+            else if (0 == strcicmp(typeText, "keyboard"))
+            {
+                renderPass->channel[cidx].type = SCREEN_ChannelType_Keyboard;
             }
             else
             {

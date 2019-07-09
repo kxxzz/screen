@@ -255,16 +255,29 @@ static void SCREEN_renderPassDevOnRender(SCREEN_RenderPassDev* dev, SCREEN_Rende
 
     for (u32 i = 0; i < SCREEN_Channels_MAX; ++i)
     {
-        if (SCREEN_ChannelType_Unused == desc->channel[i].type)
+        switch (desc->channel[i].type)
         {
-            //glActiveTexture(GL_TEXTURE0 + i);
-            //glBindTexture(GL_TEXTURE_2D, 0);
+        case SCREEN_ChannelType_Unused:
+        {
+            glActiveTexture(GL_TEXTURE0 + i);
+            glBindTexture(GL_TEXTURE_2D, 0);
             continue;
         }
-        assert(SCREEN_ChannelType_Buffer2D == desc->channel[i].type);
-        glActiveTexture(GL_TEXTURE0 + i);
-        GLuint texture = ctx->buffer2d[desc->channel[i].buffer2d].texture;
-        glBindTexture(GL_TEXTURE_2D, texture);
+        case SCREEN_ChannelType_Buffer2D:
+        {
+            glActiveTexture(GL_TEXTURE0 + i);
+            GLuint texture = ctx->buffer2d[desc->channel[i].buffer2d].texture;
+            glBindTexture(GL_TEXTURE_2D, texture);
+            break;
+        }
+        case SCREEN_ChannelType_Keyboard:
+        {
+            break;
+        }
+        default:
+            assert(false);
+            break;
+        }
     }
 
     glDrawArrays(GL_TRIANGLES, 0, 6);
