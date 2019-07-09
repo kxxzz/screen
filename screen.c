@@ -2,13 +2,13 @@
 
 
 
-typedef enum SCREEN_KeyboardTextureRow
+typedef enum SCREEN_KeyboardState
 {
-    SCREEN_KeyboardTextureRow_KeyDown = 0,
-    SCREEN_KeyboardTextureRow_KeyPressed,
-    SCREEN_KeyboardTextureRow_KeyToggle,
-    SCREEN_KeyboardTextureRowCount
-} SCREEN_KeyboardTextureRow;
+    SCREEN_KeyboardState_KeyDown = 0,
+    SCREEN_KeyboardState_KeyPressed,
+    SCREEN_KeyboardState_KeyToggle,
+    SCREEN_KeyboardStateCount
+} SCREEN_KeyboardState;
 
 
 enum
@@ -42,7 +42,7 @@ typedef struct SCREEN_Context
     GLuint vb;
     GLuint va;
     GLuint fb;
-    u8 keyboardState[SCREEN_KeyboardTextureRowCount][SCREEN_KeyCount];
+    u8 keyboardState[SCREEN_KeyboardStateCount][SCREEN_KeyCount];
     GLuint texKeyboard;
 
     // scene context
@@ -470,7 +470,7 @@ void SCREEN_enter(u32 w, u32 h)
         glBindTexture(GL_TEXTURE_2D, ctx->texKeyboard);
         glTexStorage2D
         (
-            GL_TEXTURE_2D, 1, SCREEN_KeyboardTextureFormat, SCREEN_KeyCount, SCREEN_KeyboardTextureRowCount
+            GL_TEXTURE_2D, 1, SCREEN_KeyboardTextureFormat, SCREEN_KeyCount, SCREEN_KeyboardStateCount
         );
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
@@ -582,13 +582,13 @@ void SCREEN_frame(f32 dt)
         glTexSubImage2D
         (
             GL_TEXTURE_2D, 0, 0, 0,
-            SCREEN_KeyCount, SCREEN_KeyboardTextureRowCount,
+            SCREEN_KeyCount, SCREEN_KeyboardStateCount,
             SCREEN_KeyboardTextureDataFormat, SCREEN_KeyboardTextureDataType,
             ctx->keyboardState
         );
         SCREEN_GL_CHECK();
 
-        memset(ctx->keyboardState + SCREEN_KeyboardTextureRow_KeyPressed, 0, sizeof(*ctx->keyboardState));
+        memset(ctx->keyboardState + SCREEN_KeyboardState_KeyPressed, 0, sizeof(*ctx->keyboardState));
     }
 
 
@@ -660,24 +660,24 @@ void SCREEN_mouseMotion(s32 x, s32 y)
 void SCREEN_keyUp(SCREEN_Key k)
 {
     assert(k < SCREEN_KeyCount);
-    ctx->keyboardState[SCREEN_KeyboardTextureRow_KeyDown][k] = 0;
-    ctx->keyboardState[SCREEN_KeyboardTextureRow_KeyPressed][k] = 0;
+    ctx->keyboardState[SCREEN_KeyboardState_KeyDown][k] = 0;
+    ctx->keyboardState[SCREEN_KeyboardState_KeyPressed][k] = 0;
 }
 
 void SCREEN_keyDown(SCREEN_Key k)
 {
     assert(k < SCREEN_KeyCount);
-    u8* pDown = ctx->keyboardState[SCREEN_KeyboardTextureRow_KeyDown];
+    u8* pDown = ctx->keyboardState[SCREEN_KeyboardState_KeyDown];
     if (!pDown[k])
     {
-        ctx->keyboardState[SCREEN_KeyboardTextureRow_KeyPressed][k] = 0xff;
+        ctx->keyboardState[SCREEN_KeyboardState_KeyPressed][k] = 0xff;
         pDown[k] = 0xff;
-        u8* pToggle = ctx->keyboardState[SCREEN_KeyboardTextureRow_KeyToggle];
+        u8* pToggle = ctx->keyboardState[SCREEN_KeyboardState_KeyToggle];
         pToggle[k] = pToggle[k] ? 0 : 0xff;
     }
     else
     {
-        ctx->keyboardState[SCREEN_KeyboardTextureRow_KeyPressed][k] = 0;
+        ctx->keyboardState[SCREEN_KeyboardState_KeyPressed][k] = 0;
     }
 }
 
