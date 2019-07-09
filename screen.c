@@ -55,6 +55,7 @@ typedef struct SCREEN_Context
 
     // data buffer
     vec_char sceneDataBuf[1];
+    vec_char tmpDataBuf[1];
 } SCREEN_Context;
 
 static SCREEN_Context* ctx = NULL;
@@ -80,6 +81,7 @@ void SCREEN_startup(void)
 
 void SCREEN_destroy(void)
 {
+    vec_free(ctx->tmpDataBuf);
     vec_free(ctx->sceneDataBuf);
     free(ctx);
     ctx = NULL;
@@ -122,6 +124,10 @@ static void SCREEN_renderPassDevOnEnter(SCREEN_RenderPassDev* dev, const SCREEN_
 
     if (!noTex)
     {
+        u32 w = ctx->renderWidth;
+        u32 h = ctx->renderHeight;
+        vec_char* tmpDataBuf = ctx->tmpDataBuf;
+
         glGenTextures(1, &dev->texture);
 
         glActiveTexture(GL_TEXTURE0);
@@ -132,7 +138,12 @@ static void SCREEN_renderPassDevOnEnter(SCREEN_RenderPassDev* dev, const SCREEN_
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexStorage2D(GL_TEXTURE_2D, 1, ctx->textureInternalFormat, ctx->renderWidth, ctx->renderHeight);
+        glTexStorage2D(GL_TEXTURE_2D, 1, ctx->textureInternalFormat, w, h);
+
+        vec_resize(tmpDataBuf, w * h * 4);
+        memset(tmpDataBuf->data, 0, tmpDataBuf->length);
+        glBindTexture(GL_TEXTURE_2D, dev->texture);
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, tmpDataBuf->data);
     }
 }
 
@@ -146,25 +157,31 @@ static void SCREEN_renderPassDevOnResize
 {
     if (!dev->entered || noTex)
     {
-        if (dev->texture)
-        {
-            glDeleteTextures(1, &dev->texture);
-            dev->texture = 0;
-        }
+        assert(!dev->texture);
         return;
     }
+    u32 w = ctx->renderWidth;
+    u32 h = ctx->renderHeight;
+    vec_char* tmpDataBuf = ctx->tmpDataBuf;
+
     GLuint texture0 = dev->texture;
     glGenTextures(1, &dev->texture);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, dev->texture);
-    glTexStorage2D(GL_TEXTURE_2D, 1, ctx->textureInternalFormat, ctx->renderWidth, ctx->renderHeight);
+    glTexStorage2D(GL_TEXTURE_2D, 1, ctx->textureInternalFormat, w, h);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    vec_resize(tmpDataBuf, w * h * 4);
+    memset(tmpDataBuf->data, 0, tmpDataBuf->length);
+    glBindTexture(GL_TEXTURE_2D, dev->texture);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, tmpDataBuf->data);
+
 
     if (widthCopy && heightCopy)
     {
@@ -305,6 +322,32 @@ static void SCREEN_renderPassDevOnRender(SCREEN_RenderPassDev* dev, SCREEN_Rende
     glDrawArrays(GL_TRIANGLES, 0, 6);
     SCREEN_GL_CHECK();
 }
+
+
+
+
+
+
+
+static void SCREEN_renderPassDevReset(SCREEN_RenderPassDev* dev, bool noTex)
+{
+    if (!dev->entered || noTex)
+    {
+        return;
+    }
+    if (dev->texture)
+    {
+        u32 w = ctx->renderWidth;
+        u32 h = ctx->renderHeight;
+        vec_char* tmpDataBuf = ctx->tmpDataBuf;
+
+        vec_resize(tmpDataBuf, w * h * 4);
+        memset(tmpDataBuf->data, 0, tmpDataBuf->length);
+        glBindTexture(GL_TEXTURE_2D, dev->texture);
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, tmpDataBuf->data);
+    }
+}
+
 
 
 
@@ -585,8 +628,17 @@ static void SCREEN_sceneStateReset(void)
 void SCREEN_sceneReset(void)
 {
     assert(ctx->entered);
-    SCREEN_leaveScene();
-    SCREEN_enterScene();
+    //SCREEN_leaveScene();
+    //SCREEN_enterScene();
+
+    for (u32 i = 0; i < SCREEN_Buffer2Ds_MAX; ++i)
+    {
+
+        SCREEN_RenderPassDev* passDev = ctx->buffer2d + i;
+        SCREEN_renderPassDevReset(passDev, false);
+    }
+    SCREEN_renderPassDevReset(ctx->image, ctx->imageRenderDirect);
+
     SCREEN_sceneStateReset();
 }
 
