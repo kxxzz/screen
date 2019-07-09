@@ -332,7 +332,7 @@ int main(int argc, char* argv[])
             outdated = false;
 
             ++frameCount;
-            SCREEN_frame(deltaTime, stopped);
+            SCREEN_frame(deltaTime);
 
             SDL_GL_SwapWindow(window);
             // SDL_Delay(1);

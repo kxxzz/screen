@@ -646,15 +646,13 @@ void SCREEN_sceneReset(void)
 
 
 
-void SCREEN_frame(f32 dt, bool stopped)
+void SCREEN_frame(f32 dt)
 {
     assert(ctx->entered);
 
     ctx->timeDelta = dt;
-    if (!stopped)
-    {
-        ctx->time += dt;
-    }
+    ctx->time += dt;
+
 
     glViewport(0, 0, ctx->renderWidth, ctx->renderHeight);
     glClearColor(0.0f, 0.0f, 1.0f, 1.0);
