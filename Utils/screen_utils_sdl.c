@@ -135,19 +135,36 @@ SCREEN_Key SCREEN_keyFromSdlKeysym(const SDL_Keysym* keysym)
     case SDLK_z:
         return SCREEN_Key_Z;
 
+
+    case SDLK_LGUI:
+        return SCREEN_Key_LEFT_META;
+    case SDLK_RGUI:
+        return SCREEN_Key_RIGHT_META;
     case SDLK_SELECT:
         return SCREEN_Key_SELECT;
 
-        //return SCREEN_Key_NUMPAD_0;
-        //return SCREEN_Key_NUMPAD_1;
-        //return SCREEN_Key_NUMPAD_2;
-        //return SCREEN_Key_NUMPAD_3;
-        //return SCREEN_Key_NUMPAD_4;
-        //return SCREEN_Key_NUMPAD_5;
-        //return SCREEN_Key_NUMPAD_6;
-        //return SCREEN_Key_NUMPAD_7;
-        //return SCREEN_Key_NUMPAD_8;
-        //return SCREEN_Key_NUMPAD_9;
+
+    case SDLK_KP_0:
+        return SCREEN_Key_NUMPAD_0;
+    case SDLK_KP_1:
+        return SCREEN_Key_NUMPAD_1;
+    case SDLK_KP_2:
+        return SCREEN_Key_NUMPAD_2;
+    case SDLK_KP_3:
+        return SCREEN_Key_NUMPAD_3;
+    case SDLK_KP_4:
+        return SCREEN_Key_NUMPAD_4;
+    case SDLK_KP_5:
+        return SCREEN_Key_NUMPAD_5;
+    case SDLK_KP_6:
+        return SCREEN_Key_NUMPAD_6;
+    case SDLK_KP_7:
+        return SCREEN_Key_NUMPAD_7;
+    case SDLK_KP_8:
+        return SCREEN_Key_NUMPAD_8;
+    case SDLK_KP_9:
+        return SCREEN_Key_NUMPAD_9;
+
 
     case SDLK_KP_MULTIPLY:
         return SCREEN_Key_MULTIPLY;
@@ -159,6 +176,7 @@ SCREEN_Key SCREEN_keyFromSdlKeysym(const SDL_Keysym* keysym)
         return SCREEN_Key_DECIMAL;
     case SDLK_KP_DIVIDE:
         return SCREEN_Key_DIVIDE;
+
 
     case SDLK_F1:
         return SCREEN_Key_F1;
@@ -184,6 +202,7 @@ SCREEN_Key SCREEN_keyFromSdlKeysym(const SDL_Keysym* keysym)
         return SCREEN_Key_F11;
     case SDLK_F12:
         return SCREEN_Key_F12;
+
 
     case SDLK_NUMLOCKCLEAR:
         return SCREEN_Key_NUM_LOCK;
@@ -211,6 +230,7 @@ SCREEN_Key SCREEN_keyFromSdlKeysym(const SDL_Keysym* keysym)
         return SCREEN_Key_CLOSE_BRACKET;
     case SDLK_QUOTE:
         return SCREEN_Key_SINGLE_QUOTE;
+
 
     default:
         return SCREEN_Key_UNKNOWN;
