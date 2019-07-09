@@ -5,9 +5,14 @@
 #include "screen.h"
 
 
+#define HAVE_M_PI
+#include <SDL.h>
 
 
 
+
+
+SCREEN_Key SCREEN_keyFromSdlKeysym(const SDL_Keysym* keysym);
 
 
 

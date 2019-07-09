@@ -4,6 +4,8 @@
 
 typedef enum SCREEN_Key
 {
+    SCREEN_Key_UNKNOWN = 0,
+
     SCREEN_Key_BACKSPACE = 8,
     SCREEN_Key_TAB = 9,
     SCREEN_Key_ENTER = 13,

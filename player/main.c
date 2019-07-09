@@ -285,10 +285,14 @@ int main(int argc, char* argv[])
                 {
                     lazyMode = !lazyMode;
                 }
+                SCREEN_Key k = SCREEN_keyFromSdlKeysym(&e.key.keysym);
+                SCREEN_keyDown(k);
                 break;
             }
             case SDL_KEYUP:
             {
+                SCREEN_Key k = SCREEN_keyFromSdlKeysym(&e.key.keysym);
+                SCREEN_keyUp(k);
                 break;
             }
             default:
