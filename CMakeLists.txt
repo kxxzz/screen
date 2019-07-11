@@ -54,6 +54,7 @@ include_directories (imp/vec)
 include_directories (imp/fileu)
 include_directories (imp/argparse)
 include_directories (imp/nxjson)
+include_directories (imp/stb)
 
 file (GLOB IMP_SRC_FILES
     imp/vec/*.h
@@ -64,6 +65,8 @@ file (GLOB IMP_SRC_FILES
     imp/argparse/*.c
     imp/nxjson/*.h
     imp/nxjson/*.c
+    imp/stb/*.h
+    imp/stb/*.c
     )
 list(FILTER IMP_SRC_FILES EXCLUDE REGEX "main.c$")
 

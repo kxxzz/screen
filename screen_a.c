@@ -4,6 +4,30 @@
 
 
 
+const char* SCREEN_DataTypeNameTable(SCREEN_DataType t)
+{
+    assert(t < SCREEN_DataTypeCount);
+    static const char* a[SCREEN_DataTypeCount] =
+    {
+        "s8", "u8", "f16", "f32"
+    };
+    return a[t];
+}
+
+const char* SCREEN_AssetTypeNameTable(SCREEN_AssetType t)
+{
+    assert(t < SCREEN_AssetTypeCount);
+    static const char* a[SCREEN_AssetTypeCount] =
+    {
+        "1d", "2d", "3d", "cube"
+    };
+    return a[t];
+}
+
+
+
+
+
 
 
 static const char* SCREEN_glErrStr(GLenum err)

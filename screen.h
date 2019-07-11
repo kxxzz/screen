@@ -93,6 +93,7 @@ typedef enum SCREEN_DataType
     SCREEN_DataTypeCount
 } SCREEN_DataType;
 
+const char* SCREEN_DataTypeNameTable(SCREEN_DataType t);
 
 
 typedef enum SCREEN_AssetType
@@ -104,6 +105,9 @@ typedef enum SCREEN_AssetType
     SCREEN_AssetTypeCount
 } SCREEN_AssetType;
 
+const char* SCREEN_AssetTypeNameTable(SCREEN_AssetType t);
+
+
 typedef struct SCREEN_Asset
 {
     SCREEN_AssetType type;
@@ -112,6 +116,7 @@ typedef struct SCREEN_Asset
     u32 size[3];
     const u8* data;
 } SCREEN_Asset;
+
 
 
 
