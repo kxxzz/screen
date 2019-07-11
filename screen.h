@@ -76,9 +76,9 @@ void SCREEN_setRenderSize(const SCREEN_RenderSize* rs);
 
 enum
 {
+    SCREEN_Assets_MAX = 8,
     SCREEN_Channels_MAX = 4,
     SCREEN_Buffer2Ds_MAX = 4,
-    SCREEN_Assets_MAX = 8,
 };
 
 
@@ -107,7 +107,7 @@ typedef enum SCREEN_AssetType
 typedef struct SCREEN_Asset
 {
     SCREEN_AssetType type;
-    u32 perElmChannels;
+    u32 components;
     SCREEN_DataType dataType;
     u32 size[3];
     const u8* data;
@@ -144,6 +144,7 @@ typedef struct SCREEN_RenderPass
 
 typedef struct SCREEN_Scene
 {
+    u32 assetCount;
     SCREEN_Asset asset[SCREEN_Assets_MAX];
     const char* shaderCommon;
     SCREEN_RenderPass buffer2d[SCREEN_Buffer2Ds_MAX];

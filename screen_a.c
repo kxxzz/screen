@@ -131,10 +131,10 @@ static const char* SCREEN_shaderFragmentSrcFooter(void)
 
 
 
-static GLuint SCREEN_compileShader(GLenum type, GLsizei numSrcs, const char** srcs)
+static GLuint SCREEN_compileShader(GLenum type, GLsizei srcCount, const char** srcs)
 {
     GLuint shader = glCreateShader(type);
-    glShaderSource(shader, numSrcs, srcs, 0);
+    glShaderSource(shader, srcCount, srcs, 0);
     glCompileShader(shader);
     int status;
     glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
