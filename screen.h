@@ -84,21 +84,8 @@ enum
 
 
 
-typedef enum SCREEN_DataType
-{
-    SCREEN_DataType_S8,
-    SCREEN_DataType_U8,
-    SCREEN_DataType_F16,
-    SCREEN_DataType_F32,
-    SCREEN_DataTypeCount
-} SCREEN_DataType;
-
-const char* SCREEN_DataTypeNameTable(SCREEN_DataType t);
-
-
 typedef enum SCREEN_AssetType
 {
-    SCREEN_AssetType_1D,
     SCREEN_AssetType_2D,
     SCREEN_AssetType_3D,
     SCREEN_AssetType_Cube,
@@ -112,7 +99,6 @@ typedef struct SCREEN_Asset
 {
     SCREEN_AssetType type;
     u32 components;
-    SCREEN_DataType dataType;
     u32 size[3];
     const char* data;
 } SCREEN_Asset;

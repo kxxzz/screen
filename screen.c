@@ -37,6 +37,7 @@ typedef struct SCREEN_Context
 
     // gpu runtime
     bool entered;
+    SCREEN_AssetDev asset[SCREEN_Assets_MAX];
     SCREEN_RenderPassDev buffer2d[SCREEN_Buffer2Ds_MAX];
     SCREEN_RenderPassDev image[1];
     GLuint vb;
@@ -94,6 +95,84 @@ void SCREEN_destroy(void)
 
 
 
+
+
+
+
+static void SCREEN_assetDevOnEnter(SCREEN_AssetDev* dev, const SCREEN_Asset* desc)
+{
+    GLenum target = SCREEN_targetTextureFromAssetType(desc->type);
+
+    u32 w = desc->size[0];
+    u32 h = desc->size[1];
+    u32 d = desc->size[2];
+
+    GLenum internalFormat;
+    GLenum format;
+    switch (desc->components)
+    {
+    case 1:
+    {
+        internalFormat = GL_R8;
+        format = GL_RED;
+        break;
+    }
+    case 3:
+    {
+        internalFormat = GL_RGB8;
+        format = GL_RGB;
+        break;
+    }
+    case 4:
+    {
+        internalFormat = GL_RGBA8;
+        format = GL_RGBA;
+        break;
+    }
+    default:
+        assert(false);
+        break;
+    }
+    GLenum type = GL_UNSIGNED_BYTE;
+
+    glGenTextures(1, &dev->texture);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(target, dev->texture);
+    glTexParameteri(target, GL_TEXTURE_BASE_LEVEL, 0);
+    glTexParameteri(target, GL_TEXTURE_MAX_LEVEL, 1000);
+
+    glBindTexture(target, dev->texture);
+    switch (target)
+    {
+    case GL_TEXTURE_2D:
+    {
+        glTexStorage2D(target, 1, internalFormat, w, h);
+        glTexSubImage2D(target, 0, 0, 0, w, h, format, type, desc->data);
+        break;
+    }
+    case GL_TEXTURE_3D:
+    {
+        glTexStorage3D(target, 1, internalFormat, w, h, d);
+        glTexSubImage3D(target, 0, 0, 0, 0, w, h, d, format, type, desc->data);
+        break;
+    }
+    default:
+        assert(false);
+        break;
+    }
+    SCREEN_GL_CHECK();
+
+    glGenerateMipmap(target);
+    SCREEN_GL_CHECK();
+}
+
+
+
+
+
+
+
 static void SCREEN_renderPassDevOnEnter(SCREEN_RenderPassDev* dev, const SCREEN_RenderPass* desc, bool noTex)
 {
     assert(!dev->entered);
@@ -134,10 +213,6 @@ static void SCREEN_renderPassDevOnEnter(SCREEN_RenderPassDev* dev, const SCREEN_
         glBindTexture(GL_TEXTURE_2D, dev->texture);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexStorage2D(GL_TEXTURE_2D, 1, ctx->textureInternalFormat, w, h);
 
         vec_resize(tmpDataBuf, w * h * 4);
@@ -176,10 +251,6 @@ static void SCREEN_renderPassDevOnResize
     glTexStorage2D(GL_TEXTURE_2D, 1, ctx->textureInternalFormat, w, h);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     vec_resize(tmpDataBuf, w * h * 4);
     memset(tmpDataBuf->data, 0, tmpDataBuf->length);
@@ -296,30 +367,56 @@ static void SCREEN_renderPassDevOnRender(SCREEN_RenderPassDev* dev, SCREEN_Rende
 
     for (u32 i = 0; i < SCREEN_Channels_MAX; ++i)
     {
-        switch (desc->channel[i].type)
+        glActiveTexture(GL_TEXTURE0 + i);
+
+        SCREEN_ChannelType type = desc->channel[i].type;
+        GLenum target;
+        if (SCREEN_ChannelType_Asset == type)
+        {
+            u32 ai = desc->channel[i].asset;
+            target = SCREEN_targetTextureFromAssetType(ctx->scene->asset[ai].type);
+        }
+        else
+        {
+            target = GL_TEXTURE_2D;
+        }
+
+        switch (type)
         {
         case SCREEN_ChannelType_Unused:
         {
-            glActiveTexture(GL_TEXTURE0 + i);
-            glBindTexture(GL_TEXTURE_2D, 0);
+            glBindTexture(target, 0);
             continue;
         }
         case SCREEN_ChannelType_Buffer2D:
         {
-            glActiveTexture(GL_TEXTURE0 + i);
-            GLuint texture = ctx->buffer2d[desc->channel[i].buffer2d].texture;
-            glBindTexture(GL_TEXTURE_2D, texture);
+            u32 bi = desc->channel[i].buffer2d;
+            GLuint texture = ctx->buffer2d[bi].texture;
+            glBindTexture(target, texture);
             break;
         }
         case SCREEN_ChannelType_Keyboard:
         {
-            glActiveTexture(GL_TEXTURE0 + i);
-            glBindTexture(GL_TEXTURE_2D, ctx->texKeyboard);
+            glBindTexture(target, ctx->texKeyboard);
+            break;
+        }
+        case SCREEN_ChannelType_Asset:
+        {
+            u32 ai = desc->channel[i].asset;
+            GLuint texture = ctx->asset[ai].texture;
+            glBindTexture(target, texture);
             break;
         }
         default:
             assert(false);
             break;
+        }
+        if (type != SCREEN_ChannelType_Unused)
+        {
+            glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         }
     }
 
@@ -370,26 +467,38 @@ static void SCREEN_enterScene(void)
     assert(ctx->entered);
     assert(ctx->sceneLoaded);
 
+    for (u32 i = 0; i < ctx->scene->assetCount; ++i)
+    {
+        SCREEN_AssetDev* dev = ctx->asset + i;
+        SCREEN_assetDevOnEnter(dev, ctx->scene->asset + i);
+    }
+
     for (u32 i = 0; i < SCREEN_Buffer2Ds_MAX; ++i)
     {
         if (!ctx->scene->buffer2d[i].shaderCode)
         {
             continue;
         }
-        SCREEN_RenderPassDev* passDev = ctx->buffer2d + i;
-        SCREEN_renderPassDevOnEnter(passDev, ctx->scene->buffer2d + i, false);
+        SCREEN_RenderPassDev* dev = ctx->buffer2d + i;
+        SCREEN_renderPassDevOnEnter(dev, ctx->scene->buffer2d + i, false);
     }
     SCREEN_renderPassDevOnEnter(ctx->image, &ctx->scene->image, ctx->imageRenderDirect);
 
     SCREEN_GL_CHECK();
 }
 
+
 static void SCREEN_leaveScene(void)
 {
+    for (u32 i = 0; i < ctx->scene->assetCount; ++i)
+    {
+        SCREEN_AssetDev* dev = ctx->asset + i;
+        SCREEN_assetDevOnLeave(dev);
+    }
     for (u32 i = 0; i < SCREEN_Buffer2Ds_MAX; ++i)
     {
-        SCREEN_RenderPassDev* passDev = ctx->buffer2d + i;
-        SCREEN_renderPassDevOnLeave(passDev);
+        SCREEN_RenderPassDev* dev = ctx->buffer2d + i;
+        SCREEN_renderPassDevOnLeave(dev);
     }
     SCREEN_renderPassDevOnLeave(ctx->image);
 }
@@ -894,7 +1003,8 @@ static void SCREEN_loadSceneData(const SCREEN_Scene* srcScene)
     u32 dataSize = SCREEN_calcSceneDataSize(srcScene);
     vec_reserve(ctx->sceneDataBuf, dataSize);
 
-    for (u32 ai = 0; ai < SCREEN_Assets_MAX; ++ai)
+    dstScene->assetCount = srcScene->assetCount;
+    for (u32 ai = 0; ai < srcScene->assetCount; ++ai)
     {
         const SCREEN_Asset* srcAsset = srcScene->asset + ai;
         SCREEN_Asset* dstAsset = dstScene->asset + ai;

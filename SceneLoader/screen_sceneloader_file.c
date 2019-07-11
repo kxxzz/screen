@@ -107,8 +107,12 @@ static void SCREEN_loadSceneAssetFromJson
                 // todo report error
                 goto error;
             }
+            if ((comp != 1) && (comp != 3) && (comp != 4))
+            {
+                // todo report error
+                goto error;
+            }
             desc->asset[ai].components = comp;
-            desc->asset[ai].dataType = SCREEN_DataType_U8;
             desc->asset[ai].size[0] = x;
             desc->asset[ai].size[1] = y;
             desc->asset[ai].size[2] = 1;

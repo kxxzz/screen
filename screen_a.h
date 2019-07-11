@@ -124,8 +124,36 @@ GLenum SCREEN_glCheck(const char *const file, int const line);
 
 
 
+
+static GLenum SCREEN_targetTextureFromAssetType(SCREEN_AssetType type)
+{
+    assert(type < SCREEN_AssetTypeCount);
+    static const GLenum a[SCREEN_AssetTypeCount] =
+    {
+        GL_TEXTURE_2D,
+        GL_TEXTURE_3D,
+        GL_TEXTURE_CUBE_MAP,
+    };
+    return a[type];
+}
+
+
+
+
+
 GLuint SCREEN_buildShaderProgram(const char* shaderComm, const char* shaderMain);
 
+
+
+
+
+
+typedef struct SCREEN_AssetDev
+{
+    GLuint texture;
+} SCREEN_AssetDev;
+
+void SCREEN_assetDevOnLeave(SCREEN_AssetDev* dev);
 
 
 
