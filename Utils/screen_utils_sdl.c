@@ -148,25 +148,25 @@ SCREEN_Key SCREEN_keyFromSdlKeysym(const SDL_Keysym* keysym)
 
 
     case SDLK_KP_0:
-        return SCREEN_Key_NUMPAD_0;
+        return (keysym->mod & KMOD_NUM) ? SCREEN_Key_NUMPAD_0 : SCREEN_Key_INSERT;
     case SDLK_KP_1:
-        return SCREEN_Key_NUMPAD_1;
+        return (keysym->mod & KMOD_NUM) ? SCREEN_Key_NUMPAD_1 : SCREEN_Key_END;
     case SDLK_KP_2:
-        return SCREEN_Key_NUMPAD_2;
+        return (keysym->mod & KMOD_NUM) ? SCREEN_Key_NUMPAD_2 : SCREEN_Key_DOWN;
     case SDLK_KP_3:
-        return SCREEN_Key_NUMPAD_3;
+        return (keysym->mod & KMOD_NUM) ? SCREEN_Key_NUMPAD_3 : SCREEN_Key_PAGE_DOWN;
     case SDLK_KP_4:
-        return SCREEN_Key_NUMPAD_4;
+        return (keysym->mod & KMOD_NUM) ? SCREEN_Key_NUMPAD_4 : SCREEN_Key_LEFT;
     case SDLK_KP_5:
         return SCREEN_Key_NUMPAD_5;
     case SDLK_KP_6:
-        return SCREEN_Key_NUMPAD_6;
+        return (keysym->mod & KMOD_NUM) ? SCREEN_Key_NUMPAD_6 : SCREEN_Key_RIGHT;
     case SDLK_KP_7:
-        return SCREEN_Key_NUMPAD_7;
+        return (keysym->mod & KMOD_NUM) ? SCREEN_Key_NUMPAD_7 : SCREEN_Key_HOME;
     case SDLK_KP_8:
-        return SCREEN_Key_NUMPAD_8;
+        return (keysym->mod & KMOD_NUM) ? SCREEN_Key_NUMPAD_8 : SCREEN_Key_UP;
     case SDLK_KP_9:
-        return SCREEN_Key_NUMPAD_9;
+        return (keysym->mod & KMOD_NUM) ? SCREEN_Key_NUMPAD_9 : SCREEN_Key_PAGE_UP;
 
 
     case SDLK_KP_MULTIPLY:
@@ -176,7 +176,7 @@ SCREEN_Key SCREEN_keyFromSdlKeysym(const SDL_Keysym* keysym)
     case SDLK_KP_MINUS:
         return SCREEN_Key_SUBTRACT;
     case SDLK_KP_PERIOD:
-        return SCREEN_Key_DECIMAL;
+        return (keysym->mod & KMOD_NUM) ? SCREEN_Key_DECIMAL : SCREEN_Key_DELETE;
     case SDLK_KP_DIVIDE:
         return SCREEN_Key_DIVIDE;
 

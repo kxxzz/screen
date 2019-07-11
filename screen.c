@@ -728,8 +728,6 @@ static void SCREEN_sceneStateReset(void)
     ctx->pointY = ctx->height;
     ctx->pointStart[0] = ctx->pointX;
     ctx->pointStart[1] = ctx->pointY;
-
-    memset(ctx->keyboardState, 0, sizeof(ctx->keyboardState));
 }
 
 
