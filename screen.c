@@ -101,7 +101,7 @@ void SCREEN_destroy(void)
 
 static void SCREEN_assetDevOnEnter(SCREEN_AssetDev* dev, const SCREEN_Asset* desc)
 {
-    GLenum target = SCREEN_targetTextureFromAssetType(desc->type);
+    GLenum target = SCREEN_glTargetTextureFromAssetType(desc->type);
 
     u32 w = desc->size[0];
     u32 h = desc->size[1];
@@ -374,7 +374,7 @@ static void SCREEN_renderPassDevOnRender(SCREEN_RenderPassDev* dev, SCREEN_Rende
         if (SCREEN_ChannelType_Asset == type)
         {
             u32 ai = desc->channel[i].asset;
-            target = SCREEN_targetTextureFromAssetType(ctx->scene->asset[ai].type);
+            target = SCREEN_glTargetTextureFromAssetType(ctx->scene->asset[ai].type);
         }
         else
         {
@@ -413,10 +413,13 @@ static void SCREEN_renderPassDevOnRender(SCREEN_RenderPassDev* dev, SCREEN_Rende
         }
         if (type != SCREEN_ChannelType_Unused)
         {
-            glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-            glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-            glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            GLenum wrap = SCREEN_glFilterFromChannelWrap(desc->channel[i].wrap);
+            GLenum filterMin = SCREEN_glMinFilterFromChannelFilter(desc->channel[i].filter);
+            GLenum filterMag = SCREEN_glMagFilterFromChannelFilter(desc->channel[i].filter);
+            glTexParameteri(target, GL_TEXTURE_WRAP_S, wrap);
+            glTexParameteri(target, GL_TEXTURE_WRAP_T, wrap);
+            glTexParameteri(target, GL_TEXTURE_MIN_FILTER, filterMin);
+            glTexParameteri(target, GL_TEXTURE_MAG_FILTER, filterMag);
         }
     }
 
@@ -724,14 +727,16 @@ static void SCREEN_sceneStateReset(void)
     ctx->frame = 0;
     ctx->time = 0;
     ctx->timeDelta = 0;
-
-    //ctx->pointX = 0;
-    //ctx->pointY = ctx->height;
-    //ctx->pointStart[0] = ctx->pointX;
-    //ctx->pointStart[1] = ctx->pointY;
-    //memset(ctx->keyboardState, 0, sizeof(ctx->keyboardState));
 }
 
+static void SCREEN_inputStateReset(void)
+{
+    ctx->pointX = 0;
+    ctx->pointY = ctx->height;
+    ctx->pointStart[0] = ctx->pointX;
+    ctx->pointStart[1] = ctx->pointY;
+    memset(ctx->keyboardState, 0, sizeof(ctx->keyboardState));
+}
 
 
 
@@ -1080,6 +1085,7 @@ bool SCREEN_loadScene(const SCREEN_Scene* scene)
         SCREEN_enterScene();
     }
     SCREEN_sceneStateReset();
+    SCREEN_inputStateReset();
     return true;
 }
 

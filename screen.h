@@ -117,6 +117,21 @@ typedef enum SCREEN_ChannelType
     SCREEN_ChannelTypeCount
 } SCREEN_ChannelType;
 
+typedef enum SCREEN_ChannelWrap
+{
+    SCREEN_ChannelWrap_Repeat = 0,
+    SCREEN_ChannelWrap_Clamp,
+    SCREEN_ChannelWrapCount
+} SCREEN_ChannelWrap;
+
+typedef enum SCREEN_ChannelFilter
+{
+    SCREEN_ChannelFilter_Mipmap = 0,
+    SCREEN_ChannelFilter_Linear,
+    SCREEN_ChannelFilter_Nearest,
+    SCREEN_ChannelFilterCount
+} SCREEN_ChannelFilter;
+
 typedef struct SCREEN_Channel
 {
     SCREEN_ChannelType type;
@@ -125,6 +140,8 @@ typedef struct SCREEN_Channel
         u32 buffer2d;
         u32 asset;
     };
+    SCREEN_ChannelWrap wrap;
+    SCREEN_ChannelFilter filter;
 } SCREEN_Channel;
 
 typedef struct SCREEN_RenderPass

@@ -125,7 +125,7 @@ GLenum SCREEN_glCheck(const char *const file, int const line);
 
 
 
-static GLenum SCREEN_targetTextureFromAssetType(SCREEN_AssetType type)
+static GLenum SCREEN_glTargetTextureFromAssetType(SCREEN_AssetType type)
 {
     assert(type < SCREEN_AssetTypeCount);
     static const GLenum a[SCREEN_AssetTypeCount] =
@@ -136,6 +136,45 @@ static GLenum SCREEN_targetTextureFromAssetType(SCREEN_AssetType type)
     };
     return a[type];
 }
+
+
+static GLenum SCREEN_glFilterFromChannelWrap(SCREEN_ChannelWrap wrap)
+{
+    assert(wrap < SCREEN_ChannelWrapCount);
+    static const GLenum a[SCREEN_ChannelWrapCount] =
+    {
+        GL_REPEAT,
+        GL_CLAMP_TO_EDGE,
+    };
+    return a[wrap];
+}
+
+
+static GLenum SCREEN_glMinFilterFromChannelFilter(SCREEN_ChannelFilter filter)
+{
+    assert(filter < SCREEN_ChannelFilterCount);
+    static const GLenum a[SCREEN_ChannelFilterCount] =
+    {
+        GL_LINEAR_MIPMAP_LINEAR,
+        GL_LINEAR,
+        GL_NEAREST,
+    };
+    return a[filter];
+}
+
+
+static GLenum SCREEN_glMagFilterFromChannelFilter(SCREEN_ChannelFilter filter)
+{
+    assert(filter < SCREEN_ChannelFilterCount);
+    static const GLenum a[SCREEN_ChannelFilterCount] =
+    {
+        GL_LINEAR,
+        GL_LINEAR,
+        GL_NEAREST,
+    };
+    return a[filter];
+}
+
 
 
 
