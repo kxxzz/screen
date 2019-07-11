@@ -114,7 +114,7 @@ typedef struct SCREEN_Asset
     u32 components;
     SCREEN_DataType dataType;
     u32 size[3];
-    const u8* data;
+    const char* data;
 } SCREEN_Asset;
 
 

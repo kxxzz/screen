@@ -896,7 +896,12 @@ static void SCREEN_loadSceneData(const SCREEN_Scene* srcScene)
 
     for (u32 ai = 0; ai < SCREEN_Assets_MAX; ++ai)
     {
-        // todo
+        const SCREEN_Asset* srcAsset = srcScene->asset + ai;
+        SCREEN_Asset* dstAsset = dstScene->asset + ai;
+        *dstAsset = *srcAsset;
+        dstAsset->data = ctx->sceneDataBuf->data + ctx->sceneDataBuf->length;
+        u32 n = srcAsset->size[0] * srcAsset->size[1] * srcAsset->size[2] * srcAsset->components;
+        vec_pusharr(ctx->sceneDataBuf, srcAsset->data, n);
     }
 
     if (srcScene->shaderCommon)
