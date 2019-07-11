@@ -286,14 +286,12 @@ void SCREEN_renderPassDevOnLeave(SCREEN_RenderPassDev* dev)
 u32 SCREEN_calcSceneDataSize(const SCREEN_Scene* scene)
 {
     u32 size = 0;
-
     for (u32 ai = 0; ai < SCREEN_Assets_MAX; ++ai)
     {
         const SCREEN_Asset* asset = scene->asset + ai;
         u32 n = asset->size[0] * asset->size[1] * asset->size[2] * asset->components;
         size += n;
     }
-
     if (scene->shaderCommon)
     {
         size += (u32)strlen(scene->shaderCommon) + 1;
