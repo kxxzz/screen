@@ -66,6 +66,7 @@ static bool SCREEN_loadAssetFromImageFile
         asset->size[0] = x;
         asset->size[1] = y;
         asset->size[2] = 1;
+        asset->dataSize = x * y * comp;
     }
     stbi_uc* data = stbi_load(filename, &x, &y, &comp, comp);
     if (!data)
@@ -93,9 +94,7 @@ static bool SCREEN_loadAssetFromImageFile
 static void SCREEN_loadSceneAssetFromJson
 (
     const nx_json* assetJs, const char* dir,
-    SCREEN_Scene* desc, vec_char* dataBuf,
-    u32* pDataOff, u32 ai,
-    vec_char* pathBuf
+    SCREEN_Asset* desc, vec_char* dataBuf, u32* pDataOff, vec_char* pathBuf
 )
 {
     char path[SCREEN_PATH_MAX] = "";
@@ -118,7 +117,7 @@ static void SCREEN_loadSceneAssetFromJson
         {
             if (strcicmp(typeStr, SCREEN_AssetTypeNameTable(i)) == 0)
             {
-                desc->asset[ai].type = i;
+                desc->type = i;
                 type = i;
                 break;
             }
@@ -142,7 +141,7 @@ static void SCREEN_loadSceneAssetFromJson
         snprintf(path, sizeof(path), "%s/%s", dir, filename);
 
         u32 dataOff = dataBuf->length;
-        if (!SCREEN_loadAssetFromImageFile(dataBuf, pathBuf, desc->asset + ai, path))
+        if (!SCREEN_loadAssetFromImageFile(dataBuf, pathBuf, desc, path))
         {
             goto error;
         }
@@ -174,12 +173,12 @@ static void SCREEN_loadSceneAssetFromJson
             const char* filename = faceJs->text_value;
             snprintf(path, sizeof(path), "%s/%s", dir, filename);
 
-            SCREEN_Asset* asset = (0 == f) ? (desc->asset + ai) : NULL;
-            if (!SCREEN_loadAssetFromImageFile(dataBuf, pathBuf, asset, path))
+            if (!SCREEN_loadAssetFromImageFile(dataBuf, pathBuf, (0 == f) ? desc : NULL, path))
             {
                 goto error;
             }
         }
+        desc->dataSize *= 6;
         *pDataOff = dataOff;
     }
     else
@@ -203,9 +202,8 @@ error:
 static void SCREEN_loadScenePassFromJson
 (
     const nx_json* passJs, const char* dir,
-    SCREEN_Scene* desc, vec_char* dataBuf,
-    u32* pShaderOff, u32* pBi,
-    vec_char* pathBuf
+    SCREEN_Scene* desc, vec_char* dataBuf, vec_char* pathBuf,
+    u32* pShaderOff, u32* pBi
 )
 {
     char path[SCREEN_PATH_MAX] = "";
@@ -372,7 +370,7 @@ static SCREEN_LoadFileError SCREEN_loadSceneFromJson(char* code, const char* dir
         {
             const nx_json* assetJs = nx_json_item(assetsJs, ai);
             u32 dataOff;
-            SCREEN_loadSceneAssetFromJson(assetJs, dir, desc, dataBuf, &dataOff, ai, pathBuf);
+            SCREEN_loadSceneAssetFromJson(assetJs, dir, desc->asset + ai, dataBuf, &dataOff, pathBuf);
             if (dataOff != -1)
             {
                 assetDataOff[ai] = dataOff;
@@ -416,7 +414,7 @@ static SCREEN_LoadFileError SCREEN_loadSceneFromJson(char* code, const char* dir
         {
             const nx_json* bufferJs = nx_json_item(buffersJs, i);
             u32 shaderOff, bi;
-            SCREEN_loadScenePassFromJson(bufferJs, dir, desc, dataBuf, &shaderOff, &bi, pathBuf);
+            SCREEN_loadScenePassFromJson(bufferJs, dir, desc, dataBuf, pathBuf, &shaderOff, &bi);
             if (shaderOff != -1)
             {
                 assert(bi != -1);
@@ -432,7 +430,7 @@ static SCREEN_LoadFileError SCREEN_loadSceneFromJson(char* code, const char* dir
     }
 
     const nx_json* imageJs = nx_json_get(rootJs, "image");
-    SCREEN_loadScenePassFromJson(imageJs, dir, desc, dataBuf, &imageShaderOff, NULL, pathBuf);
+    SCREEN_loadScenePassFromJson(imageJs, dir, desc, dataBuf, pathBuf, &imageShaderOff, NULL);
 
     for (u32 i = 0; i < desc->assetCount; ++i)
     {

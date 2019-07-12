@@ -588,6 +588,9 @@ void SCREEN_enter(u32 w, u32 h)
 
     //printf("GL_VERSION  : %s\n", glGetString(GL_VERSION));
     //printf("GL_RENDERER : %s\n", glGetString(GL_RENDERER));
+#ifdef SCREEN_USE_GL3W
+    glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+#endif
 
     assert(w && h);
 
@@ -1029,8 +1032,7 @@ static void SCREEN_loadSceneData(const SCREEN_Scene* srcScene)
         SCREEN_Asset* dstAsset = dstScene->asset + ai;
         *dstAsset = *srcAsset;
         dstAsset->data = ctx->sceneDataBuf->data + ctx->sceneDataBuf->length;
-        u32 n = srcAsset->size[0] * srcAsset->size[1] * srcAsset->size[2] * srcAsset->components;
-        vec_pusharr(ctx->sceneDataBuf, srcAsset->data, n);
+        vec_pusharr(ctx->sceneDataBuf, srcAsset->data, srcAsset->dataSize);
     }
 
     if (srcScene->shaderCommon)

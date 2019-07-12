@@ -112,7 +112,7 @@ static const char* SCREEN_shaderFragmentSrcHeader(void)
         "out vec4 outColor;\n"
         "uniform sampler2D iChannel0;\n"
         "uniform sampler2D iChannel1;\n"
-        "uniform sampler2D iChannel2;\n"
+        "uniform samplerCube iChannel2;\n"
         "uniform sampler2D iChannel3;\n"
         ;
     return a;
@@ -289,8 +289,7 @@ u32 SCREEN_calcSceneDataSize(const SCREEN_Scene* scene)
     for (u32 ai = 0; ai < SCREEN_Assets_MAX; ++ai)
     {
         const SCREEN_Asset* asset = scene->asset + ai;
-        u32 n = asset->size[0] * asset->size[1] * asset->size[2] * asset->components;
-        size += n;
+        size += asset->dataSize;
     }
     if (scene->shaderCommon)
     {

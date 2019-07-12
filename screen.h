@@ -101,6 +101,7 @@ typedef struct SCREEN_Asset
     u32 components;
     u32 size[3];
     const char* data;
+    u32 dataSize;
 } SCREEN_Asset;
 
 
