@@ -187,12 +187,46 @@ static void SCREEN_assetDevOnEnter(SCREEN_AssetDev* dev, const SCREEN_Asset* des
 
 
 
+
+
+
+
+
+
+
+
+
 static void SCREEN_renderPassDevOnEnter(SCREEN_RenderPassDev* dev, const SCREEN_RenderPass* desc, bool noTex)
 {
     assert(!dev->entered);
     dev->entered = true;
 
-    GLuint shaderProgram = dev->shaderProgram = SCREEN_buildShaderProgram(ctx->scene->shaderCommon, desc->shaderCode);
+    vec_resize(ctx->tmpDataBuf, 0);
+    for (u32 ci = 0; ci < SCREEN_Channels_MAX; ++ci)
+    {
+        if (SCREEN_ChannelType_Unused == desc->channel[ci].type)
+        {
+            continue;
+        }
+        const char* samplerStr = "sampler2D";
+        if (SCREEN_ChannelType_Asset == desc->channel[ci].type)
+        {
+            SCREEN_Asset* asset = ctx->scene->asset + desc->channel[ci].asset;
+            if (SCREEN_AssetType_Cube == asset->type)
+            {
+                samplerStr = "samplerCube";
+            }
+        }
+        char buf[1024];
+        u32 n = snprintf(buf, sizeof(buf), "uniform %s iChannel%u;\n", samplerStr, ci);
+        vec_pusharr(ctx->tmpDataBuf, buf, n);
+    }
+    vec_push(ctx->tmpDataBuf, 0);
+
+    GLuint shaderProgram = dev->shaderProgram = SCREEN_buildShaderProgram
+    (
+        ctx->scene->shaderCommon, ctx->tmpDataBuf->data, desc->shaderCode
+    );
     assert(shaderProgram);
 
     dev->uniform_Resolution = glGetUniformLocation(shaderProgram, "iResolution");

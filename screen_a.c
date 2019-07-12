@@ -110,10 +110,6 @@ static const char* SCREEN_shaderFragmentSrcHeader(void)
         "uniform vec4      iDate;\n"
         "uniform float     iSampleRate;\n"
         "out vec4 outColor;\n"
-        "uniform sampler2D iChannel0;\n"
-        "uniform sampler2D iChannel1;\n"
-        "uniform samplerCube iChannel2;\n"
-        "uniform sampler2D iChannel3;\n"
         ;
     return a;
 }
@@ -127,6 +123,8 @@ static const char* SCREEN_shaderFragmentSrcFooter(void)
         "}\n";
     return a;
 }
+
+
 
 
 
@@ -172,7 +170,7 @@ static GLuint SCREEN_compileShader(GLenum type, GLsizei srcCount, const char** s
 
 
 
-GLuint SCREEN_buildShaderProgram(const char* shaderComm, const char* shaderMain)
+GLuint SCREEN_buildShaderProgram(const char* shaderComm, const char* shaderChannels, const char* shaderMain)
 {
     const char* vsSrc[] =
     {
@@ -190,6 +188,7 @@ GLuint SCREEN_buildShaderProgram(const char* shaderComm, const char* shaderMain)
         SCREEN_shaderCommonSrcHeader(),
         SCREEN_shaderFragmentSrcHeader(),
         shaderComm ? shaderComm : "",
+        shaderChannels,
         shaderMain,
         SCREEN_shaderFragmentSrcFooter(),
     };

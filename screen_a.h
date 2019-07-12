@@ -126,6 +126,23 @@ GLenum SCREEN_glCheck(const char *const file, int const line);
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 static GLenum SCREEN_glTargetTextureFromAssetType(SCREEN_AssetType type)
 {
     assert(type < SCREEN_AssetTypeCount);
@@ -186,7 +203,7 @@ static GLenum SCREEN_glMagFilterFromChannelFilter(SCREEN_ChannelFilter filter)
 
 
 
-GLuint SCREEN_buildShaderProgram(const char* shaderComm, const char* shaderMain);
+GLuint SCREEN_buildShaderProgram(const char* shaderComm, const char* shaderChannels, const char* shaderMain);
 
 
 
