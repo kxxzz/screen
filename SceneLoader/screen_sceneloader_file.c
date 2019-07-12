@@ -21,7 +21,7 @@ static void SCREEN_pathAdd(const char* filename, vec_char* pathBuf)
 
 
 
-static u32 SCREEN_loadFileDataToBuf(vec_char* dataBuf, const char* filename, vec_char* pathBuf)
+static u32 SCREEN_loadFileDataToBuf(vec_char* dataBuf, vec_char* pathBuf, const char* filename)
 {
     u32 size = FILEU_readFile(filename, NULL, 0);
     if ((-1 == size) || !size)
@@ -39,6 +39,48 @@ static u32 SCREEN_loadFileDataToBuf(vec_char* dataBuf, const char* filename, vec
 
 
 
+
+
+
+
+static bool SCREEN_loadAssetFromImageFile
+(
+    vec_char* dataBuf, vec_char* pathBuf, SCREEN_Asset* asset, const char* filename
+)
+{
+    int x, y, comp;
+    int r = stbi_info(filename, &x, &y, &comp);
+    if (!r)
+    {
+        // todo report error
+        return false;
+    }
+    if ((comp != 1) && (comp != 3) && (comp != 4))
+    {
+        // todo report error
+        return false;
+    }
+    if (asset)
+    {
+        asset->components = comp;
+        asset->size[0] = x;
+        asset->size[1] = y;
+        asset->size[2] = 1;
+    }
+    stbi_uc* data = stbi_load(filename, &x, &y, &comp, comp);
+    if (!data)
+    {
+        // todo report error
+        return false;
+    }
+    u32 dataSize = x * y * comp;
+
+    u32 dataOff = dataBuf->length;
+    vec_resize(dataBuf, dataOff + dataSize);
+    memcpy(dataBuf->data + dataOff, data, dataSize);
+    SCREEN_pathAdd(filename, pathBuf);
+    return true;
+}
 
 
 
@@ -88,6 +130,7 @@ static void SCREEN_loadSceneAssetFromJson
         }
     }
 
+    if (SCREEN_AssetType_2D == type)
     {
         const nx_json* uriJs = nx_json_get(assetJs, "uri");
         if (uriJs->type != NX_JSON_STRING)
@@ -98,43 +141,51 @@ static void SCREEN_loadSceneAssetFromJson
         const char* filename = uriJs->text_value;
         snprintf(path, sizeof(path), "%s/%s", dir, filename);
 
-        if (SCREEN_AssetType_2D == type)
+        u32 dataOff = dataBuf->length;
+        if (!SCREEN_loadAssetFromImageFile(dataBuf, pathBuf, desc->asset + ai, path))
         {
-            int x, y, comp;
-            int r = stbi_info(path, &x, &y, &comp);
-            if (!r)
-            {
-                // todo report error
-                goto error;
-            }
-            if ((comp != 1) && (comp != 3) && (comp != 4))
-            {
-                // todo report error
-                goto error;
-            }
-            desc->asset[ai].components = comp;
-            desc->asset[ai].size[0] = x;
-            desc->asset[ai].size[1] = y;
-            desc->asset[ai].size[2] = 1;
-            stbi_uc* data = stbi_load(path, &x, &y, &comp, comp);
-            if (!data)
-            {
-                // todo report error
-                goto error;
-            }
-            u32 dataSize = x * y * comp;
-
-            u32 dataOff = dataBuf->length;
-            vec_resize(dataBuf, dataOff + dataSize);
-            memcpy(dataBuf->data + dataOff, data, dataSize);
-            SCREEN_pathAdd(filename, pathBuf);
-            *pDataOff = dataOff;
+            goto error;
         }
-        else
+        *pDataOff = dataOff;
+    }
+    else if (SCREEN_AssetType_Cube == type)
+    {
+        const nx_json* facesJs = nx_json_get(assetJs, "faces");
+        if (facesJs->type != NX_JSON_ARRAY)
         {
             // todo report error
             goto error;
         }
+        if (facesJs->length != 6)
+        {
+            // todo report error
+            goto error;
+        }
+
+        u32 dataOff = dataBuf->length;
+        for (u32 f = 0; f < 6; ++f)
+        {
+            const nx_json* faceJs = nx_json_item(facesJs, f);
+            if (faceJs->type != NX_JSON_STRING)
+            {
+                // todo report error
+                goto error;
+            }
+            const char* filename = faceJs->text_value;
+            snprintf(path, sizeof(path), "%s/%s", dir, filename);
+
+            SCREEN_Asset* asset = (0 == f) ? (desc->asset + ai) : NULL;
+            if (!SCREEN_loadAssetFromImageFile(dataBuf, pathBuf, asset, path))
+            {
+                goto error;
+            }
+        }
+        *pDataOff = dataOff;
+    }
+    else
+    {
+        // todo report error
+        goto error;
     }
     return;
 error:
@@ -171,7 +222,7 @@ static void SCREEN_loadScenePassFromJson
     }
     const char* filename = shaderJs->text_value;
     snprintf(path, sizeof(path), "%s/%s", dir, filename);
-    u32 shaderOff = SCREEN_loadFileDataToBuf(dataBuf, path, pathBuf);
+    u32 shaderOff = SCREEN_loadFileDataToBuf(dataBuf, pathBuf, path);
     if (-1 == shaderOff)
     {
         // todo report error
@@ -344,7 +395,7 @@ static SCREEN_LoadFileError SCREEN_loadSceneFromJson(char* code, const char* dir
             }
             const char* filename = shaderJs->text_value;
             snprintf(path, sizeof(path), "%s/%s", dir, filename);
-            u32 shaderOff = SCREEN_loadFileDataToBuf(dataBuf, path, pathBuf);
+            u32 shaderOff = SCREEN_loadFileDataToBuf(dataBuf, pathBuf, path);
             if (-1 == shaderOff)
             {
                 // todo report error

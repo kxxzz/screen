@@ -89,6 +89,7 @@ static char* stzncpy(char* dst, char const* src, u32 len)
 
 
 
+
 #ifdef __EMSCRIPTEN__
 # include <GLES3/gl3.h>
 # include <emscripten/emscripten.h>
@@ -174,6 +175,11 @@ static GLenum SCREEN_glMagFilterFromChannelFilter(SCREEN_ChannelFilter filter)
     };
     return a[filter];
 }
+
+
+
+
+
 
 
 

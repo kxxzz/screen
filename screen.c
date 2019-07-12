@@ -134,6 +134,7 @@ static void SCREEN_assetDevOnEnter(SCREEN_AssetDev* dev, const SCREEN_Asset* des
         break;
     }
     GLenum type = GL_UNSIGNED_BYTE;
+    GLsizei levels = (GLsizei)floor(log2(max(max(w, h), d)) + 1);
 
     glGenTextures(1, &dev->texture);
 
@@ -147,14 +148,27 @@ static void SCREEN_assetDevOnEnter(SCREEN_AssetDev* dev, const SCREEN_Asset* des
     {
     case GL_TEXTURE_2D:
     {
-        glTexStorage2D(target, 1, internalFormat, w, h);
+        glTexStorage2D(target, levels, internalFormat, w, h);
         glTexSubImage2D(target, 0, 0, 0, w, h, format, type, desc->data);
         break;
     }
     case GL_TEXTURE_3D:
     {
-        glTexStorage3D(target, 1, internalFormat, w, h, d);
+        glTexStorage3D(target, levels, internalFormat, w, h, d);
         glTexSubImage3D(target, 0, 0, 0, 0, w, h, d, format, type, desc->data);
+        break;
+    }
+    case GL_TEXTURE_CUBE_MAP:
+    {
+        glTexStorage2D(target, levels, internalFormat, w, h);
+        u32 faceSize = w * h * desc->components;
+        for (u32 f = 0; f < 6; ++f)
+        {
+            glTexSubImage2D
+            (
+                GL_TEXTURE_CUBE_MAP_POSITIVE_X + f, 0, 0, 0, w, h, format, type, desc->data + faceSize * f
+            );
+        }
         break;
     }
     default:
