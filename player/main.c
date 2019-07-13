@@ -324,13 +324,12 @@ int main(int argc, char* argv[])
             }
         }
 
-
+        
         if (!stopped || outdated)
         {
             outdated = false;
 
             float deltaTime = stopped ? (f32)(1.0 / 60.0) : (now - now0);
-            now0 = now;
 
             ++frameCount;
             SCREEN_frame(deltaTime, stopped);
@@ -338,6 +337,7 @@ int main(int argc, char* argv[])
             SDL_GL_SwapWindow(window);
             // SDL_Delay(1);
         }
+        now0 = now;
     }
 
 
