@@ -9,6 +9,13 @@
 #include <stdlib.h>
 #include <math.h>
 #include <ctype.h>
+#include <time.h>
+
+#ifdef _WIN32
+# include <gettimeofday.h>
+#else
+# include <sys/time.h>
+#endif
 
 #include <vec.h>
 
@@ -245,6 +252,7 @@ typedef struct SCREEN_RenderPassDev
     GLint uniform_Channel[SCREEN_Channels_MAX];
     GLint uniform_ChannelTime[SCREEN_Channels_MAX];
     GLint uniform_ChannelResolution[SCREEN_Channels_MAX];
+    GLint uniform_Date;
 } SCREEN_RenderPassDev;
 
 void SCREEN_renderPassDevOnLeave(SCREEN_RenderPassDev* dev);

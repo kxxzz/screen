@@ -55,6 +55,7 @@ include_directories (imp/fileu)
 include_directories (imp/argparse)
 include_directories (imp/nxjson)
 include_directories (imp/stb)
+include_directories (imp/gettimeofday)
 
 file (GLOB IMP_SRC_FILES
     imp/vec/*.h
@@ -67,6 +68,8 @@ file (GLOB IMP_SRC_FILES
     imp/nxjson/*.c
     imp/stb/*.h
     imp/stb/*.c
+    imp/gettimeofday/*.h
+    imp/gettimeofday/*.c
     )
 list(FILTER IMP_SRC_FILES EXCLUDE REGEX "main.c$")
 

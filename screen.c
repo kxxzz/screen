@@ -236,6 +236,7 @@ static void SCREEN_renderPassDevOnEnter(SCREEN_RenderPassDev* dev, const SCREEN_
     dev->uniform_TimeDelta = glGetUniformLocation(shaderProgram, "iTimeDelta");
     dev->uniform_Mouse = glGetUniformLocation(shaderProgram, "iMouse");
     dev->uniform_Frame = glGetUniformLocation(shaderProgram, "iFrame");
+    dev->uniform_Date = glGetUniformLocation(shaderProgram, "iDate");
 
     for (u32 i = 0; i < SCREEN_Channels_MAX; ++i)
     {
@@ -384,6 +385,22 @@ static void SCREEN_renderPassDevOnRender(SCREEN_RenderPassDev* dev, SCREEN_Rende
     if (dev->uniform_Frame >= 0)
     {
         glUniform1i(dev->uniform_Frame, ctx->frame);
+    }
+    if (dev->uniform_Date >= 0)
+    {
+        struct timeval tv[1];
+        gettimeofday(tv, NULL);
+        time_t tt = time(NULL);
+        struct tm* t = localtime(&tt);
+        glUniform4f
+        (
+            dev->uniform_Date,
+            (f32)t->tm_year + 1900.0f,
+            (f32)t->tm_mon,
+            (f32)t->tm_mday,
+            t->tm_hour * 60.0f * 60.0f +
+            t->tm_min * 60.0f + t->tm_sec + tv->tv_usec * 0.000001f
+        );
     }
 
     for (u32 i = 0; i < SCREEN_Channels_MAX; ++i)
