@@ -78,11 +78,16 @@ static char* stzncpy(char* dst, char const* src, u32 len)
 
 
 
-#ifdef _MSC_VER
-# ifndef NDEBUG
-#  define SCREEN_SCENE_STRICT
-# endif
+
+
+#ifndef NDEBUG
+# define SCREEN_SCENE_STRICT
 #endif
+
+
+
+
+
 
 
 
