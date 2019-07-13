@@ -204,10 +204,12 @@ static void SCREEN_renderPassDevOnEnter(SCREEN_RenderPassDev* dev, const SCREEN_
     vec_resize(ctx->tmpDataBuf, 0);
     for (u32 ci = 0; ci < SCREEN_Channels_MAX; ++ci)
     {
+#ifdef SCREEN_SCENE_STRICT
         if (SCREEN_ChannelType_Unused == desc->channel[ci].type)
         {
             continue;
         }
+#endif
         const char* samplerStr = "sampler2D";
         if (SCREEN_ChannelType_Asset == desc->channel[ci].type)
         {
