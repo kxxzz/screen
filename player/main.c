@@ -215,6 +215,7 @@ int main(int argc, char* argv[])
                 //    path,
                 //    window
                 //);
+                outdated = true;
                 sceneFile = realloc(sceneFile, strlen(path) + 1);
                 memcpy(sceneFile, path, strlen(path) + 1);
                 SDL_free(path);
@@ -325,7 +326,10 @@ int main(int argc, char* argv[])
 
             if (watchFlag)
             {
-                SCREEN_fwtchUpdate();
+                if (SCREEN_fwtchUpdate())
+                {
+                    outdated = true;
+                }
             }
         }
 

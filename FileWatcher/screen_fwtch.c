@@ -185,7 +185,7 @@ void SCREEN_fwtchConfigUnbind(void)
 
 
 
-void SCREEN_fwtchUpdate(void)
+bool SCREEN_fwtchUpdate(void)
 {
     assert(ctx);
     bool modified = false;
@@ -195,8 +195,9 @@ void SCREEN_fwtchUpdate(void)
         vec_char* pathBuf = ctx->pathBuf;
         vec_resize(pathBuf, 0);
 
-        modified = SCREEN_fwtchFileCheckModify(sceneFiles->data + ctx->sceneFileIndex);
-        if (modified)
+        bool m = SCREEN_fwtchFileCheckModify(sceneFiles->data + ctx->sceneFileIndex);
+        modified = modified || m;
+        if (m)
         {
             // todo report
             printf("[SCENE CHANGE] \"%s\"\n", sceneFiles->data[ctx->sceneFileIndex].path);
@@ -219,8 +220,9 @@ void SCREEN_fwtchUpdate(void)
     if (ctx->hasConfigFile)
     {
         SCREEN_FwtchFile* configFile = ctx->configFile;
-        modified = SCREEN_fwtchFileCheckModify(configFile);
-        if (modified)
+        bool m = SCREEN_fwtchFileCheckModify(configFile);
+        modified = modified || m;
+        if (m)
         {
             // todo report
             printf("[CONFIG CHANGE] \"%s\"\n", configFile->path);
@@ -231,6 +233,7 @@ void SCREEN_fwtchUpdate(void)
             }
         }
     }
+    return modified;
 }
 
 
