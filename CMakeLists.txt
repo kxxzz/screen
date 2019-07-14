@@ -25,6 +25,10 @@ set (SDL_DIR ${IMPLIB_DIR}/sdl)
 include_directories (${SDL_DIR}/include)
 link_directories (${SDL_DIR}/build/${ConfigurationName})
 
+set (CURL_DIR ${IMPLIB_DIR}/curl)
+include_directories (${CURL_DIR}/include)
+link_directories (${CURL_DIR}/lib)
+
 
 include_directories (.)
 add_definitions (-D_UNICODE -D_CRT_SECURE_NO_WARNINGS -D_USE_MATH_DEFINES)
@@ -129,9 +133,9 @@ if (NOT DEFINED EMSCRIPTEN)
 endif ()
 if (NOT DEFINED EMSCRIPTEN)
     if (WIN32)
-        target_link_libraries (player opengl32 gl3w version winmm imm32)
+        target_link_libraries (player opengl32 gl3w libcurl_a version winmm imm32)
     else ()
-        target_link_libraries (player GL gl3w)
+        target_link_libraries (player GL gl3w curl)
     endif ()
 endif ()
 
