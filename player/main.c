@@ -267,10 +267,15 @@ int main(int argc, char* argv[])
             case SDL_KEYDOWN:
             {
                 outdated = true;
-                if (SDLK_BACKSPACE == e.key.keysym.sym)
+                if (SDLK_ESCAPE == e.key.keysym.sym)
                 {
                     fullscreen = !fullscreen;
                     SDL_SetWindowFullscreen(window, fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
+                }
+                if (SDLK_F8 == e.key.keysym.sym)
+                {
+                    fullscreen = !fullscreen;
+                    SDL_SetWindowFullscreen(window, fullscreen ? SDL_WINDOW_FULLSCREEN : 0);
                 }
                 if (SDLK_TAB == e.key.keysym.sym)
                 {
@@ -283,11 +288,11 @@ int main(int argc, char* argv[])
                 }
                 if (SDLK_F1 == e.key.keysym.sym)
                 {
-                    stopped = !stopped;
-                }
-                if (SDLK_ESCAPE == e.key.keysym.sym)
-                {
                     SCREEN_sceneReset();
+                }
+                if (SDLK_F2 == e.key.keysym.sym)
+                {
+                    stopped = !stopped;
                 }
                 SCREEN_Key k = SCREEN_keyFromSdlKeysym(&e.key.keysym);
                 SCREEN_keyDown(k);
