@@ -78,7 +78,7 @@ enum
 {
     SCREEN_Assets_MAX = 8,
     SCREEN_Channels_MAX = 4,
-    SCREEN_Buffer2Ds_MAX = 4,
+    SCREEN_Buffers_MAX = 4,
 };
 
 
@@ -112,7 +112,7 @@ typedef struct SCREEN_Asset
 typedef enum SCREEN_ChannelType
 {
     SCREEN_ChannelType_Unused = 0,
-    SCREEN_ChannelType_Buffer2D,
+    SCREEN_ChannelType_Buffer,
     SCREEN_ChannelType_Keyboard,
     SCREEN_ChannelType_Asset,
     SCREEN_ChannelTypeCount
@@ -138,7 +138,7 @@ typedef struct SCREEN_Channel
     SCREEN_ChannelType type;
     union
     {
-        u32 buffer2d;
+        u32 buffer;
         u32 asset;
     };
     SCREEN_ChannelWrap wrap;
@@ -156,7 +156,7 @@ typedef struct SCREEN_Scene
     u32 assetCount;
     SCREEN_Asset asset[SCREEN_Assets_MAX];
     const char* shaderCommon;
-    SCREEN_RenderPass buffer2d[SCREEN_Buffer2Ds_MAX];
+    SCREEN_RenderPass buffer[SCREEN_Buffers_MAX];
     SCREEN_RenderPass image;
 } SCREEN_Scene;
 

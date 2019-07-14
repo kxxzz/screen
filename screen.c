@@ -38,7 +38,7 @@ typedef struct SCREEN_Context
     // gpu runtime
     bool entered;
     SCREEN_AssetDev asset[SCREEN_Assets_MAX];
-    SCREEN_RenderPassDev buffer2d[SCREEN_Buffer2Ds_MAX];
+    SCREEN_RenderPassDev buffer[SCREEN_Buffers_MAX];
     SCREEN_RenderPassDev image[1];
     GLuint vb;
     GLuint va;
@@ -455,10 +455,10 @@ static void SCREEN_renderPassDevOnRender(SCREEN_RenderPassDev* dev, SCREEN_Rende
             glBindTexture(target, 0);
             continue;
         }
-        case SCREEN_ChannelType_Buffer2D:
+        case SCREEN_ChannelType_Buffer:
         {
-            u32 bi = desc->channel[i].buffer2d;
-            GLuint texture = ctx->buffer2d[bi].texture;
+            u32 bi = desc->channel[i].buffer;
+            GLuint texture = ctx->buffer[bi].texture;
             glBindTexture(target, texture);
             break;
         }
@@ -543,14 +543,14 @@ static void SCREEN_enterScene(void)
         SCREEN_assetDevOnEnter(dev, ctx->scene->asset + i);
     }
 
-    for (u32 i = 0; i < SCREEN_Buffer2Ds_MAX; ++i)
+    for (u32 i = 0; i < SCREEN_Buffers_MAX; ++i)
     {
-        if (!ctx->scene->buffer2d[i].shaderCode)
+        if (!ctx->scene->buffer[i].shaderCode)
         {
             continue;
         }
-        SCREEN_RenderPassDev* dev = ctx->buffer2d + i;
-        SCREEN_renderPassDevOnEnter(dev, ctx->scene->buffer2d + i, false);
+        SCREEN_RenderPassDev* dev = ctx->buffer + i;
+        SCREEN_renderPassDevOnEnter(dev, ctx->scene->buffer + i, false);
     }
     SCREEN_renderPassDevOnEnter(ctx->image, &ctx->scene->image, ctx->imageRenderDirect);
 
@@ -565,9 +565,9 @@ static void SCREEN_leaveScene(void)
         SCREEN_AssetDev* dev = ctx->asset + i;
         SCREEN_assetDevOnLeave(dev);
     }
-    for (u32 i = 0; i < SCREEN_Buffer2Ds_MAX; ++i)
+    for (u32 i = 0; i < SCREEN_Buffers_MAX; ++i)
     {
-        SCREEN_RenderPassDev* dev = ctx->buffer2d + i;
+        SCREEN_RenderPassDev* dev = ctx->buffer + i;
         SCREEN_renderPassDevOnLeave(dev);
     }
     SCREEN_renderPassDevOnLeave(ctx->image);
@@ -819,10 +819,10 @@ void SCREEN_sceneReset(void)
     //SCREEN_leaveScene();
     //SCREEN_enterScene();
 
-    for (u32 i = 0; i < SCREEN_Buffer2Ds_MAX; ++i)
+    for (u32 i = 0; i < SCREEN_Buffers_MAX; ++i)
     {
 
-        SCREEN_RenderPassDev* passDev = ctx->buffer2d + i;
+        SCREEN_RenderPassDev* passDev = ctx->buffer + i;
         SCREEN_renderPassDevReset(passDev, false);
     }
     SCREEN_renderPassDevReset(ctx->image, ctx->imageRenderDirect);
@@ -871,9 +871,9 @@ void SCREEN_frame(f32 dt, bool stopped)
     }
 
 
-    for (u32 i = 0; i < SCREEN_Buffer2Ds_MAX; ++i)
+    for (u32 i = 0; i < SCREEN_Buffers_MAX; ++i)
     {
-        SCREEN_renderPassDevOnRender(ctx->buffer2d + i, ctx->scene->buffer2d + i);
+        SCREEN_renderPassDevOnRender(ctx->buffer + i, ctx->scene->buffer + i);
     }
     SCREEN_renderPassDevOnRender(ctx->image, &ctx->scene->image);
 
@@ -1009,9 +1009,9 @@ void SCREEN_setRenderSize(const SCREEN_RenderSize* rs)
         u32 widthCopy = min(ctx->renderWidth, renderWidth0);
         u32 heightCopy = min(ctx->renderHeight, renderHeight0);
 
-        for (u32 i = 0; i < SCREEN_Buffer2Ds_MAX; ++i)
+        for (u32 i = 0; i < SCREEN_Buffers_MAX; ++i)
         {
-            SCREEN_renderPassDevOnResize(ctx->buffer2d + i, ctx->scene->buffer2d + i, false, widthCopy, heightCopy);
+            SCREEN_renderPassDevOnResize(ctx->buffer + i, ctx->scene->buffer + i, false, widthCopy, heightCopy);
         }
         SCREEN_renderPassDevOnResize(ctx->image, &ctx->scene->image, ctx->imageRenderDirect, 0, 0);
 
@@ -1095,12 +1095,12 @@ static void SCREEN_loadSceneData(const SCREEN_Scene* srcScene)
         vec_pusharr(ctx->sceneDataBuf, srcScene->shaderCommon, n);
     }
 
-    for (u32 bi = 0; bi < SCREEN_Buffer2Ds_MAX; ++bi)
+    for (u32 bi = 0; bi < SCREEN_Buffers_MAX; ++bi)
     {
-        const SCREEN_RenderPass* srcBuffer = srcScene->buffer2d + bi;
+        const SCREEN_RenderPass* srcBuffer = srcScene->buffer + bi;
         if (srcBuffer->shaderCode)
         {
-            SCREEN_RenderPass* dstBuffer = dstScene->buffer2d + bi;
+            SCREEN_RenderPass* dstBuffer = dstScene->buffer + bi;
             dstBuffer->shaderCode = ctx->sceneDataBuf->data + ctx->sceneDataBuf->length;
             u32 n = (u32)strlen(srcBuffer->shaderCode) + 1;
             vec_pusharr(ctx->sceneDataBuf, srcBuffer->shaderCode, n);

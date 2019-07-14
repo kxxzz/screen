@@ -107,25 +107,32 @@ static void SCREEN_loadSceneAssetFromJson
     SCREEN_AssetType type = -1;
     {
         const nx_json* typeJs = nx_json_get(assetJs, "type");
-        if (typeJs->type != NX_JSON_STRING)
+        if (NX_JSON_NULL == typeJs->type)
         {
-            // todo report error
-            goto error;
+            type = SCREEN_AssetType_2D;
         }
-        const char* typeStr = typeJs->text_value;
-        for (u32 i = 0; i < SCREEN_AssetTypeCount; ++i)
+        else
         {
-            if (strcicmp(typeStr, SCREEN_AssetTypeNameTable(i)) == 0)
+            if (typeJs->type != NX_JSON_STRING)
             {
-                desc->type = i;
-                type = i;
-                break;
+                // todo report error
+                goto error;
             }
-        }
-        if (-1 == type)
-        {
-            // todo report error
-            goto error;
+            const char* typeStr = typeJs->text_value;
+            for (u32 i = 0; i < SCREEN_AssetTypeCount; ++i)
+            {
+                if (strcicmp(typeStr, SCREEN_AssetTypeNameTable(i)) == 0)
+                {
+                    desc->type = i;
+                    type = i;
+                    break;
+                }
+            }
+            if (-1 == type)
+            {
+                // todo report error
+                goto error;
+            }
         }
     }
 
@@ -247,7 +254,7 @@ static void SCREEN_loadScenePassFromJson
     SCREEN_RenderPass* renderPass;
     if (pBi)
     {
-        renderPass = desc->buffer2d + bi;
+        renderPass = desc->buffer + bi;
     }
     else
     {
@@ -292,16 +299,16 @@ static void SCREEN_loadScenePassFromJson
                 goto error;
             }
             const char* typeText = typeJs->text_value;
-            if (0 == strcicmp(typeText, "buffer2d"))
+            if (0 == strcicmp(typeText, "buffer"))
             {
-                renderPass->channel[cidx].type = SCREEN_ChannelType_Buffer2D;
+                renderPass->channel[cidx].type = SCREEN_ChannelType_Buffer;
                 const nx_json* idJs = nx_json_item(channelJs, 1);
                 if (idJs->type != NX_JSON_INTEGER)
                 {
                     // todo report error
                     goto error;
                 }
-                renderPass->channel[cidx].buffer2d = (u32)idJs->int_value;
+                renderPass->channel[cidx].buffer = (u32)idJs->int_value;
             }
             else if (0 == strcicmp(typeText, "keyboard"))
             {
@@ -316,7 +323,7 @@ static void SCREEN_loadScenePassFromJson
                     // todo report error
                     goto error;
                 }
-                renderPass->channel[cidx].buffer2d = (u32)idJs->int_value;
+                renderPass->channel[cidx].buffer = (u32)idJs->int_value;
             }
             else
             {
@@ -348,8 +355,8 @@ static SCREEN_LoadFileError SCREEN_loadSceneFromJson(char* code, const char* dir
     char path[SCREEN_PATH_MAX] = "";
     u32 assetDataOff[SCREEN_Assets_MAX] = { 0 };
     u32 commShaderOff = -1, imageShaderOff = -1;
-    bool buffer2dUsed[SCREEN_Buffer2Ds_MAX] = { 0 };
-    u32 buffer2dShaderOff[SCREEN_Buffer2Ds_MAX] = { 0 };
+    bool bufferUsed[SCREEN_Buffers_MAX] = { 0 };
+    u32 bufferShaderOff[SCREEN_Buffers_MAX] = { 0 };
 
     const nx_json* rootJs = nx_json_parse(code, NULL);
     if (!rootJs)
@@ -402,24 +409,24 @@ static SCREEN_LoadFileError SCREEN_loadSceneFromJson(char* code, const char* dir
             commShaderOff = shaderOff;
         }
     }
-    const nx_json* buffer2dsJs = nx_json_get(rootJs, "buffer2ds");
-    if (buffer2dsJs->type != NX_JSON_NULL)
+    const nx_json* buffersJs = nx_json_get(rootJs, "buffers");
+    if (buffersJs->type != NX_JSON_NULL)
     {
-        if (buffer2dsJs->type != NX_JSON_ARRAY)
+        if (buffersJs->type != NX_JSON_ARRAY)
         {
             // todo report error
             goto error;
         }
-        for (int i = 0; i < buffer2dsJs->length; ++i)
+        for (int i = 0; i < buffersJs->length; ++i)
         {
-            const nx_json* buffer2dJs = nx_json_item(buffer2dsJs, i);
+            const nx_json* bufferJs = nx_json_item(buffersJs, i);
             u32 shaderOff, bi;
-            SCREEN_loadScenePassFromJson(buffer2dJs, dir, desc, dataBuf, pathBuf, &shaderOff, &bi);
+            SCREEN_loadScenePassFromJson(bufferJs, dir, desc, dataBuf, pathBuf, &shaderOff, &bi);
             if (shaderOff != -1)
             {
                 assert(bi != -1);
-                buffer2dShaderOff[bi] = shaderOff;
-                buffer2dUsed[bi] = true;
+                bufferShaderOff[bi] = shaderOff;
+                bufferUsed[bi] = true;
             }
             else
             {
@@ -440,11 +447,11 @@ static SCREEN_LoadFileError SCREEN_loadSceneFromJson(char* code, const char* dir
     {
         desc->shaderCommon = dataBuf->data + commShaderOff;
     }
-    for (u32 i = 0; i < SCREEN_Buffer2Ds_MAX; ++i)
+    for (u32 i = 0; i < SCREEN_Buffers_MAX; ++i)
     {
-        if (buffer2dUsed[i])
+        if (bufferUsed[i])
         {
-            desc->buffer2d[i].shaderCode = dataBuf->data + buffer2dShaderOff[i];
+            desc->buffer[i].shaderCode = dataBuf->data + bufferShaderOff[i];
         }
     }
     desc->image.shaderCode = dataBuf->data + imageShaderOff;

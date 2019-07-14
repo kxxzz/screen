@@ -294,11 +294,11 @@ u32 SCREEN_calcSceneDataSize(const SCREEN_Scene* scene)
     {
         size += (u32)strlen(scene->shaderCommon) + 1;
     }
-    for (u32 i = 0; i < SCREEN_Buffer2Ds_MAX; ++i)
+    for (u32 i = 0; i < SCREEN_Buffers_MAX; ++i)
     {
-        if (scene->buffer2d[i].shaderCode)
+        if (scene->buffer[i].shaderCode)
         {
-            size += (u32)strlen(scene->buffer2d[i].shaderCode) + 1;
+            size += (u32)strlen(scene->buffer[i].shaderCode) + 1;
         }
     }
     if (scene->image.shaderCode)
