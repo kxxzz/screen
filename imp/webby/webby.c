@@ -517,7 +517,9 @@ WebbyServerInit(struct WebbyServerConfig *config, void *memory, size_t memory_si
 
     memset(&bind_addr, 0, sizeof bind_addr); // use 0.0.0.0
     bind_addr.sin_family = AF_INET;
-    bind_addr.sin_addr.s_addr = inet_addr(config->bind_address);
+    //bind_addr.sin_addr.s_addr = inet_addr(config->bind_address);
+    inet_pton(AF_INET, config->bind_address, &bind_addr.sin_addr.s_addr);
+
     bind_addr.sin_port = htons((unsigned short) config->listening_port);
 
     if (0 != bind(server->socket, (struct sockaddr*) &bind_addr, sizeof bind_addr))

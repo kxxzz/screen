@@ -7,17 +7,17 @@
 
 #include <threads.h>
 
-#define WBY_IMPLEMENTATION
-#define WBY_UINT_PTR uintptr_t
-#include <wby.h>
+#include <webby.h>
 
 
 
 
 typedef struct SCREEN_SyncSrv
 {
-    struct wby_server wby[1];
+    struct WebbyServer* server;
+    struct WebbyServerConfig config[1];
     void* memory;
+    int memorySize;
 } SCREEN_SyncSrv;
 
 static SCREEN_SyncSrv srv[1] = { 0 };
@@ -26,35 +26,64 @@ static SCREEN_SyncSrv srv[1] = { 0 };
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 void SCREEN_syncSrvStartup(void)
 {
-    struct wby_config config[1];
-    memset(config, 0, sizeof(config));
-    config->address = "127.0.0.1";
-    config->port = 8888;
-    config->connection_max = 8;
+#if defined(_WIN32)
+    {
+        WORD wsa_version = MAKEWORD(2, 2);
+        WSADATA wsa_data;
+        if (0 != WSAStartup(wsa_version, &wsa_data))
+        {
+            // todo report
+            return;
+        }
+    }
+#endif
+
+    struct WebbyServerConfig* config = srv->config;
+    memset(config, 0, sizeof(srv->config));
+    config->bind_address = "127.0.0.1";
+    config->listening_port = 8081;
+    config->flags = WEBBY_SERVER_WEBSOCKETS;
+    config->connection_max = 4;
     config->request_buffer_size = 2048;
     config->io_buffer_size = 8192;
-    config->dispatch = dispatch;
-    config->ws_connect = websocket_connect;
-    config->ws_connected = websocket_connected;
-    config->ws_frame = websocket_frame;
-    config->ws_closed = websocket_closed;
+    //config->dispatch = test_dispatch;
+    //config->log = test_log;
+    //config->ws_connect = test_ws_connect;
+    //config->ws_connected = test_ws_connected;
+    //config->ws_closed = test_ws_closed;
+    //config->ws_frame = test_ws_frame;
 
     assert(!srv->memory);
-    size_t memorySize;
-    wby_init(srv->wby, &config, &memorySize);
-    srv->memory = zalloc(memorySize);
-    wby_start(srv->wby, srv->memory);
+    srv->memorySize = WebbyServerMemoryNeeded(config);
+    srv->memory = malloc(srv->memorySize);
+    srv->server = WebbyServerInit(config, srv->memory, srv->memorySize);
 }
 
 
 
 void SCREEN_syncSrvDestroy(void)
 {
-    wby_stop(srv->wby);
+    WebbyServerShutdown(srv->server);
     free(srv->memory);
-    memset(srv, 0, sizeof(*srv));
+    memset(srv, 0, sizeof(srv));
+
+#if defined(_WIN32)
+    WSACleanup();
+#endif
 }
 
 
