@@ -182,7 +182,7 @@ int main(int argc, char* argv[])
     }
 
 
-    SCREEN_syncSrvStartup();
+    SCREEN_syncSrvStartup(18081);
 
 
 

@@ -90,7 +90,7 @@ static int SCREEN_syncSrv_dispatch(struct WebbyConnection* conn)
 static int SCREEN_syncSrv_connect(struct WebbyConnection* conn)
 {
     /* Allow websocket upgrades on /wstest */
-    if (0 == strcmp(conn->request.uri, "/wstest") && srv->connectionCount < SCREEN_SyncSrvConn_MAX)
+    if (0 == strcmp(conn->request.uri, "/") && srv->connectionCount < SCREEN_SyncSrvConn_MAX)
     {
         return 0;
     }
@@ -214,7 +214,7 @@ static int SCREEN_syncSrvMain(void* a)
 
 
 
-void SCREEN_syncSrvStartup(void)
+void SCREEN_syncSrvStartup(u32 port)
 {
 #if defined(_WIN32)
     {
@@ -231,7 +231,7 @@ void SCREEN_syncSrvStartup(void)
     struct WebbyServerConfig* config = srv->config;
     memset(config, 0, sizeof(srv->config));
     config->bind_address = "127.0.0.1";
-    config->listening_port = 8081;
+    config->listening_port = port;
     config->flags = WEBBY_SERVER_WEBSOCKETS | WEBBY_SERVER_LOG_DEBUG;
     config->connection_max = 4;
     config->request_buffer_size = 2048;

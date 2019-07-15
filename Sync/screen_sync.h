@@ -6,7 +6,7 @@
 
 
 
-void SCREEN_syncSrvStartup(void);
+void SCREEN_syncSrvStartup(u32 port);
 void SCREEN_syncSrvDestroy(void);
 
 
