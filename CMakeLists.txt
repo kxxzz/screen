@@ -108,6 +108,13 @@ add_library (ScreenFileWatcher ${FILEWATCHER_SRC_FILES})
 set_target_properties (ScreenFileWatcher PROPERTIES FOLDER screen)
 
 
+include_directories (NetSync)
+file (GLOB NETSYNC_SRC_FILES NetSync/*.h NetSync/*.c)
+source_group (src FILES ${NETSYNC_SRC_FILES})
+add_library (ScreenNetSync ${NETSYNC_SRC_FILES})
+set_target_properties (ScreenNetSync PROPERTIES FOLDER screen)
+
+
 include_directories (Utils)
 file (GLOB UTILS_SRC_FILES Utils/*.h Utils/*.c)
 source_group (src FILES ${UTILS_SRC_FILES})
@@ -121,7 +128,7 @@ source_group (src FILES ${TESTS_SRC_FILES})
 add_executable (player ${TESTS_SRC_FILES})
 target_link_libraries (player
     imp screen
-    ScreenSceneLoader ScreenConfigLoader ScreenFileWatcher ScreenUtils
+    ScreenSceneLoader ScreenConfigLoader ScreenFileWatcher ScreenNetSync ScreenUtils
     )
 if (WIN32)
 else ()
