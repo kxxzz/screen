@@ -214,7 +214,7 @@ static int SCREEN_syncSrvMain(void* a)
 
 
 
-void SCREEN_syncSrvStartup(u32 port)
+void SCREEN_syncSrvStartup(void)
 {
 #if defined(_WIN32)
     {
@@ -231,7 +231,7 @@ void SCREEN_syncSrvStartup(u32 port)
     struct WebbyServerConfig* config = srv->config;
     memset(config, 0, sizeof(srv->config));
     config->bind_address = "127.0.0.1";
-    config->listening_port = port;
+    config->listening_port = 18081;
     config->flags = WEBBY_SERVER_WEBSOCKETS | WEBBY_SERVER_LOG_DEBUG;
     config->connection_max = 4;
     config->request_buffer_size = 2048;
