@@ -4,10 +4,7 @@
 #ifdef _WIN32
 
 
-typedef struct timeval {
-    long tv_sec;
-    long tv_usec;
-} timeval;
+#include <winsock2.h>
 
 
 int gettimeofday(struct timeval* tp, struct timezone* tzp);
