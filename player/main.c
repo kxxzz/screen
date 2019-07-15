@@ -28,6 +28,7 @@
 #include <screen_configloader_file.h>
 #include <screen_fwtch.h>
 #include <screen_utils_sdl.h>
+#include <screen_sync.h>
 
 
 
@@ -179,6 +180,10 @@ int main(int argc, char* argv[])
             SCREEN_loadConfigFile(configFile);
         }
     }
+
+
+    SCREEN_syncSrvStartup();
+
 
 
     f32 now0 = (f32)SDL_GetTicks() / 1000.f;
@@ -354,6 +359,7 @@ int main(int argc, char* argv[])
     }
 
 
+    SCREEN_syncSrvDestroy();
     if (watchFlag)
     {
         SCREEN_fwtchDestroy();

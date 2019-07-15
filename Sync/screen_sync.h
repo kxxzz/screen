@@ -6,8 +6,8 @@
 
 
 
-
-
+void SCREEN_syncSrvStartup(void);
+void SCREEN_syncSrvDestroy(void);
 
 
 

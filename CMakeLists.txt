@@ -54,14 +54,18 @@ set (CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -DDEBUG")
 
 
 
+include_directories (imp)
 include_directories (imp/vec)
 include_directories (imp/fileu)
 include_directories (imp/argparse)
 include_directories (imp/nxjson)
 include_directories (imp/stb)
 include_directories (imp/gettimeofday)
+include_directories (imp/threads)
+include_directories (imp/webby)
 
 file (GLOB IMP_SRC_FILES
+    imp/*.h
     imp/vec/*.h
     imp/vec/*.c
     imp/fileu/*.h
@@ -74,6 +78,9 @@ file (GLOB IMP_SRC_FILES
     imp/stb/*.c
     imp/gettimeofday/*.h
     imp/gettimeofday/*.c
+    imp/threads/threads.h
+    imp/webby/*.h
+    imp/webby/*.c
     )
 list(FILTER IMP_SRC_FILES EXCLUDE REGEX "main.c$")
 
@@ -108,11 +115,11 @@ add_library (ScreenFileWatcher ${FILEWATCHER_SRC_FILES})
 set_target_properties (ScreenFileWatcher PROPERTIES FOLDER screen)
 
 
-include_directories (NetSync)
-file (GLOB NETSYNC_SRC_FILES NetSync/*.h NetSync/*.c)
-source_group (src FILES ${NETSYNC_SRC_FILES})
-add_library (ScreenNetSync ${NETSYNC_SRC_FILES})
-set_target_properties (ScreenNetSync PROPERTIES FOLDER screen)
+include_directories (Sync)
+file (GLOB SYNC_SRC_FILES Sync/*.h Sync/*.c)
+source_group (src FILES ${SYNC_SRC_FILES})
+add_library (ScreenSync ${SYNC_SRC_FILES})
+set_target_properties (ScreenSync PROPERTIES FOLDER screen)
 
 
 include_directories (Utils)
@@ -128,7 +135,7 @@ source_group (src FILES ${TESTS_SRC_FILES})
 add_executable (player ${TESTS_SRC_FILES})
 target_link_libraries (player
     imp screen
-    ScreenSceneLoader ScreenConfigLoader ScreenFileWatcher ScreenNetSync ScreenUtils
+    ScreenSceneLoader ScreenConfigLoader ScreenFileWatcher ScreenSync ScreenUtils
     )
 if (WIN32)
 else ()
