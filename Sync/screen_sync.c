@@ -232,7 +232,7 @@ void SCREEN_syncSrvStartup(void)
     memset(config, 0, sizeof(srv->config));
     config->bind_address = "127.0.0.1";
     config->listening_port = 8081;
-    config->flags = WEBBY_SERVER_WEBSOCKETS;
+    config->flags = WEBBY_SERVER_WEBSOCKETS | WEBBY_SERVER_LOG_DEBUG;
     config->connection_max = 4;
     config->request_buffer_size = 2048;
     config->io_buffer_size = 8192;
