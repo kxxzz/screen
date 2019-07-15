@@ -140,7 +140,11 @@ if (NOT DEFINED EMSCRIPTEN)
 endif ()
 if (NOT DEFINED EMSCRIPTEN)
     if (WIN32)
-        target_link_libraries (player opengl32 gl3w libcurl_a version winmm imm32)
+        target_link_libraries (
+            player opengl32 gl3w libcurl_a
+            version winmm imm32
+            wldap32 crypt32 ws2_32 normaliz
+            )
     else ()
         target_link_libraries (player GL gl3w curl)
     endif ()
