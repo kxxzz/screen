@@ -28,7 +28,7 @@
 #include <screen_configloader_file.h>
 #include <screen_fwtch.h>
 #include <screen_utils_sdl.h>
-#include <screen_console.h>
+#include <screen_sync.h>
 
 
 
@@ -182,7 +182,7 @@ int main(int argc, char* argv[])
     }
 
 
-    SCREEN_consoleServerStartup();
+    SCREEN_syncServerStartup();
 
 
 
@@ -359,7 +359,7 @@ int main(int argc, char* argv[])
     }
 
 
-    SCREEN_consoleServerDestroy();
+    SCREEN_syncServerDestroy();
     if (watchFlag)
     {
         SCREEN_fwtchDestroy();
