@@ -104,8 +104,12 @@ void SCREEN_destroy(void)
 
 
 
-static void SCREEN_assetDevOnEnter(SCREEN_AssetDev* dev, const SCREEN_Asset* desc)
+static void SCREEN_assetDevOnEnter(u32 ai)
 {
+    SCREEN_AssetDev* dev = ctx->asset + ai;
+    const SCREEN_Asset* desc = ctx->scene->asset + ai;
+    const char* data = ctx->assetData[ai].data;
+
     GLenum target = SCREEN_glTargetTextureFromAssetType(desc->type);
 
     u32 w = desc->size[0];
@@ -154,13 +158,13 @@ static void SCREEN_assetDevOnEnter(SCREEN_AssetDev* dev, const SCREEN_Asset* des
     case GL_TEXTURE_2D:
     {
         glTexStorage2D(target, levels, internalFormat, w, h);
-        glTexSubImage2D(target, 0, 0, 0, w, h, format, type, desc->data);
+        glTexSubImage2D(target, 0, 0, 0, w, h, format, type, data);
         break;
     }
     case GL_TEXTURE_3D:
     {
         glTexStorage3D(target, levels, internalFormat, w, h, d);
-        glTexSubImage3D(target, 0, 0, 0, 0, w, h, d, format, type, desc->data);
+        glTexSubImage3D(target, 0, 0, 0, 0, w, h, d, format, type, data);
         break;
     }
     case GL_TEXTURE_CUBE_MAP:
@@ -171,7 +175,7 @@ static void SCREEN_assetDevOnEnter(SCREEN_AssetDev* dev, const SCREEN_Asset* des
         {
             glTexSubImage2D
             (
-                GL_TEXTURE_CUBE_MAP_POSITIVE_X + f, 0, 0, 0, w, h, format, type, desc->data + faceSize * f
+                GL_TEXTURE_CUBE_MAP_POSITIVE_X + f, 0, 0, 0, w, h, format, type, data + faceSize * f
             );
         }
         break;
@@ -544,8 +548,7 @@ static void SCREEN_enterScene(void)
 
     for (u32 i = 0; i < ctx->scene->assetCount; ++i)
     {
-        SCREEN_AssetDev* dev = ctx->asset + i;
-        SCREEN_assetDevOnEnter(dev, ctx->scene->asset + i);
+        SCREEN_assetDevOnEnter(i);
     }
 
     for (u32 i = 0; i < SCREEN_Buffers_MAX; ++i)
@@ -1091,6 +1094,8 @@ static void SCREEN_loadSceneData(const SCREEN_Scene* srcScene)
         *dstAsset = *srcAsset;
         dstAsset->data = ctx->sceneDataBuf->data + ctx->sceneDataBuf->length;
         vec_pusharr(ctx->sceneDataBuf, srcAsset->data, srcAsset->dataSize);
+
+        // todo
     }
 
     if (srcScene->shaderCommon)
