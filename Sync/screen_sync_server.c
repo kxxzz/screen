@@ -215,7 +215,7 @@ static int SCREEN_consSrvMain(void* a)
 
 void SCREEN_syncServerStartup(void)
 {
-#if defined(_WIN32)
+#ifdef _WIN32
     {
         WORD wsa_version = MAKEWORD(2, 2);
         WSADATA wsa_data;
@@ -264,7 +264,7 @@ void SCREEN_syncServerDestroy(void)
     free(srv->memory);
     memset(srv, 0, sizeof(srv));
 
-#if defined(_WIN32)
+#ifdef _WIN32
     WSACleanup();
 #endif
 }
