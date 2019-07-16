@@ -55,6 +55,7 @@ typedef struct SCREEN_Context
     u8 keyboardState[SCREEN_KeyboardStateCount][SCREEN_KeyCount];
 
     // data buffer
+    vec_char assetData[SCREEN_Assets_MAX];
     vec_char sceneDataBuf[1];
     vec_char tmpDataBuf[1];
 } SCREEN_Context;
@@ -84,6 +85,10 @@ void SCREEN_destroy(void)
 {
     vec_free(ctx->tmpDataBuf);
     vec_free(ctx->sceneDataBuf);
+    for (u32 i = 0; i < SCREEN_Assets_MAX; ++i)
+    {
+        vec_free(ctx->assetData + i);
+    }
     free(ctx);
     ctx = NULL;
 }
