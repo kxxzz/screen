@@ -55,7 +55,7 @@ typedef struct SCREEN_Context
     u8 keyboardState[SCREEN_KeyboardStateCount][SCREEN_KeyCount];
 
     // data buffer
-    vec_char assetData[SCREEN_Assets_MAX];
+    vec_char assetGpuData[SCREEN_Assets_MAX];
     vec_char sceneDataBuf[1];
     vec_char tmpDataBuf[1];
 } SCREEN_Context;
@@ -87,7 +87,7 @@ void SCREEN_destroy(void)
     vec_free(ctx->sceneDataBuf);
     for (u32 i = 0; i < SCREEN_Assets_MAX; ++i)
     {
-        vec_free(ctx->assetData + i);
+        vec_free(ctx->assetGpuData + i);
     }
     free(ctx);
     ctx = NULL;
@@ -108,7 +108,7 @@ static void SCREEN_assetDevOnEnter(u32 ai)
 {
     SCREEN_AssetDev* dev = ctx->asset + ai;
     const SCREEN_Asset* desc = ctx->scene->asset + ai;
-    const char* data = ctx->assetData[ai].data;
+    const char* data = ctx->assetGpuData[ai].data;
 
     GLenum target = SCREEN_glTargetTextureFromAssetType(desc->type);
 
@@ -1095,7 +1095,9 @@ static void SCREEN_loadSceneData(const SCREEN_Scene* srcScene)
         dstAsset->data = ctx->sceneDataBuf->data + ctx->sceneDataBuf->length;
         vec_pusharr(ctx->sceneDataBuf, srcAsset->data, srcAsset->dataSize);
 
-        // todo
+        u32 gpuDataSize = SCREEN_assetGpuDataSize(srcAsset);
+        vec_resize(ctx->assetGpuData + ai, gpuDataSize);
+        SCREEN_assetMakeGpuData(ctx->assetGpuData[ai].data, srcAsset);
     }
 
     if (srcScene->shaderCommon)

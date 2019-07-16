@@ -21,7 +21,7 @@ static void SCREEN_pathAdd(const char* filename, vec_char* pathBuf)
 
 
 
-static u32 SCREEN_loadFileDataToBuf(vec_char* dataBuf, vec_char* pathBuf, const char* filename)
+static u32 SCREEN_loadFileDataToBuf(vec_char* dataBuf, vec_char* pathBuf, const char* filename, bool addStrEnd)
 {
     u32 size = FILEU_readFile(filename, NULL, 0);
     if ((-1 == size) || !size)
@@ -30,9 +30,12 @@ static u32 SCREEN_loadFileDataToBuf(vec_char* dataBuf, vec_char* pathBuf, const 
         return -1;
     }
     u32 offset = dataBuf->length;
-    vec_resize(dataBuf, offset + size + 1);
+    vec_resize(dataBuf, offset + size + (addStrEnd ? 1 : 0));
     size = FILEU_readFile(filename, dataBuf->data + offset, size);
-    dataBuf->data[offset + size] = 0;
+    if (addStrEnd)
+    {
+        dataBuf->data[offset + size] = 0;
+    }
     SCREEN_pathAdd(filename, pathBuf);
     return offset;
 }
@@ -66,20 +69,8 @@ static bool SCREEN_loadAssetFromImageFile
         asset->size[0] = x;
         asset->size[1] = y;
         asset->size[2] = 1;
-        asset->dataSize = x * y * comp;
     }
-    stbi_uc* data = stbi_load(filename, &x, &y, &comp, comp);
-    if (!data)
-    {
-        // todo report error
-        return false;
-    }
-    u32 dataSize = x * y * comp;
-
-    u32 dataOff = dataBuf->length;
-    vec_resize(dataBuf, dataOff + dataSize);
-    memcpy(dataBuf->data + dataOff, data, dataSize);
-    SCREEN_pathAdd(filename, pathBuf);
+    SCREEN_loadFileDataToBuf(dataBuf, pathBuf, filename, false);
     return true;
 }
 
@@ -152,6 +143,7 @@ static void SCREEN_loadSceneAssetFromJson
         {
             goto error;
         }
+        desc->dataSize = dataBuf->length - dataOff;
         *pDataOff = dataOff;
     }
     else if (SCREEN_AssetType_Cube == type)
@@ -180,12 +172,14 @@ static void SCREEN_loadSceneAssetFromJson
             const char* filename = faceJs->text_value;
             snprintf(path, sizeof(path), "%s/%s", dir, filename);
 
+            u32 dataOff = dataBuf->length;
             if (!SCREEN_loadAssetFromImageFile(dataBuf, pathBuf, (0 == f) ? desc : NULL, path))
             {
                 goto error;
             }
+            desc->cubeFaceDataSize[f] = dataBuf->length - dataOff;
         }
-        desc->dataSize *= 6;
+        desc->dataSize = dataBuf->length - dataOff;
         *pDataOff = dataOff;
     }
     else
@@ -227,7 +221,7 @@ static void SCREEN_loadScenePassFromJson
     }
     const char* filename = shaderJs->text_value;
     snprintf(path, sizeof(path), "%s/%s", dir, filename);
-    u32 shaderOff = SCREEN_loadFileDataToBuf(dataBuf, pathBuf, path);
+    u32 shaderOff = SCREEN_loadFileDataToBuf(dataBuf, pathBuf, path, true);
     if (-1 == shaderOff)
     {
         // todo report error
@@ -400,7 +394,7 @@ static SCREEN_LoadFileError SCREEN_loadSceneFromJson(char* code, const char* dir
             }
             const char* filename = shaderJs->text_value;
             snprintf(path, sizeof(path), "%s/%s", dir, filename);
-            u32 shaderOff = SCREEN_loadFileDataToBuf(dataBuf, pathBuf, path);
+            u32 shaderOff = SCREEN_loadFileDataToBuf(dataBuf, pathBuf, path, true);
             if (-1 == shaderOff)
             {
                 // todo report error

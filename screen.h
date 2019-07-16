@@ -95,6 +95,7 @@ typedef enum SCREEN_AssetType
 const char* SCREEN_AssetTypeNameTable(SCREEN_AssetType t);
 
 
+
 typedef struct SCREEN_Asset
 {
     SCREEN_AssetType type;
@@ -102,7 +103,10 @@ typedef struct SCREEN_Asset
     u32 size[3];
     const char* data;
     u32 dataSize;
+    u32 cubeFaceDataSize[6];
 } SCREEN_Asset;
+
+u32 SCREEN_assetGpuDataSize(const SCREEN_Asset* asset);
 
 
 

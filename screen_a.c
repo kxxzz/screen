@@ -1,5 +1,8 @@
 #include "screen_a.h"
 
+#include <stb_image.h>
+
+
 
 
 
@@ -11,6 +14,25 @@ const char* SCREEN_AssetTypeNameTable(SCREEN_AssetType t)
         "2d", "3d", "cube"
     };
     return a[t];
+}
+
+
+
+
+u32 SCREEN_assetGpuDataSize(const SCREEN_Asset* asset)
+{
+    switch (asset->type)
+    {
+    case SCREEN_AssetType_2D:
+        return asset->size[0] * asset->size[1] * asset->components;
+    case SCREEN_AssetType_3D:
+        return asset->size[0] * asset->size[1] * asset->size[2] * asset->components;
+    case SCREEN_AssetType_Cube:
+        return asset->size[0] * asset->size[1] * asset->components * 6;
+    default:
+        assert(false);
+        return 0;
+    }
 }
 
 
@@ -270,6 +292,66 @@ void SCREEN_renderPassDevOnLeave(SCREEN_RenderPassDev* dev)
     }
     memset(dev, 0, sizeof(*dev));
 }
+
+
+
+
+
+
+
+
+
+
+
+
+void SCREEN_assetMakeGpuData(char* dstBuf, const SCREEN_Asset* asset)
+{
+    if (SCREEN_AssetType_2D == asset->type)
+    {
+        int x, y, comp;
+        stbi_uc* data = stbi_load_from_memory(asset->data, asset->dataSize, &x, &y, &comp, asset->components);
+        if (!data)
+        {
+            // todo report error
+            return;
+        }
+        assert(asset->size[0] == x);
+        assert(asset->size[1] == y);
+        assert(asset->components == comp);
+        u32 size = x * y * comp;
+        memmove(dstBuf, data, size);
+        stbi_image_free(data);
+    }
+    else if (SCREEN_AssetType_Cube == asset->type)
+    {
+        u32 size = asset->size[0] * asset->size[1] * asset->components;
+        u32 srcDataOff = 0;
+        for (u32 f = 0; f < 6; ++f)
+        {
+            int x, y, comp;
+            u32 srcDataSize = asset->cubeFaceDataSize[f];
+            stbi_uc* data = stbi_load_from_memory(asset->data + srcDataOff, srcDataSize, &x, &y, &comp, asset->components);
+            if (!data)
+            {
+                // todo report error
+                return;
+            }
+            assert(asset->size[0] == x);
+            assert(asset->size[1] == y);
+            assert(asset->components == comp);
+            memmove(dstBuf + f*size, data, size);
+            stbi_image_free(data);
+            srcDataOff += srcDataSize;
+        }
+    }
+    else
+    {
+        // todo report error
+        return;
+    }
+}
+
+
 
 
 

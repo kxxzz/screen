@@ -259,7 +259,7 @@ void SCREEN_renderPassDevOnLeave(SCREEN_RenderPassDev* dev);
 
 
 
-
+void SCREEN_assetMakeGpuData(char* dstBuf, const SCREEN_Asset* asset);
 
 
 
