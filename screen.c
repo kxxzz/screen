@@ -234,9 +234,14 @@ static void SCREEN_renderPassDevOnEnter(SCREEN_RenderPassDev* dev, const SCREEN_
     }
     vec_push(ctx->tmpDataBuf, 0);
 
+    const char* commonShader = NULL;
+    if (ctx->scene->commonShaderCodeOffset != -1)
+    {
+        commonShader = ctx->sceneDataBuf->data + ctx->scene->commonShaderCodeOffset;
+    }
     GLuint shaderProgram = dev->shaderProgram = SCREEN_buildShaderProgram
     (
-        ctx->scene->shaderCommon, ctx->tmpDataBuf->data, desc->shaderCode
+        commonShader, ctx->tmpDataBuf->data, ctx->sceneDataBuf->data + desc->shaderCodeOffset
     );
     assert(shaderProgram);
 
@@ -553,7 +558,7 @@ static void SCREEN_enterScene(void)
 
     for (u32 i = 0; i < SCREEN_Buffers_MAX; ++i)
     {
-        if (!ctx->scene->buffer[i].shaderCode)
+        if (-1 == ctx->scene->buffer[i].shaderCodeOffset)
         {
             continue;
         }
@@ -1079,63 +1084,20 @@ void SCREEN_setRenderSize(const SCREEN_RenderSize* rs)
 
 
 
-static void SCREEN_loadSceneData(const SCREEN_Scene* srcScene)
+static void SCREEN_loadSceneData(const SCREEN_Scene* scene, const char* sceneData, u32 sceneDataSize)
 {
     assert(0 == ctx->sceneDataBuf->length);
-    SCREEN_Scene* dstScene = ctx->scene;
-    u32 dataSize = SCREEN_calcSceneDataSize(srcScene);
-    vec_reserve(ctx->sceneDataBuf, dataSize);
+    *ctx->scene = *scene;
+    vec_pusharr(ctx->sceneDataBuf, sceneData, sceneDataSize);
 
-    dstScene->assetCount = srcScene->assetCount;
-    for (u32 ai = 0; ai < srcScene->assetCount; ++ai)
+    assert(SCREEN_calcSceneDataSize(ctx->sceneDataBuf->data, scene) == sceneDataSize);
+
+    for (u32 ai = 0; ai < scene->assetCount; ++ai)
     {
-        const SCREEN_Asset* srcAsset = srcScene->asset + ai;
-        SCREEN_Asset* dstAsset = dstScene->asset + ai;
-        *dstAsset = *srcAsset;
-        dstAsset->data = ctx->sceneDataBuf->data + ctx->sceneDataBuf->length;
-        vec_pusharr(ctx->sceneDataBuf, srcAsset->data, srcAsset->dataSize);
-
-        u32 gpuDataSize = SCREEN_assetGpuDataSize(srcAsset);
+        u32 gpuDataSize = SCREEN_assetGpuDataSize(&scene->asset[ai]);
         vec_resize(ctx->assetGpuData + ai, gpuDataSize);
-        SCREEN_assetMakeGpuData(ctx->assetGpuData[ai].data, srcAsset);
+        SCREEN_assetMakeGpuData(ctx->assetGpuData[ai].data, sceneData, &scene->asset[ai]);
     }
-
-    if (srcScene->shaderCommon)
-    {
-        dstScene->shaderCommon = ctx->sceneDataBuf->data + ctx->sceneDataBuf->length;
-        u32 n = (u32)strlen(srcScene->shaderCommon) + 1;
-        vec_pusharr(ctx->sceneDataBuf, srcScene->shaderCommon, n);
-    }
-
-    for (u32 bi = 0; bi < SCREEN_Buffers_MAX; ++bi)
-    {
-        const SCREEN_RenderPass* srcBuffer = srcScene->buffer + bi;
-        if (srcBuffer->shaderCode)
-        {
-            SCREEN_RenderPass* dstBuffer = dstScene->buffer + bi;
-            dstBuffer->shaderCode = ctx->sceneDataBuf->data + ctx->sceneDataBuf->length;
-            u32 n = (u32)strlen(srcBuffer->shaderCode) + 1;
-            vec_pusharr(ctx->sceneDataBuf, srcBuffer->shaderCode, n);
-
-            for (u32 ci = 0; ci < SCREEN_Channels_MAX; ++ci)
-            {
-                dstBuffer->channel[ci] = srcBuffer->channel[ci];
-            }
-        }
-    }
-
-    if (srcScene->image.shaderCode)
-    {
-        dstScene->image.shaderCode = ctx->sceneDataBuf->data + ctx->sceneDataBuf->length;
-        u32 n = (u32)strlen(srcScene->image.shaderCode) + 1;
-        vec_pusharr(ctx->sceneDataBuf, srcScene->image.shaderCode, n);
-
-        for (u32 ci = 0; ci < SCREEN_Channels_MAX; ++ci)
-        {
-            dstScene->image.channel[ci] = srcScene->image.channel[ci];
-        }
-    }
-    assert(ctx->sceneDataBuf->length == dataSize);
 }
 
 
@@ -1149,7 +1111,7 @@ static void SCREEN_loadSceneData(const SCREEN_Scene* srcScene)
 
 
 
-bool SCREEN_loadScene(const SCREEN_Scene* scene)
+bool SCREEN_loadScene(const SCREEN_Scene* scene, const char* sceneData, u32 sceneDataSize)
 {
     if (!SCREEN_validateScene(scene))
     {
@@ -1160,7 +1122,7 @@ bool SCREEN_loadScene(const SCREEN_Scene* scene)
         SCREEN_unloadScene();
     }
     ctx->sceneLoaded = true;
-    SCREEN_loadSceneData(scene);
+    SCREEN_loadSceneData(scene, sceneData, sceneDataSize);
     if (ctx->entered)
     {
         SCREEN_enterScene();

@@ -259,11 +259,11 @@ void SCREEN_renderPassDevOnLeave(SCREEN_RenderPassDev* dev);
 
 
 
-void SCREEN_assetMakeGpuData(char* dstBuf, const SCREEN_Asset* asset);
+void SCREEN_assetMakeGpuData(char* dstBuf, const char* sceneData, const SCREEN_Asset* asset);
 
 
 
-u32 SCREEN_calcSceneDataSize(const SCREEN_Scene* scene);
+u32 SCREEN_calcSceneDataSize(const char* sceneData, const SCREEN_Scene* scene);
 
 bool SCREEN_validateScene(const SCREEN_Scene* scene);
 

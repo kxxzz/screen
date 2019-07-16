@@ -347,41 +347,12 @@ static SCREEN_LoadFileError SCREEN_loadSceneFromJson(char* code, const char* dir
 {
     vec_char dataBuf[1] = { 0 };
     char path[SCREEN_PATH_MAX] = "";
-    u32 assetDataOff[SCREEN_Assets_MAX] = { 0 };
-    u32 commShaderOff = -1, imageShaderOff = -1;
-    bool bufferUsed[SCREEN_Buffers_MAX] = { 0 };
-    u32 bufferShaderOff[SCREEN_Buffers_MAX] = { 0 };
 
     const nx_json* rootJs = nx_json_parse(code, NULL);
     if (!rootJs)
     {
         // todo report error
         return SCREEN_LoadFileError_FileInvalid;
-    }
-    const nx_json* assetsJs = nx_json_get(rootJs, "assets");
-    if (assetsJs->type != NX_JSON_NULL)
-    {
-        if (assetsJs->type != NX_JSON_ARRAY)
-        {
-            // todo report error
-            goto error;
-        }
-        desc->assetCount = assetsJs->length;
-        for (int ai = 0; ai < assetsJs->length; ++ai)
-        {
-            const nx_json* assetJs = nx_json_item(assetsJs, ai);
-            u32 dataOff;
-            SCREEN_loadSceneAssetFromJson(assetJs, dir, desc->asset + ai, dataBuf, &dataOff, pathBuf);
-            if (dataOff != -1)
-            {
-                assetDataOff[ai] = dataOff;
-            }
-            else
-            {
-                // todo report error
-                goto error;
-            }
-        }
     }
     {
         const nx_json* shaderJs = nx_json_get(rootJs, "commonShader");
@@ -400,7 +371,7 @@ static SCREEN_LoadFileError SCREEN_loadSceneFromJson(char* code, const char* dir
                 // todo report error
                 goto error;
             }
-            commShaderOff = shaderOff;
+            desc->commonShaderCodeOffset = shaderOff;
         }
     }
     const nx_json* buffersJs = nx_json_get(rootJs, "buffers");
@@ -419,8 +390,35 @@ static SCREEN_LoadFileError SCREEN_loadSceneFromJson(char* code, const char* dir
             if (shaderOff != -1)
             {
                 assert(bi != -1);
-                bufferShaderOff[bi] = shaderOff;
-                bufferUsed[bi] = true;
+                desc->buffer[bi].shaderCodeOffset = shaderOff;
+            }
+            else
+            {
+                // todo report error
+                goto error;
+            }
+        }
+    }
+    const nx_json* imageJs = nx_json_get(rootJs, "image");
+    SCREEN_loadScenePassFromJson(imageJs, dir, desc, dataBuf, pathBuf, &desc->image.shaderCodeOffset, NULL);
+
+    const nx_json* assetsJs = nx_json_get(rootJs, "assets");
+    if (assetsJs->type != NX_JSON_NULL)
+    {
+        if (assetsJs->type != NX_JSON_ARRAY)
+        {
+            // todo report error
+            goto error;
+        }
+        desc->assetCount = assetsJs->length;
+        for (int ai = 0; ai < assetsJs->length; ++ai)
+        {
+            const nx_json* assetJs = nx_json_item(assetsJs, ai);
+            u32 dataOff;
+            SCREEN_loadSceneAssetFromJson(assetJs, dir, desc->asset + ai, dataBuf, &dataOff, pathBuf);
+            if (dataOff != -1)
+            {
+                desc->asset[ai].dataOffset = dataOff;
             }
             else
             {
@@ -430,27 +428,7 @@ static SCREEN_LoadFileError SCREEN_loadSceneFromJson(char* code, const char* dir
         }
     }
 
-    const nx_json* imageJs = nx_json_get(rootJs, "image");
-    SCREEN_loadScenePassFromJson(imageJs, dir, desc, dataBuf, pathBuf, &imageShaderOff, NULL);
-
-    for (u32 i = 0; i < desc->assetCount; ++i)
-    {
-        desc->asset[i].data = dataBuf->data + assetDataOff[i];
-    }
-    if (commShaderOff != -1)
-    {
-        desc->shaderCommon = dataBuf->data + commShaderOff;
-    }
-    for (u32 i = 0; i < SCREEN_Buffers_MAX; ++i)
-    {
-        if (bufferUsed[i])
-        {
-            desc->buffer[i].shaderCode = dataBuf->data + bufferShaderOff[i];
-        }
-    }
-    desc->image.shaderCode = dataBuf->data + imageShaderOff;
-
-    SCREEN_loadScene(desc);
+    SCREEN_loadScene(desc, dataBuf->data, dataBuf->length);
 
     vec_free(dataBuf);
     nx_json_free(rootJs);
@@ -472,6 +450,16 @@ error:
 SCREEN_LoadFileError SCREEN_loadSceneFile(const char* filename, vec_char* pathBuf)
 {
     SCREEN_Scene desc[1] = { 0 };
+    desc->commonShaderCodeOffset = -1;
+    for (u32 i = 0; i < SCREEN_Assets_MAX; ++i)
+    {
+        desc->asset[i].dataOffset = -1;
+    }
+    for (u32 i = 0; i < SCREEN_Buffers_MAX; ++i)
+    {
+        desc->buffer[i].shaderCodeOffset = -1;
+    }
+
     if (FILEU_fileExist(filename))
     {
         if (FILEU_dirExist(filename))
@@ -530,9 +518,7 @@ SCREEN_LoadFileError SCREEN_loadSceneFile(const char* filename, vec_char* pathBu
                 {
                     vec_pusharr(pathBuf, filename, 1 + (u32)strlen(filename));
                 }
-
-                desc->image.shaderCode = buf;
-                bool r = SCREEN_loadScene(desc);
+                bool r = SCREEN_loadScene(desc, buf, size + 1);
                 free(buf);
                 return r ? SCREEN_LoadFileError_NONE : SCREEN_LoadFileError_FileInvalid;
             }

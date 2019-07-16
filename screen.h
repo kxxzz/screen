@@ -101,7 +101,7 @@ typedef struct SCREEN_Asset
     SCREEN_AssetType type;
     u32 components;
     u32 size[3];
-    const char* data;
+    u32 dataOffset;
     u32 dataSize;
     u32 cubeFaceDataSize[6];
 } SCREEN_Asset;
@@ -152,22 +152,22 @@ typedef struct SCREEN_Channel
 typedef struct SCREEN_RenderPass
 {
     SCREEN_Channel channel[SCREEN_Channels_MAX];
-    const char* shaderCode;
+    u32 shaderCodeOffset;
 } SCREEN_RenderPass;
 
 typedef struct SCREEN_Scene
 {
-    u32 assetCount;
-    SCREEN_Asset asset[SCREEN_Assets_MAX];
-    const char* shaderCommon;
+    u32 commonShaderCodeOffset;
     SCREEN_RenderPass buffer[SCREEN_Buffers_MAX];
     SCREEN_RenderPass image;
+    u32 assetCount;
+    SCREEN_Asset asset[SCREEN_Assets_MAX];
 } SCREEN_Scene;
 
 
 
 
-bool SCREEN_loadScene(const SCREEN_Scene* scene);
+bool SCREEN_loadScene(const SCREEN_Scene* scene, const char* sceneData, u32 sceneDataSize);
 void SCREEN_unloadScene(void);
 
 

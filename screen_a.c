@@ -304,12 +304,15 @@ void SCREEN_renderPassDevOnLeave(SCREEN_RenderPassDev* dev)
 
 
 
-void SCREEN_assetMakeGpuData(char* dstBuf, const SCREEN_Asset* asset)
+void SCREEN_assetMakeGpuData(char* dstBuf, const char* sceneData, const SCREEN_Asset* asset)
 {
     if (SCREEN_AssetType_2D == asset->type)
     {
         int x, y, comp;
-        stbi_uc* data = stbi_load_from_memory(asset->data, asset->dataSize, &x, &y, &comp, asset->components);
+        stbi_uc* data = stbi_load_from_memory
+        (
+            sceneData + asset->dataOffset, asset->dataSize, &x, &y, &comp, asset->components
+        );
         if (!data)
         {
             // todo report error
@@ -330,7 +333,10 @@ void SCREEN_assetMakeGpuData(char* dstBuf, const SCREEN_Asset* asset)
         {
             int x, y, comp;
             u32 srcDataSize = asset->cubeFaceDataSize[f];
-            stbi_uc* data = stbi_load_from_memory(asset->data + srcDataOff, srcDataSize, &x, &y, &comp, asset->components);
+            stbi_uc* data = stbi_load_from_memory
+            (
+                sceneData + asset->dataOffset + srcDataOff, srcDataSize, &x, &y, &comp, asset->components
+            );
             if (!data)
             {
                 // todo report error
@@ -364,28 +370,28 @@ void SCREEN_assetMakeGpuData(char* dstBuf, const SCREEN_Asset* asset)
 
 
 
-u32 SCREEN_calcSceneDataSize(const SCREEN_Scene* scene)
+u32 SCREEN_calcSceneDataSize(const char* sceneData, const SCREEN_Scene* scene)
 {
     u32 size = 0;
+    if (scene->commonShaderCodeOffset != -1)
+    {
+        size += (u32)strlen(sceneData + scene->commonShaderCodeOffset) + 1;
+    }
+    for (u32 i = 0; i < SCREEN_Buffers_MAX; ++i)
+    {
+        if (scene->buffer[i].shaderCodeOffset != -1)
+        {
+            size += (u32)strlen(sceneData + scene->buffer[i].shaderCodeOffset) + 1;
+        }
+    }
+    if (scene->image.shaderCodeOffset != -1)
+    {
+        size += (u32)strlen(sceneData + scene->image.shaderCodeOffset) + 1;
+    }
     for (u32 ai = 0; ai < SCREEN_Assets_MAX; ++ai)
     {
         const SCREEN_Asset* asset = scene->asset + ai;
         size += asset->dataSize;
-    }
-    if (scene->shaderCommon)
-    {
-        size += (u32)strlen(scene->shaderCommon) + 1;
-    }
-    for (u32 i = 0; i < SCREEN_Buffers_MAX; ++i)
-    {
-        if (scene->buffer[i].shaderCode)
-        {
-            size += (u32)strlen(scene->buffer[i].shaderCode) + 1;
-        }
-    }
-    if (scene->image.shaderCode)
-    {
-        size += (u32)strlen(scene->image.shaderCode) + 1;
     }
     return size;
 }
