@@ -236,6 +236,10 @@ int main(int argc, char* argv[])
             }
             case SDL_DROPFILE:
             {
+                if (mode > 0)
+                {
+                    break;
+                }
                 char* path = e.drop.file;
                 // Shows directory of dropped file
                 //SDL_ShowSimpleMessageBox(

@@ -15,7 +15,7 @@
 
 
 
-curl_socket_t SCREEN_SyncClient_opensocketfunc(void* clientp, curlsocktype purpose, struct curl_sockaddr *address)
+curl_socket_t SCREEN_SyncClient_opensocketfunc(void* clientp, curlsocktype purpose, struct curl_sockaddr* address)
 {
     SOCKET s = socket(address->family, address->socktype, address->protocol);
     return s;
