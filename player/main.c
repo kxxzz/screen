@@ -96,16 +96,21 @@ int main(int argc, char* argv[])
     char timeBuf[TimeStrBuf_MAX];
 
 
+    int mode = 0;
     char* sceneFile = NULL;
     char* configFile = NULL;
     int watchFlag = false;
+    char* url = NULL;
     struct argparse_option options[] =
     {
         OPT_HELP(),
-        //OPT_GROUP("Basic options"),
+        OPT_INTEGER('m', "mode", &mode, "0 => server (default); 1 => client"),
+        OPT_GROUP("Server Mode options"),
         OPT_STRING('s', "scene", &sceneFile, "scene file to open"),
         OPT_STRING('c', "config", &configFile, "config file to open"),
         OPT_BOOLEAN('w', "watch", &watchFlag, "watch file and reload it when it changes"),
+        OPT_GROUP("Client Mode options"),
+        OPT_STRING('u', "url", &url, "Websocket URL to connect"),
         OPT_END(),
     };
     struct argparse argparse;
@@ -181,9 +186,24 @@ int main(int argc, char* argv[])
         }
     }
 
-
-    SCREEN_syncServerStartup();
-
+    if (0 == mode)
+    {
+        SCREEN_syncServerStartup();
+    }
+    else if (1 == mode)
+    {
+        if (!url)
+        {
+            // report error
+            goto out;
+        }
+        SCREEN_syncClientConn(url);
+    }
+    else
+    {
+        // report error
+        goto out;
+    }
 
 
     f32 now0 = (f32)SDL_GetTicks() / 1000.f;
@@ -324,7 +344,7 @@ int main(int argc, char* argv[])
         f32 now = (f32)SDL_GetTicks() / 1000.f;
 
 
-        if (sceneFile && (now - lastCheckTime > 0.25f))
+        if (now - lastCheckTime > 0.25f)
         {
             static char title[255] = "";
             snprintf(title, sizeof(title), "SCREEN PLAYER%*c FPS: %-2.2f", 16, ' ', (double)frameCount / (now - lastCheckTime));
@@ -333,7 +353,7 @@ int main(int argc, char* argv[])
 
             lastCheckTime = now;
 
-            if (watchFlag)
+            if (sceneFile && watchFlag)
             {
                 if (SCREEN_fwtchUpdate())
                 {
@@ -364,6 +384,7 @@ int main(int argc, char* argv[])
     {
         SCREEN_fwtchDestroy();
     }
+out:
     free(sceneFile);
     SCREEN_destroy();
     SDL_GL_DeleteContext(context);

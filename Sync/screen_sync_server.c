@@ -254,6 +254,10 @@ void SCREEN_syncServerStartup(void)
 
 void SCREEN_syncServerDestroy(void)
 {
+    if (!srv->memory)
+    {
+        return;
+    }
     atomic_set(srv->shutdown, 1);
     thrd_join(srv->thrd, NULL);
     WebbyServerShutdown(srv->server);
