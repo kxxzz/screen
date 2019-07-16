@@ -6,12 +6,11 @@
 
 
 
-void SCREEN_syncSrvStartup(void);
-void SCREEN_syncSrvDestroy(void);
+void SCREEN_syncServerStartup(void);
+void SCREEN_syncServerDestroy(void);
 
 
-
-
+void SCREEN_syncWithServer(const char* srvUrl);
 
 
 

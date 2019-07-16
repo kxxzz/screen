@@ -23,7 +23,7 @@ enum
 
 
 
-typedef struct SCREEN_SyncSrv
+typedef struct SCREEN_SyncServer
 {
     struct WebbyServer* server;
     struct WebbyServerConfig config[1];
@@ -34,25 +34,24 @@ typedef struct SCREEN_SyncSrv
     struct WebbyConnection* connection[SCREEN_SyncSrvConn_MAX];
     thrd_t thrd;
     int64_t shutdown[1];
-} SCREEN_SyncSrv;
+} SCREEN_SyncServer;
 
-static SCREEN_SyncSrv srv[1] = { 0 };
-
-
+static SCREEN_SyncServer srv[1] = { 0 };
 
 
 
 
 
-static void SCREEN_syncSrv_log(const char* text)
+
+static void SCREEN_SyncServer_log(const char* text)
 {
-    printf("[debug] %s\n", text);
+    printf("[SyncServer] %s\n", text);
 }
 
 
 
 
-static int SCREEN_syncSrv_dispatch(struct WebbyConnection* conn)
+static int SCREEN_SyncServer_dispatch(struct WebbyConnection* conn)
 {
     if (0 == strcmp("/foo", conn->request.uri))
     {
@@ -87,7 +86,7 @@ static int SCREEN_syncSrv_dispatch(struct WebbyConnection* conn)
 
 
 
-static int SCREEN_syncSrv_connect(struct WebbyConnection* conn)
+static int SCREEN_SyncServer_connect(struct WebbyConnection* conn)
 {
     /* Allow websocket upgrades on /wstest */
     if (0 == strcmp(conn->request.uri, "/") && srv->connectionCount < SCREEN_SyncSrvConn_MAX)
@@ -103,7 +102,7 @@ static int SCREEN_syncSrv_connect(struct WebbyConnection* conn)
 
 
 
-static void SCREEN_syncSrv_connected(struct WebbyConnection* conn)
+static void SCREEN_SyncServer_connected(struct WebbyConnection* conn)
 {
     printf("WebSocket connected\n");
     srv->connection[srv->connectionCount++] = conn;
@@ -112,7 +111,7 @@ static void SCREEN_syncSrv_connected(struct WebbyConnection* conn)
 
 
 
-static void SCREEN_syncSrv_closed(struct WebbyConnection* conn)
+static void SCREEN_SyncServer_closed(struct WebbyConnection* conn)
 {
     printf("WebSocket closed\n");
 
@@ -131,7 +130,7 @@ static void SCREEN_syncSrv_closed(struct WebbyConnection* conn)
 
 
 
-static int SCREEN_syncSrv_frame(struct WebbyConnection* conn, const struct WebbyWsFrame* frame)
+static int SCREEN_SyncServer_frame(struct WebbyConnection* conn, const struct WebbyWsFrame* frame)
 {
     u32 i = 0;
 
@@ -214,7 +213,7 @@ static int SCREEN_syncSrvMain(void* a)
 
 
 
-void SCREEN_syncSrvStartup(void)
+void SCREEN_syncServerStartup(void)
 {
 #if defined(_WIN32)
     {
@@ -236,12 +235,12 @@ void SCREEN_syncSrvStartup(void)
     config->connection_max = 4;
     config->request_buffer_size = 2048;
     config->io_buffer_size = 8192;
-    config->dispatch = SCREEN_syncSrv_dispatch;
-    config->log = SCREEN_syncSrv_log;
-    config->ws_connect = SCREEN_syncSrv_connect;
-    config->ws_connected = SCREEN_syncSrv_connected;
-    config->ws_closed = SCREEN_syncSrv_closed;
-    config->ws_frame = SCREEN_syncSrv_frame;
+    config->dispatch = SCREEN_SyncServer_dispatch;
+    config->log = SCREEN_SyncServer_log;
+    config->ws_connect = SCREEN_SyncServer_connect;
+    config->ws_connected = SCREEN_SyncServer_connected;
+    config->ws_closed = SCREEN_SyncServer_closed;
+    config->ws_frame = SCREEN_SyncServer_frame;
 
     assert(!srv->memory);
     srv->memorySize = WebbyServerMemoryNeeded(config);
@@ -253,7 +252,7 @@ void SCREEN_syncSrvStartup(void)
 
 
 
-void SCREEN_syncSrvDestroy(void)
+void SCREEN_syncServerDestroy(void)
 {
     atomic_set(srv->shutdown, 1);
     thrd_join(srv->thrd, NULL);
@@ -274,6 +273,12 @@ void SCREEN_syncSrvDestroy(void)
 
 
 
+
+
+void SCREEN_syncWithServer(const char* srvUrl)
+{
+
+}
 
 
 

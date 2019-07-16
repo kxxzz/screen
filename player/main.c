@@ -182,7 +182,7 @@ int main(int argc, char* argv[])
     }
 
 
-    SCREEN_syncSrvStartup();
+    SCREEN_syncServerStartup();
 
 
 
@@ -359,7 +359,7 @@ int main(int argc, char* argv[])
     }
 
 
-    SCREEN_syncSrvDestroy();
+    SCREEN_syncServerDestroy();
     if (watchFlag)
     {
         SCREEN_fwtchDestroy();
