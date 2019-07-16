@@ -164,6 +164,7 @@ typedef struct SCREEN_Scene
     SCREEN_Asset asset[SCREEN_Assets_MAX];
 } SCREEN_Scene;
 
+SCREEN_Scene SCREEN_sceneEmpty(void);
 
 
 

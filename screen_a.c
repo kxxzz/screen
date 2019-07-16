@@ -37,6 +37,28 @@ u32 SCREEN_assetGpuDataSize(const SCREEN_Asset* asset)
 
 
 
+SCREEN_Scene SCREEN_sceneEmpty(void)
+{
+    SCREEN_Scene scene[1] = { 0 };
+    scene->commonShaderCodeOffset = -1;
+    for (u32 i = 0; i < SCREEN_Assets_MAX; ++i)
+    {
+        scene->asset[i].dataOffset = -1;
+    }
+    for (u32 i = 0; i < SCREEN_Buffers_MAX; ++i)
+    {
+        scene->buffer[i].shaderCodeOffset = -1;
+    }
+    return *scene;
+}
+
+
+
+
+
+
+
+
 
 
 

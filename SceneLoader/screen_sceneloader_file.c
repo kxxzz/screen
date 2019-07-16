@@ -449,16 +449,7 @@ error:
 
 SCREEN_LoadFileError SCREEN_loadSceneFile(const char* filename, vec_char* pathBuf)
 {
-    SCREEN_Scene desc[1] = { 0 };
-    desc->commonShaderCodeOffset = -1;
-    for (u32 i = 0; i < SCREEN_Assets_MAX; ++i)
-    {
-        desc->asset[i].dataOffset = -1;
-    }
-    for (u32 i = 0; i < SCREEN_Buffers_MAX; ++i)
-    {
-        desc->buffer[i].shaderCodeOffset = -1;
-    }
+    SCREEN_Scene desc[1] = { SCREEN_sceneEmpty() };
 
     if (FILEU_fileExist(filename))
     {
