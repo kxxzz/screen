@@ -91,6 +91,7 @@ int main(int argc, char* argv[])
 #if !defined(NDEBUG) && defined(_WIN32)
     _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
+    srand((u32)time(NULL));
     curl_global_init(CURL_GLOBAL_DEFAULT);
 
     char timeBuf[TimeStrBuf_MAX];
