@@ -344,7 +344,7 @@ void SCREEN_assetMakeGpuData(char* dstBuf, const char* sceneData, const SCREEN_A
         assert(asset->size[1] == y);
         assert(asset->components == comp);
         u32 size = x * y * comp;
-        memmove(dstBuf, data, size);
+        memcpy(dstBuf, data, size);
         stbi_image_free(data);
     }
     else if (SCREEN_AssetType_Cube == asset->type)
@@ -367,7 +367,7 @@ void SCREEN_assetMakeGpuData(char* dstBuf, const char* sceneData, const SCREEN_A
             assert(asset->size[0] == x);
             assert(asset->size[1] == y);
             assert(asset->components == comp);
-            memmove(dstBuf + f*size, data, size);
+            memcpy(dstBuf + f*size, data, size);
             stbi_image_free(data);
             srcDataOff += srcDataSize;
         }

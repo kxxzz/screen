@@ -120,7 +120,7 @@ static void SCREEN_SyncServer_closed(struct WebbyConnection* conn)
         if (srv->connection[i] == conn)
         {
             int remain = srv->connectionCount - i;
-            memmove(srv->connection + i, srv->connection + i + 1, remain * sizeof(srv->connection[0]));
+            memcpy(srv->connection + i, srv->connection + i + 1, remain * sizeof(srv->connection[0]));
             --srv->connectionCount;
             break;
         }
