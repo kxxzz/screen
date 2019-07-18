@@ -208,8 +208,8 @@ static void SCREEN_consoleSendClose(void)
 
 static void SCREEN_console_onAlloc(uv_handle_t* handle, size_t size, uv_buf_t* buf)
 {
-    static char uvReadBuf[65536];
-    *buf = uv_buf_init(uvReadBuf, (int)size);
+    static char uvReadBuf[1024*64];
+    *buf = uv_buf_init(uvReadBuf, (int)min(size, sizeof(uvReadBuf)));
 }
 
 
@@ -231,6 +231,7 @@ static void SCREEN_console_onRead(uv_stream_t* stream, ssize_t nread, const uv_b
         uv_close((uv_handle_t*)stream, SCREEN_console_onClose);
         return;
     }
+    assert(nread <= buf->len);
     char* base = buf->base;
     u32 len = (u32)nread;
     if (ctx->state != SCREEN_ConsoleState_Handshaked)
@@ -350,7 +351,7 @@ static void SCREEN_console_onConnect(uv_connect_t* conn, int status)
     if (status != 0)
     {
         ctx->state = SCREEN_ConsoleState_Disconnected;
-        const char* errStr[4096];
+        char errStr[4096];
         uv_strerror_r(status, errStr, sizeof(errStr));
         printf("[Console] error: %s\n", errStr);
         return;
