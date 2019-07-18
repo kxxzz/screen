@@ -350,6 +350,8 @@ static void SCREEN_console_onConnect(uv_connect_t* conn, int status)
     if (status != 0)
     {
         ctx->state = SCREEN_ConsoleState_Disconnected;
+        const char* errStr = uv_strerror(status);
+        printf("[Console] error: %s\n", errStr);
         return;
     }
 
