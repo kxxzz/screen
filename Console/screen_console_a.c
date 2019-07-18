@@ -1,15 +1,16 @@
-#pragma once
+#include "screen_console_a.h"
 
 
 
-#include "screen.h"
-
-#include <vec.h>
 
 
 
-void SCREEN_consoleStartup(void);
-void SCREEN_consoleDestroy(void);
+
+
+
+
+
+
 
 
 

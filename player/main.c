@@ -28,7 +28,7 @@
 #include <screen_configloader_file.h>
 #include <screen_fwtch.h>
 #include <screen_utils_sdl.h>
-#include <screen_console.h>
+#include <screen_console_ws.h>
 
 
 
@@ -185,7 +185,8 @@ int main(int argc, char* argv[])
 
     if (consoleURL)
     {
-        //SCREEN_syncClientStartup(url);
+        SCREEN_consoleSetURL(consoleURL);
+        SCREEN_consoleStartup();
     }
 
 
@@ -364,7 +365,7 @@ int main(int argc, char* argv[])
 
     if (consoleURL)
     {
-        // SCREEN_syncServerDestroy();
+        SCREEN_consoleDestroy();
     }
     if (watchFlag)
     {

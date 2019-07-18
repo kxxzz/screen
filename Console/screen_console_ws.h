@@ -2,29 +2,12 @@
 
 
 
-#include "screen.h"
-
-#include <vec.h>
-
-
-
-void SCREEN_consoleStartup(void);
-void SCREEN_consoleDestroy(void);
+#include "screen_console.h"
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
+void SCREEN_consoleSetURL(const char* url);
 
 
 
