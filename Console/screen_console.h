@@ -8,10 +8,19 @@
 
 
 
-void SCREEN_cmdLoadScene(vec_char* cmdBuf, const SCREEN_Scene* scene, const char* sceneData, u32 sceneDataSize);
 
 
-void SCREEN_cmdExec(const char* cmd, u32 cmdSize);
+
+void SCREEN_consoleCmdLoadScene
+(
+    vec_char* cmdBuf, const SCREEN_Scene* scene, const char* sceneData, u32 sceneDataSize
+);
+
+
+
+
+
+void SCREEN_consoleExec(const char* cmd, u32 cmdSize);
 
 
 
