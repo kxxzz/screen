@@ -97,21 +97,17 @@ int main(int argc, char* argv[])
     char timeBuf[TimeStrBuf_MAX];
 
 
-    int mode = 0;
     char* sceneFile = NULL;
     char* configFile = NULL;
     int watchFlag = false;
-    char* url = NULL;
+    char* consoleURL = NULL;
     struct argparse_option options[] =
     {
         OPT_HELP(),
-        OPT_INTEGER('m', "mode", &mode, "0 => server (default); 1 => client"),
-        OPT_GROUP("Server Mode options"),
         OPT_STRING('s', "scene", &sceneFile, "scene file to open"),
         OPT_STRING('c', "config", &configFile, "config file to open"),
         OPT_BOOLEAN('w', "watch", &watchFlag, "watch file and reload it when it changes"),
-        OPT_GROUP("Client Mode options"),
-        OPT_STRING('u', "url", &url, "Websocket URL to connect"),
+        OPT_STRING('u', "url", &consoleURL, "Console URL (WebSocket) to connect"),
         OPT_END(),
     };
     struct argparse argparse;
@@ -187,23 +183,9 @@ int main(int argc, char* argv[])
         }
     }
 
-    if (0 == mode)
+    if (consoleURL)
     {
-        //SCREEN_syncServerStartup();
-    }
-    else if (1 == mode)
-    {
-        if (!url)
-        {
-            // report error
-            goto out;
-        }
         //SCREEN_syncClientStartup(url);
-    }
-    else
-    {
-        // report error
-        goto out;
     }
 
 
@@ -237,10 +219,6 @@ int main(int argc, char* argv[])
             }
             case SDL_DROPFILE:
             {
-                if (mode > 0)
-                {
-                    break;
-                }
                 char* path = e.drop.file;
                 // Shows directory of dropped file
                 //SDL_ShowSimpleMessageBox(
@@ -384,12 +362,14 @@ int main(int argc, char* argv[])
     }
 
 
-    //SCREEN_syncServerDestroy();
+    if (consoleURL)
+    {
+        // SCREEN_syncServerDestroy();
+    }
     if (watchFlag)
     {
         SCREEN_fwtchDestroy();
     }
-out:
     free(sceneFile);
     SCREEN_destroy();
     SDL_GL_DeleteContext(context);
