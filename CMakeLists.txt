@@ -25,6 +25,10 @@ set (SDL_DIR ${IMPLIB_DIR}/sdl)
 include_directories (${SDL_DIR}/include)
 link_directories (${SDL_DIR}/build/${ConfigurationName})
 
+set (UV_DIR ${IMPLIB_DIR}/uv)
+include_directories (${UV_DIR}/include)
+link_directories (${UV_DIR}/build/${ConfigurationName})
+
 set (CURL_DIR ${IMPLIB_DIR}/curl)
 include_directories (${CURL_DIR}/include)
 link_directories (${CURL_DIR}/lib)
@@ -64,7 +68,6 @@ include_directories (imp/gettimeofday)
 include_directories (imp/threads)
 include_directories (imp/webby)
 include_directories (imp/base64)
-include_directories (imp/dyad)
 
 file (GLOB IMP_SRC_FILES
     imp/*.h
@@ -85,8 +88,6 @@ file (GLOB IMP_SRC_FILES
     imp/webby/*.c
     imp/base64/*.h
     imp/base64/*.c
-    imp/dyad/*.h
-    imp/dyad/*.c
     )
 list(FILTER IMP_SRC_FILES EXCLUDE REGEX "main.c$")
 
@@ -154,12 +155,13 @@ endif ()
 if (NOT DEFINED EMSCRIPTEN)
     if (WIN32)
         target_link_libraries (
-            player opengl32 gl3w libcurl_a
+            player opengl32 gl3w uv_a
             version winmm imm32
             wldap32 crypt32 ws2_32 normaliz
+            userenv psapi iphlpapi
             )
     else ()
-        target_link_libraries (player GL gl3w curl)
+        target_link_libraries (player GL gl3w uv)
     endif ()
 endif ()
 

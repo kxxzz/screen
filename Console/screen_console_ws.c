@@ -6,7 +6,7 @@
 # include <ws2tcpip.h>
 #endif
 
-#include <dyad.h>
+#include <uv.h>
 #include <base64.h>
 
 
@@ -55,24 +55,34 @@ typedef enum WS_FrameOp
 
 
 
-
+typedef enum SCREEN_ConsoleState
+{
+    SCREEN_ConsoleState_Disconnected = 0,
+    SCREEN_ConsoleState_Connecting,
+    SCREEN_ConsoleState_Connected,
+    SCREEN_ConsoleState_Handshaked,
+} SCREEN_ConsoleState;
 
 
 
 
 typedef struct SCREEN_Console
 {
-    bool connected;
     char host[HOST_NAME_MAX];
     u32 port;
     char uri[MAX_REQUEST_PATH_LENGTH];
-    dyad_Stream* stream;
 
-    bool handshaked;
+    SCREEN_ConsoleState state;
     WS_FrameOp opState;
     u32 remain;
     vec_char sendBuf[1];
     vec_char recvBuf[1];
+
+    uv_loop_t* loop;
+    uv_tcp_t sock[1];
+    uv_connect_t conn[1];
+    uv_write_t writeReq[1];
+    uv_shutdown_t shutdownReq[1];
 } SCREEN_Console;
 
 static SCREEN_Console* ctx = NULL;
@@ -156,7 +166,8 @@ static void SCREEN_consoleSend(WS_FrameOp opcode, const char* data, u32 len)
             sendBuf[headerSize + i] ^= maskingKey[i % 4];
         }
     }
-    dyad_write(ctx->stream, sendBuf, headerSize + len);
+    uv_buf_t uvBuf = { headerSize + len, sendBuf };
+    uv_write(ctx->writeReq, ctx->conn->handle, &uvBuf, 1, NULL);
 }
 
 
@@ -195,77 +206,43 @@ static void SCREEN_consoleSendClose(void)
 
 
 
-
-
-static void SCREEN_console_onError(dyad_Event *e)
+static void SCREEN_console_onAlloc(uv_handle_t* handle, size_t size, uv_buf_t* buf)
 {
-    //printf("[Console] error: %s\n", e->msg);
+    static char uvReadBuf[65536];
+    *buf = uv_buf_init(uvReadBuf, (int)size);
 }
 
-static void SCREEN_console_onTimeout(dyad_Event *e)
-{
-    printf("[Console] timeout: %s\n", e->msg);
-}
 
-static void SCREEN_console_onClose(dyad_Event *e)
+
+static void SCREEN_console_onClose(uv_handle_t* handle)
 {
-    if (ctx->connected)
-    {
-        ctx->connected = false;
-        printf("[Console] disconnected\n");
-    }
+    printf("[Console] disconnected\n");
+    ctx->state = SCREEN_ConsoleState_Disconnected;
 }
 
 
 
 
-static void SCREEN_console_onConnect(dyad_Event *e)
+static void SCREEN_console_onRead(uv_stream_t* stream, ssize_t nread, const uv_buf_t* buf)
 {
-    printf("[Console] connected\n");
-
-    ctx->connected = true;
-
-    const char* requestFmt =
-        "GET %s HTTP/1.1\r\n"
-        "Host: %s:%u\r\n"
-        "Connection: Upgrade\r\n"
-        "Upgrade: websocket\r\n"
-        "Sec-WebSocket-Version: 13\r\n"
-        "Sec-WebSocket-Key: %s\r\n"
-        "\r\n";
-
-    u32 key[WS_KEY_SIZE / 4];
-    for (u32 i = 0; i < WS_KEY_SIZE / 4; ++i)
+    if (nread < 0)
     {
-        key[i] = rand();
+        ctx->state = SCREEN_ConsoleState_Disconnected;
+        uv_close((uv_handle_t*)stream, SCREEN_console_onClose);
+        return;
     }
-    char* keyStr = base64_encode((char*)key, WS_KEY_SIZE, NULL);
-
-    s32 n = snprintf(NULL, 0, requestFmt, ctx->uri, ctx->host, ctx->port, keyStr);
-    vec_resize(ctx->sendBuf, n + 1);
-    n = snprintf(ctx->sendBuf->data, ctx->sendBuf->length, requestFmt, ctx->uri, ctx->host, ctx->port, keyStr);
-    free(keyStr);
-    if (n > 0)
+    char* base = buf->base;
+    u32 len = (u32)nread;
+    if (ctx->state != SCREEN_ConsoleState_Handshaked)
     {
-        dyad_write((dyad_Stream*)ctx->stream, ctx->sendBuf->data, n);
-    }
-    else
-    {
-        // report
-    }
-}
-
-
-
-
-static void SCREEN_console_onData(dyad_Event* e)
-{
-    if (!ctx->handshaked)
-    {
-        ctx->handshaked = true;
+        assert(SCREEN_ConsoleState_Connected == ctx->state);
+        ctx->state = SCREEN_ConsoleState_Handshaked;
 
         printf("[Console] handshaked\n");
-        printf("%s", e->data);
+        vec_resize(ctx->recvBuf, len + 1);
+        memcpy(ctx->recvBuf->data, base, len);
+        ctx->recvBuf->data[len] = 0;
+        printf("%s", ctx->recvBuf->data);
     }
     else
     {
@@ -274,24 +251,24 @@ static void SCREEN_console_onData(dyad_Event* e)
         char* newData = NULL;
         if (WS_FrameOp_Continuation == ctx->opState)
         {
-            u8 finalFragment = e->data[0] >> 7 & 0x1;
-            WS_FrameOp opcode = e->data[0] & 0xf;
-            u8 masked = e->data[1] >> 7 & 0x1;
-            u32 payloadLength = e->data[1] & 0x7f;
+            u8 finalFragment = base[0] >> 7 & 0x1;
+            WS_FrameOp opcode = base[0] & 0xf;
+            u8 masked = base[1] >> 7 & 0x1;
+            u32 payloadLength = base[1] & 0x7f;
 
             if (payloadLength < 126)
             {
-                newData = e->data + 2;
+                newData = base + 2;
             }
             else if (payloadLength == 126)
             {
-                payloadLength = ntohs(*(u16*)(e->data + 2));
-                newData = e->data + 2 + 2;
+                payloadLength = ntohs(*(u16*)(base + 2));
+                newData = base + 2 + 2;
             }
             else if (payloadLength == 127)
             {
-                payloadLength = (u32)ntohll(*(u64*)(e->data + 2));
-                newData = e->data + 2 + 8;
+                payloadLength = (u32)ntohll(*(u64*)(base + 2));
+                newData = base + 2 + 8;
             }
 
             if (masked)
@@ -310,10 +287,10 @@ static void SCREEN_console_onData(dyad_Event* e)
         }
         else
         {
-            newData = e->data;
+            newData = base;
         }
 
-        u32 newDataLen = (u32)(e->data + e->size - newData);
+        u32 newDataLen = (u32)(base + len - newData);
         if (newDataLen && ctx->remain)
         {
             newDataLen = min(newDataLen, ctx->remain);
@@ -358,7 +335,63 @@ static void SCREEN_console_onData(dyad_Event* e)
             ctx->opState = WS_FrameOp_Continuation;
         }
     }
+    uv_read_start(ctx->conn->handle, SCREEN_console_onAlloc, SCREEN_console_onRead);
 }
+
+
+
+
+
+
+
+
+static void SCREEN_console_onConnect(uv_connect_t* conn, int status)
+{
+    if (status != 0)
+    {
+        ctx->state = SCREEN_ConsoleState_Disconnected;
+        return;
+    }
+
+    printf("[Console] connected\n");
+    assert(ctx->conn == conn);
+
+    assert(SCREEN_ConsoleState_Connecting == ctx->state);
+    ctx->state = SCREEN_ConsoleState_Connected;
+
+    const char* requestFmt =
+        "GET %s HTTP/1.1\r\n"
+        "Host: %s:%u\r\n"
+        "Connection: Upgrade\r\n"
+        "Upgrade: websocket\r\n"
+        "Sec-WebSocket-Version: 13\r\n"
+        "Sec-WebSocket-Key: %s\r\n"
+        "\r\n";
+
+    u32 key[WS_KEY_SIZE / 4];
+    for (u32 i = 0; i < WS_KEY_SIZE / 4; ++i)
+    {
+        key[i] = rand();
+    }
+    char* keyStr = base64_encode((char*)key, WS_KEY_SIZE, NULL);
+
+    s32 n = snprintf(NULL, 0, requestFmt, ctx->uri, ctx->host, ctx->port, keyStr);
+    vec_resize(ctx->sendBuf, n + 1);
+    n = snprintf(ctx->sendBuf->data, ctx->sendBuf->length, requestFmt, ctx->uri, ctx->host, ctx->port, keyStr);
+    free(keyStr);
+    if (n > 0)
+    {
+        uv_buf_t uvBuf = { n, ctx->sendBuf->data };
+        uv_write(ctx->writeReq, ctx->conn->handle, &uvBuf, 1, NULL);
+
+        uv_read_start(ctx->conn->handle, SCREEN_console_onAlloc, SCREEN_console_onRead);
+    }
+    else
+    {
+        // report
+    }
+}
+
 
 
 
@@ -390,20 +423,7 @@ void SCREEN_consoleStartup(void)
     ctx->port = port;
     stzncpy(ctx->uri, uri, MAX_REQUEST_PATH_LENGTH);
 
-    dyad_init();
-    dyad_Stream* s = dyad_newStream();
-    if (!s)
-    {
-        // report error
-        return;
-    }
-    ctx->stream = s;
-
-    dyad_addListener(s, DYAD_EVENT_ERROR, SCREEN_console_onError, NULL);
-    dyad_addListener(s, DYAD_EVENT_TIMEOUT, SCREEN_console_onTimeout, NULL);
-    dyad_addListener(s, DYAD_EVENT_CLOSE, SCREEN_console_onClose, NULL);
-    dyad_addListener(s, DYAD_EVENT_CONNECT, SCREEN_console_onConnect, NULL);
-    dyad_addListener(s, DYAD_EVENT_DATA, SCREEN_console_onData, NULL);
+    ctx->loop = uv_default_loop();
 }
 
 
@@ -412,7 +432,6 @@ void SCREEN_consoleStartup(void)
 
 void SCREEN_consoleDestroy(void)
 {
-    dyad_shutdown();
     SCREEN_consoleCleanup();
 }
 
@@ -421,18 +440,21 @@ void SCREEN_consoleDestroy(void)
 
 void SCREEN_consoleUpdate(void)
 {
-    if (DYAD_STATE_CLOSED == dyad_getState(ctx->stream))
+    //uv_run(loop, UV_RUN_DEFAULT);
+
+    if (SCREEN_ConsoleState_Disconnected == ctx->state)
     {
-        int r = dyad_connect(ctx->stream, ctx->host, ctx->port);
-        if (r != 0)
+        uv_tcp_init(ctx->loop, ctx->sock);
+        struct sockaddr_in dest[1];
+        uv_ip4_addr(ctx->host, ctx->port, dest);
+        if (0 == uv_tcp_connect(ctx->conn, ctx->sock, (const struct sockaddr*)dest, SCREEN_console_onConnect))
         {
-            printf("[Console] can't connect %s:%u/%s", ctx->host, ctx->port, ctx->uri);
-            return;
+            ctx->state = SCREEN_ConsoleState_Connecting;
         }
     }
     else
     {
-        dyad_update();
+        uv_run(ctx->loop, UV_RUN_NOWAIT);
     }
 }
 

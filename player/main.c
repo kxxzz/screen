@@ -19,9 +19,6 @@
 
 #include <argparse.h>
 
-#define CURL_STATICLIB
-#include <curl/curl.h>
-
 
 #include <screen.h>
 #include <screen_sceneloader_file.h>
@@ -92,7 +89,6 @@ int main(int argc, char* argv[])
     _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
     srand((u32)time(NULL));
-    curl_global_init(CURL_GLOBAL_DEFAULT);
 
     char timeBuf[TimeStrBuf_MAX];
 
@@ -382,7 +378,6 @@ int main(int argc, char* argv[])
     SDL_DestroyWindow(window);
     SDL_Quit();
 
-    curl_global_cleanup();
     return mainReturn(EXIT_SUCCESS);
 }
 
