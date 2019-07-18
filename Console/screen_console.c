@@ -2,7 +2,12 @@
 
 
 
+typedef enum SCREEN_ConsoleCommand
+{
+    SCREEN_ConsoleCommand_LoadScene = 0,
 
+    SCREEN_ConsoleCommandCount
+} SCREEN_ConsoleCommand;
 
 
 
