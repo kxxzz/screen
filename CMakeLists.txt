@@ -63,6 +63,8 @@ include_directories (imp/stb)
 include_directories (imp/gettimeofday)
 include_directories (imp/threads)
 include_directories (imp/webby)
+include_directories (imp/base64)
+include_directories (imp/dyad)
 
 file (GLOB IMP_SRC_FILES
     imp/*.h
@@ -81,6 +83,10 @@ file (GLOB IMP_SRC_FILES
     imp/threads/threads.h
     imp/webby/*.h
     imp/webby/*.c
+    imp/base64/*.h
+    imp/base64/*.c
+    imp/dyad/*.h
+    imp/dyad/*.c
     )
 list(FILTER IMP_SRC_FILES EXCLUDE REGEX "main.c$")
 
