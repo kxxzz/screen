@@ -227,7 +227,6 @@ static void SCREEN_console_onRead(uv_stream_t* stream, ssize_t nread, const uv_b
 {
     if (nread < 0)
     {
-        ctx->state = SCREEN_ConsoleState_Disconnected;
         uv_close((uv_handle_t*)stream, SCREEN_console_onClose);
         return;
     }
@@ -383,17 +382,10 @@ static void SCREEN_console_onConnect(uv_connect_t* conn, int status)
     vec_resize(ctx->sendBuf, n + 1);
     n = snprintf(ctx->sendBuf->data, ctx->sendBuf->length, requestFmt, ctx->uri, ctx->host, ctx->port, keyStr);
     free(keyStr);
-    if (n > 0)
-    {
-        uv_buf_t uvBuf = { n, ctx->sendBuf->data };
-        uv_write(ctx->writeReq, ctx->conn->handle, &uvBuf, 1, NULL);
-
-        uv_read_start(ctx->conn->handle, SCREEN_console_onAlloc, SCREEN_console_onRead);
-    }
-    else
-    {
-        // report
-    }
+    assert(n > 0);
+    uv_buf_t uvBuf = { n, ctx->sendBuf->data };
+    uv_write(ctx->writeReq, ctx->conn->handle, &uvBuf, 1, NULL);
+    uv_read_start(ctx->conn->handle, SCREEN_console_onAlloc, SCREEN_console_onRead);
 }
 
 
@@ -444,8 +436,6 @@ void SCREEN_consoleDestroy(void)
 
 void SCREEN_consoleUpdate(void)
 {
-    //uv_run(loop, UV_RUN_DEFAULT);
-
     if (SCREEN_ConsoleState_Disconnected == ctx->state)
     {
         uv_tcp_init(ctx->loop, ctx->sock);
