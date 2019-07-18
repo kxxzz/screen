@@ -121,11 +121,11 @@ add_library (ScreenFileWatcher ${FILEWATCHER_SRC_FILES})
 set_target_properties (ScreenFileWatcher PROPERTIES FOLDER screen)
 
 
-include_directories (Sync)
-file (GLOB SYNC_SRC_FILES Sync/*.h Sync/*.c)
-source_group (src FILES ${SYNC_SRC_FILES})
-add_library (ScreenSync ${SYNC_SRC_FILES})
-set_target_properties (ScreenSync PROPERTIES FOLDER screen)
+include_directories (Console)
+file (GLOB CONSOLE_SRC_FILES Console/*.h Console/*.c)
+source_group (src FILES ${CONSOLE_SRC_FILES})
+add_library (ScreenConsole ${CONSOLE_SRC_FILES})
+set_target_properties (ScreenConsole PROPERTIES FOLDER screen)
 
 
 include_directories (Utils)
@@ -141,7 +141,7 @@ source_group (src FILES ${TESTS_SRC_FILES})
 add_executable (player ${TESTS_SRC_FILES})
 target_link_libraries (player
     imp screen
-    ScreenSceneLoader ScreenConfigLoader ScreenFileWatcher ScreenSync ScreenUtils
+    ScreenSceneLoader ScreenConfigLoader ScreenFileWatcher ScreenConsole ScreenUtils
     )
 if (WIN32)
 else ()

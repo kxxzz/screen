@@ -28,7 +28,7 @@
 #include <screen_configloader_file.h>
 #include <screen_fwtch.h>
 #include <screen_utils_sdl.h>
-#include <screen_sync.h>
+#include <screen_console.h>
 
 
 
@@ -189,7 +189,7 @@ int main(int argc, char* argv[])
 
     if (0 == mode)
     {
-        SCREEN_syncServerStartup();
+        //SCREEN_syncServerStartup();
     }
     else if (1 == mode)
     {
@@ -198,7 +198,7 @@ int main(int argc, char* argv[])
             // report error
             goto out;
         }
-        SCREEN_syncClientStartup(url);
+        //SCREEN_syncClientStartup(url);
     }
     else
     {
@@ -384,7 +384,7 @@ int main(int argc, char* argv[])
     }
 
 
-    SCREEN_syncServerDestroy();
+    //SCREEN_syncServerDestroy();
     if (watchFlag)
     {
         SCREEN_fwtchDestroy();
