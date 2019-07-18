@@ -376,12 +376,8 @@ static void SCREEN_console_onData(dyad_Event* e)
 
 static int SCREEN_consoleMainLoop(void* _)
 {
-    for (;;)
+    while (!atomic_get(ctx->shutdown))
     {
-        if (atomic_get(ctx->shutdown))
-        {
-            break;
-        }
         if (DYAD_STATE_CLOSED == dyad_getState(ctx->stream))
         {
             int r = dyad_connect(ctx->stream, ctx->host, ctx->port);
