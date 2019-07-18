@@ -198,7 +198,7 @@ int main(int argc, char* argv[])
             // report error
             goto out;
         }
-        SCREEN_syncClientConn(url);
+        SCREEN_syncClientStartup(url);
     }
     else
     {
