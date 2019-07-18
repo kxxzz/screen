@@ -83,6 +83,7 @@ void SCREEN_startup(void)
 
 void SCREEN_destroy(void)
 {
+    assert(ctx);
     vec_free(ctx->tmpDataBuf);
     vec_free(ctx->sceneDataBuf);
     for (u32 i = 0; i < SCREEN_Assets_MAX; ++i)

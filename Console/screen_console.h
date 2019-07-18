@@ -11,6 +11,7 @@
 
 void SCREEN_consoleStartup(void);
 void SCREEN_consoleDestroy(void);
+void SCREEN_consoleUpdate(void);
 
 
 

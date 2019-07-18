@@ -9,10 +9,6 @@
 #include <dyad.h>
 #include <base64.h>
 
-#include <threads.h>
-#include <sleep.h>
-#include <atomic.h>
-
 
 
 
@@ -77,9 +73,6 @@ typedef struct SCREEN_Console
     u32 remain;
     vec_char sendBuf[1];
     vec_char recvBuf[1];
-
-    thrd_t thrd;
-    int64_t shutdown[1];
 } SCREEN_Console;
 
 static SCREEN_Console* ctx = NULL;
@@ -374,27 +367,6 @@ static void SCREEN_console_onData(dyad_Event* e)
 
 
 
-static int SCREEN_consoleMainLoop(void* _)
-{
-    while (!atomic_get(ctx->shutdown))
-    {
-        if (DYAD_STATE_CLOSED == dyad_getState(ctx->stream))
-        {
-            int r = dyad_connect(ctx->stream, ctx->host, ctx->port);
-            if (r != 0)
-            {
-                printf("[Console] can't connect %s:%u/%s", ctx->host, ctx->port, ctx->uri);
-                continue;
-            }
-        }
-        else
-        {
-            dyad_update();
-        }
-    }
-    return thrd_success;
-}
-
 
 
 
@@ -432,8 +404,6 @@ void SCREEN_consoleStartup(void)
     dyad_addListener(s, DYAD_EVENT_CLOSE, SCREEN_console_onClose, NULL);
     dyad_addListener(s, DYAD_EVENT_CONNECT, SCREEN_console_onConnect, NULL);
     dyad_addListener(s, DYAD_EVENT_DATA, SCREEN_console_onData, NULL);
-
-    thrd_create(&ctx->thrd, (thrd_start_t)SCREEN_consoleMainLoop, NULL);
 }
 
 
@@ -442,9 +412,6 @@ void SCREEN_consoleStartup(void)
 
 void SCREEN_consoleDestroy(void)
 {
-    atomic_set(ctx->shutdown, 1);
-    thrd_join(ctx->thrd, NULL);
-
     dyad_shutdown();
     SCREEN_consoleCleanup();
 }
@@ -452,7 +419,22 @@ void SCREEN_consoleDestroy(void)
 
 
 
-
+void SCREEN_consoleUpdate(void)
+{
+    if (DYAD_STATE_CLOSED == dyad_getState(ctx->stream))
+    {
+        int r = dyad_connect(ctx->stream, ctx->host, ctx->port);
+        if (r != 0)
+        {
+            printf("[Console] can't connect %s:%u/%s", ctx->host, ctx->port, ctx->uri);
+            return;
+        }
+    }
+    else
+    {
+        dyad_update();
+    }
+}
 
 
 
