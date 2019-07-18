@@ -208,7 +208,7 @@ static void SCREEN_consoleSendClose(void)
 
 static void SCREEN_console_onAlloc(uv_handle_t* handle, size_t size, uv_buf_t* buf)
 {
-    static char uvReadBuf[1024*64];
+    static char uvReadBuf[1024 * 64];
     *buf = uv_buf_init(uvReadBuf, (int)min(size, sizeof(uvReadBuf)));
 }
 
@@ -235,14 +235,17 @@ static void SCREEN_console_onRead(uv_stream_t* stream, ssize_t nread, const uv_b
     u32 len = (u32)nread;
     if (ctx->state != SCREEN_ConsoleState_Handshaked)
     {
+        assert(0 == ctx->recvBuf->length);
+        vec_pusharr(ctx->recvBuf, base, len);
+        vec_push(ctx->recvBuf, 0);
+
         assert(SCREEN_ConsoleState_Connected == ctx->state);
         ctx->state = SCREEN_ConsoleState_Handshaked;
 
         printf("[Console] handshaked\n");
-        vec_resize(ctx->recvBuf, len + 1);
-        memcpy(ctx->recvBuf->data, base, len);
-        ctx->recvBuf->data[len] = 0;
         printf("%s", ctx->recvBuf->data);
+        vec_resize(ctx->recvBuf, 0);
+        return;
     }
     else
     {
@@ -335,7 +338,6 @@ static void SCREEN_console_onRead(uv_stream_t* stream, ssize_t nread, const uv_b
             ctx->opState = WS_FrameOp_Continuation;
         }
     }
-    uv_read_start(ctx->conn->handle, SCREEN_console_onAlloc, SCREEN_console_onRead);
 }
 
 
@@ -386,6 +388,7 @@ static void SCREEN_console_onConnect(uv_connect_t* conn, int status)
     uv_buf_t uvBuf = { n, ctx->sendBuf->data };
     uv_write(ctx->writeReq, ctx->conn->handle, &uvBuf, 1, NULL);
     uv_read_start(ctx->conn->handle, SCREEN_console_onAlloc, SCREEN_console_onRead);
+    vec_resize(ctx->recvBuf, 0);
 }
 
 
