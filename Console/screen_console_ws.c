@@ -237,6 +237,14 @@ static void SCREEN_console_onRead(uv_stream_t* stream, ssize_t nread, const uv_b
     {
         assert(0 == ctx->recvBuf->length);
         vec_pusharr(ctx->recvBuf, base, len);
+        if (ctx->recvBuf->length < 4)
+        {
+            return;
+        }
+        if (memcmp(ctx->recvBuf->data + ctx->recvBuf->length - 4, "\r\n\r\n", 4) != 0)
+        {
+            return;
+        }
         vec_push(ctx->recvBuf, 0);
 
         assert(SCREEN_ConsoleState_Connected == ctx->state);
