@@ -61,6 +61,8 @@ typedef enum SCREEN_ConsoleState
     SCREEN_ConsoleState_Connecting,
     SCREEN_ConsoleState_Connected,
     SCREEN_ConsoleState_Handshaked,
+    SCREEN_ConsoleState_ReadHeader,
+    SCREEN_ConsoleState_ReadPayload,
 } SCREEN_ConsoleState;
 
 
@@ -233,7 +235,7 @@ static void SCREEN_console_onRead(uv_stream_t* stream, ssize_t nread, const uv_b
     assert(nread <= buf->len);
     char* base = buf->base;
     u32 len = (u32)nread;
-    if (ctx->state != SCREEN_ConsoleState_Handshaked)
+    if (ctx->state == SCREEN_ConsoleState_Connected)
     {
         assert(0 == ctx->recvBuf->length);
         vec_pusharr(ctx->recvBuf, base, len);
@@ -255,51 +257,51 @@ static void SCREEN_console_onRead(uv_stream_t* stream, ssize_t nread, const uv_b
         vec_resize(ctx->recvBuf, 0);
         return;
     }
-    else
+    else if (ctx->state == SCREEN_ConsoleState_Handshaked)
     {
         // https://tools.ietf.org/html/rfc6455#section-5.2
 
+    }
+    else if (ctx->state == SCREEN_ConsoleState_ReadHeader)
+    {
+        u8 finalFragment = base[0] >> 7 & 0x1;
+        WS_FrameOp opcode = base[0] & 0xf;
+        u8 masked = base[1] >> 7 & 0x1;
+        u32 payloadLength = base[1] & 0x7f;
+
         char* newData = NULL;
-        if (WS_FrameOp_Continuation == ctx->opState)
+        if (payloadLength < 126)
         {
-            u8 finalFragment = base[0] >> 7 & 0x1;
-            WS_FrameOp opcode = base[0] & 0xf;
-            u8 masked = base[1] >> 7 & 0x1;
-            u32 payloadLength = base[1] & 0x7f;
-
-            if (payloadLength < 126)
-            {
-                newData = base + 2;
-            }
-            else if (payloadLength == 126)
-            {
-                payloadLength = ntohs(*(u16*)(base + 2));
-                newData = base + 2 + 2;
-            }
-            else if (payloadLength == 127)
-            {
-                payloadLength = (u32)ntohll(*(u64*)(base + 2));
-                newData = base + 2 + 8;
-            }
-
-            if (masked)
-            {
-                u8 maskingKey[4];
-                memcpy(maskingKey, newData, 4);
-                newData += 4;
-                for (u32 i = 0; i < payloadLength; ++i)
-                {
-                    newData[i] ^= maskingKey[i % 4];
-                }
-            }
-            ctx->opState = opcode;
-            ctx->remain = payloadLength;
-            vec_resize(ctx->recvBuf, 0);
+            newData = base + 2;
         }
-        else
+        else if (payloadLength == 126)
         {
-            newData = base;
+            payloadLength = ntohs(*(u16*)(base + 2));
+            newData = base + 2 + 2;
         }
+        else if (payloadLength == 127)
+        {
+            payloadLength = (u32)ntohll(*(u64*)(base + 2));
+            newData = base + 2 + 8;
+        }
+
+        if (masked)
+        {
+            u8 maskingKey[4];
+            memcpy(maskingKey, newData, 4);
+            newData += 4;
+            for (u32 i = 0; i < payloadLength; ++i)
+            {
+                newData[i] ^= maskingKey[i % 4];
+            }
+        }
+        ctx->opState = opcode;
+        ctx->remain = payloadLength;
+        vec_resize(ctx->recvBuf, 0);
+    }
+    else if (ctx->state == SCREEN_ConsoleState_ReadPayload)
+    {
+        const char* newData = base;
 
         u32 newDataLen = (u32)(base + len - newData);
         if (newDataLen && ctx->remain)
@@ -328,8 +330,6 @@ static void SCREEN_console_onRead(uv_stream_t* stream, ssize_t nread, const uv_b
             }
             case WS_FrameOp_Close:
             {
-                //printf("[Console] closed\n");
-                //ctx->connected = false;
                 break;
             }
             case WS_FrameOp_Ping:
@@ -344,7 +344,12 @@ static void SCREEN_console_onRead(uv_stream_t* stream, ssize_t nread, const uv_b
                 break;
             }
             ctx->opState = WS_FrameOp_Continuation;
+            ctx->state = SCREEN_ConsoleState_Handshaked;
         }
+    }
+    else
+    {
+        assert(false);
     }
 }
 
