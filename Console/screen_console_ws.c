@@ -76,7 +76,9 @@ typedef struct SCREEN_Console
 
     SCREEN_ConsoleState state;
     WS_FrameOp opState;
-    u32 remain;
+    bool payloadMasked;
+    u8 payloadMaskingKey[4];
+    u32 payloadLength;
     vec_char sendBuf[1];
     vec_char recvBuf[1];
 
@@ -225,6 +227,62 @@ static void SCREEN_console_onClose(uv_handle_t* handle)
 
 
 
+
+
+
+static void SCREEN_console_onReadHandlePayload(void)
+{
+    if (ctx->recvBuf->length > ctx->payloadLength)
+    {
+        printf("[Console] error: recv payload\n");
+        vec_resize(ctx->recvBuf, ctx->payloadLength);
+    }
+    if (ctx->recvBuf->length == ctx->payloadLength)
+    {
+        if (ctx->payloadMasked)
+        {
+            for (u32 i = 0; i < ctx->payloadLength; ++i)
+            {
+                ctx->recvBuf->data[i] ^= ctx->payloadMaskingKey[i % 4];
+            }
+        }
+        switch (ctx->opState)
+        {
+        case WS_FrameOp_Text:
+        {
+            vec_push(ctx->recvBuf, 0);
+            printf("[Console] incommig text\n%s", ctx->recvBuf->data);
+            SCREEN_consoleSendText(ctx->recvBuf->data, ctx->recvBuf->length);
+            break;
+        }
+        case WS_FrameOp_Binary:
+        {
+            printf("[Console] incommig binrary size=%u\n", ctx->recvBuf->length);
+            SCREEN_cmdExec(ctx->recvBuf->data, ctx->recvBuf->length);
+            break;
+        }
+        case WS_FrameOp_Close:
+        {
+            break;
+        }
+        case WS_FrameOp_Ping:
+        case WS_FrameOp_Pong:
+        {
+            // todo
+            break;
+        }
+        default:
+            printf("[Console] unhandled opcode=%u\n", ctx->opState);
+            printf("\n%s\n", ctx->recvBuf->data);
+            break;
+        }
+        ctx->opState = WS_FrameOp_Continuation;
+        ctx->state = SCREEN_ConsoleState_Handshaked;
+    }
+}
+
+
+
 static void SCREEN_console_onRead(uv_stream_t* stream, ssize_t nread, const uv_buf_t* buf)
 {
     if (nread < 0)
@@ -239,14 +297,6 @@ static void SCREEN_console_onRead(uv_stream_t* stream, ssize_t nread, const uv_b
     {
         assert(0 == ctx->recvBuf->length);
         vec_pusharr(ctx->recvBuf, base, len);
-        if (ctx->recvBuf->length < 4)
-        {
-            return;
-        }
-        if (memcmp(ctx->recvBuf->data + ctx->recvBuf->length - 4, "\r\n\r\n", 4) != 0)
-        {
-            return;
-        }
         vec_push(ctx->recvBuf, 0);
 
         assert(SCREEN_ConsoleState_Connected == ctx->state);
@@ -260,92 +310,48 @@ static void SCREEN_console_onRead(uv_stream_t* stream, ssize_t nread, const uv_b
     else if (ctx->state == SCREEN_ConsoleState_Handshaked)
     {
         // https://tools.ietf.org/html/rfc6455#section-5.2
+        u32 headerLength = 2;
 
-    }
-    else if (ctx->state == SCREEN_ConsoleState_ReadHeader)
-    {
         u8 finalFragment = base[0] >> 7 & 0x1;
         WS_FrameOp opcode = base[0] & 0xf;
         u8 masked = base[1] >> 7 & 0x1;
         u32 payloadLength = base[1] & 0x7f;
 
-        char* newData = NULL;
-        if (payloadLength < 126)
-        {
-            newData = base + 2;
-        }
-        else if (payloadLength == 126)
+        if (payloadLength == 126)
         {
             payloadLength = ntohs(*(u16*)(base + 2));
-            newData = base + 2 + 2;
+            headerLength += 2;
         }
         else if (payloadLength == 127)
         {
             payloadLength = (u32)ntohll(*(u64*)(base + 2));
-            newData = base + 2 + 8;
+            headerLength += 8;
+        }
+        else
+        {
+            assert(payloadLength < 126);
         }
 
-        if (masked)
+        ctx->payloadMasked = masked;
+        if (ctx->payloadMasked)
         {
-            u8 maskingKey[4];
-            memcpy(maskingKey, newData, 4);
-            newData += 4;
-            for (u32 i = 0; i < payloadLength; ++i)
-            {
-                newData[i] ^= maskingKey[i % 4];
-            }
+            memcpy(ctx->payloadMaskingKey, base + headerLength, 4);
+            headerLength += 4;
         }
         ctx->opState = opcode;
-        ctx->remain = payloadLength;
+        ctx->payloadLength = payloadLength;
         vec_resize(ctx->recvBuf, 0);
+        if (len > headerLength)
+        {
+            vec_pusharr(ctx->recvBuf, base + headerLength, len - headerLength);
+        }
+        SCREEN_console_onReadHandlePayload();
     }
     else if (ctx->state == SCREEN_ConsoleState_ReadPayload)
     {
-        const char* newData = base;
-
-        u32 newDataLen = (u32)(base + len - newData);
-        if (newDataLen && ctx->remain)
-        {
-            newDataLen = min(newDataLen, ctx->remain);
-            ctx->remain -= newDataLen;
-
-            vec_pusharr(ctx->recvBuf, newData, newDataLen);
-        }
-        if (newDataLen && !ctx->remain)
-        {
-            switch (ctx->opState)
-            {
-            case WS_FrameOp_Text:
-            {
-                vec_push(ctx->recvBuf, 0);
-                printf("[Console] incommig text\n%s", ctx->recvBuf->data);
-                SCREEN_consoleSendText(ctx->recvBuf->data, ctx->recvBuf->length);
-                break;
-            }
-            case WS_FrameOp_Binary:
-            {
-                printf("[Console] incommig binrary size=%u\n", ctx->recvBuf->length);
-                SCREEN_cmdExec(ctx->recvBuf->data, ctx->recvBuf->length);
-                break;
-            }
-            case WS_FrameOp_Close:
-            {
-                break;
-            }
-            case WS_FrameOp_Ping:
-            case WS_FrameOp_Pong:
-            {
-                // todo
-                break;
-            }
-            default:
-                printf("[Console] unhandled opcode=%u\n", ctx->opState);
-                printf("\n%s\n", ctx->recvBuf->data);
-                break;
-            }
-            ctx->opState = WS_FrameOp_Continuation;
-            ctx->state = SCREEN_ConsoleState_Handshaked;
-        }
+        assert(ctx->payloadLength > 0);
+        vec_pusharr(ctx->recvBuf, base, len);
+        SCREEN_console_onReadHandlePayload();
     }
     else
     {
