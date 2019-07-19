@@ -189,7 +189,7 @@ static GLenum SCREEN_glMinFilterFromChannelFilter(SCREEN_ChannelFilter filter)
     assert(filter < SCREEN_ChannelFilterCount);
     static const GLenum a[SCREEN_ChannelFilterCount] =
     {
-        GL_LINEAR_MIPMAP_LINEAR,
+        GL_LINEAR,//GL_LINEAR_MIPMAP_LINEAR,
         GL_LINEAR,
         GL_NEAREST,
     };
