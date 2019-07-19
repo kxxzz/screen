@@ -332,14 +332,15 @@ static void SCREEN_console_onRead(uv_stream_t* stream, ssize_t nread, const uv_b
             assert(payloadLength < 126);
         }
 
-        ctx->payloadMasked = masked;
-        if (ctx->payloadMasked)
+        if (masked)
         {
             memcpy(ctx->payloadMaskingKey, base + headerLength, 4);
             headerLength += 4;
         }
         ctx->opState = opcode;
+        ctx->payloadMasked = masked;
         ctx->payloadLength = payloadLength;
+
         vec_resize(ctx->recvBuf, 0);
         if (len > headerLength)
         {
