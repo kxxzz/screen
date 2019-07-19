@@ -431,6 +431,15 @@ void SCREEN_consoleStartup(void)
 
 void SCREEN_consoleDestroy(void)
 {
+    if (ctx->state != SCREEN_ConsoleState_Disconnected)
+    {
+        SCREEN_consoleSendClose();
+        uv_close((uv_handle_t*)ctx->conn->handle, SCREEN_console_onClose);
+        while (ctx->state != SCREEN_ConsoleState_Disconnected)
+        {
+            uv_run(ctx->loop, UV_RUN_ONCE);
+        }
+    }
     SCREEN_consoleCleanup();
 }
 
