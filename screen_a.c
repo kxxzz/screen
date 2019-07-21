@@ -253,7 +253,7 @@ GLuint SCREEN_buildShaderProgram(const char* shaderComm, const char* shaderChann
     {
         char infoBuf[4096];
         glGetProgramInfoLog(shaderProgram, sizeof(infoBuf), &status, infoBuf);
-        assert(false);
+        printf("failed link shader program:\n%s\n", infoBuf);
         glDeleteShader(fragShader);
         glDeleteShader(vertShader);
         glDeleteProgram(shaderProgram);
