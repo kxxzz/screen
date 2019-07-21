@@ -244,7 +244,11 @@ static void SCREEN_renderPassDevOnEnter(SCREEN_RenderPassDev* dev, const SCREEN_
     (
         commonShader, ctx->tmpDataBuf->data, ctx->sceneDataBuf->data + desc->shaderCodeOffset
     );
-    assert(shaderProgram);
+    if (!shaderProgram)
+    {
+        dev->entered = false;
+        return;
+    }
 
     dev->uniform_Resolution = glGetUniformLocation(shaderProgram, "iResolution");
     dev->uniform_Time = glGetUniformLocation(shaderProgram, "iTime");

@@ -197,8 +197,7 @@ static GLuint SCREEN_compileShader(GLenum type, GLsizei srcCount, const char** s
     {
         char infoBuf[4096];
         glGetShaderInfoLog(shader, sizeof(infoBuf), &status, infoBuf);
-        // todo report
-        assert(false);
+        printf("failed compile shader:\n%s\n", infoBuf);
         glDeleteShader(shader);
         return 0;
     }
