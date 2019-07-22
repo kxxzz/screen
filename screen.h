@@ -153,13 +153,16 @@ typedef struct SCREEN_RenderPass
 {
     SCREEN_Channel channel[SCREEN_Channels_MAX];
     u32 shaderCodeOffset;
+    bool specBufferSize;
+    u32 bufferWidth;
+    u32 bufferHeight;
 } SCREEN_RenderPass;
 
 typedef struct SCREEN_Scene
 {
     u32 commonShaderCodeOffset;
     SCREEN_RenderPass buffer[SCREEN_Buffers_MAX];
-    SCREEN_RenderPass image;
+    SCREEN_RenderPass image[1];
     u32 assetCount;
     SCREEN_Asset asset[SCREEN_Assets_MAX];
 } SCREEN_Scene;

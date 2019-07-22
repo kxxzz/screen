@@ -405,9 +405,9 @@ u32 SCREEN_calcSceneDataSize(const char* sceneData, const SCREEN_Scene* scene)
             size += (u32)strlen(sceneData + scene->buffer[i].shaderCodeOffset) + 1;
         }
     }
-    if (scene->image.shaderCodeOffset != -1)
+    if (scene->image->shaderCodeOffset != -1)
     {
-        size += (u32)strlen(sceneData + scene->image.shaderCodeOffset) + 1;
+        size += (u32)strlen(sceneData + scene->image->shaderCodeOffset) + 1;
     }
     for (u32 ai = 0; ai < SCREEN_Assets_MAX; ++ai)
     {

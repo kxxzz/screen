@@ -273,8 +273,8 @@ static void SCREEN_renderPassDevOnEnter(SCREEN_RenderPassDev* dev, const SCREEN_
 
     if (!noTex)
     {
-        u32 w = ctx->renderWidth;
-        u32 h = ctx->renderHeight;
+        u32 w = desc->specBufferSize ? desc->bufferWidth : ctx->renderWidth;
+        u32 h = desc->specBufferSize ? desc->bufferHeight : ctx->renderHeight;
         vec_char* tmpDataBuf = ctx->tmpDataBuf;
 
         glGenTextures(1, &dev->texture);
@@ -307,6 +307,10 @@ static void SCREEN_renderPassDevOnResize
             glDeleteTextures(1, &dev->texture);
             dev->texture = 0;
         }
+        return;
+    }
+    if (desc->specBufferSize)
+    {
         return;
     }
     u32 w = ctx->renderWidth;
@@ -376,7 +380,9 @@ static void SCREEN_renderPassDevOnRender(SCREEN_RenderPassDev* dev, SCREEN_Rende
     glUseProgram(dev->shaderProgram);
     if (dev->uniform_Resolution >= 0)
     {
-        glUniform3f(dev->uniform_Resolution, (f32)ctx->renderWidth, (f32)ctx->renderHeight, 0.f);
+        u32 w = desc->specBufferSize ? desc->bufferWidth : ctx->renderWidth;
+        u32 h = desc->specBufferSize ? desc->bufferHeight : ctx->renderHeight;
+        glUniform3f(dev->uniform_Resolution, (f32)w, (f32)h, 0.f);
 
     }
     if (dev->uniform_Time >= 0)
@@ -434,7 +440,41 @@ static void SCREEN_renderPassDevOnRender(SCREEN_RenderPassDev* dev, SCREEN_Rende
         }
         if (dev->uniform_ChannelResolution[i] >= 0)
         {
-            glUniform3f(dev->uniform_ChannelResolution[i], (f32)ctx->renderWidth, (f32)ctx->renderHeight, 0.f);
+            u32 w, h;
+            switch (desc->channel[i].type)
+            {
+            case SCREEN_ChannelType_Unused:
+            {
+                w = h = 0;
+                break;
+            }
+            case SCREEN_ChannelType_Buffer:
+            {
+                u32 bi = desc->channel[i].buffer;
+                SCREEN_RenderPass* pass = ctx->scene->buffer + bi;
+                w = pass->specBufferSize ? pass->bufferWidth : ctx->renderWidth;
+                h = pass->specBufferSize ? pass->bufferHeight : ctx->renderHeight;
+                break;
+            }
+            case SCREEN_ChannelType_Keyboard:
+            {
+                w = ARYLEN(ctx->keyboardState[0]);
+                h = ARYLEN(ctx->keyboardState);
+                break;
+            }
+            case SCREEN_ChannelType_Asset:
+            {
+                u32 ai = desc->channel[i].asset;
+                w = ctx->scene->asset[ai].size[0];
+                h = ctx->scene->asset[ai].size[1];
+                break;
+            }
+            default:
+                assert(false);
+                w = h = 0;
+                break;
+            }
+            glUniform3f(dev->uniform_ChannelResolution[i], (f32)w, (f32)h, 0.f);
         }
     }
     SCREEN_GL_CHECK();
@@ -519,7 +559,7 @@ static void SCREEN_renderPassDevOnRender(SCREEN_RenderPassDev* dev, SCREEN_Rende
 
 
 
-static void SCREEN_renderPassDevReset(SCREEN_RenderPassDev* dev, bool noTex)
+static void SCREEN_renderPassDevReset(SCREEN_RenderPassDev* dev, const SCREEN_RenderPass* desc, bool noTex)
 {
     if (!dev->entered || noTex)
     {
@@ -527,8 +567,8 @@ static void SCREEN_renderPassDevReset(SCREEN_RenderPassDev* dev, bool noTex)
     }
     if (dev->texture)
     {
-        u32 w = ctx->renderWidth;
-        u32 h = ctx->renderHeight;
+        u32 w = desc->specBufferSize ? desc->bufferWidth : ctx->renderWidth;
+        u32 h = desc->specBufferSize ? desc->bufferHeight : ctx->renderHeight;
         vec_char* tmpDataBuf = ctx->tmpDataBuf;
 
         vec_resize(tmpDataBuf, w * h * 4);
@@ -570,7 +610,7 @@ static void SCREEN_enterScene(void)
         SCREEN_RenderPassDev* dev = ctx->buffer + i;
         SCREEN_renderPassDevOnEnter(dev, ctx->scene->buffer + i, false);
     }
-    SCREEN_renderPassDevOnEnter(ctx->image, &ctx->scene->image, ctx->imageRenderDirect);
+    SCREEN_renderPassDevOnEnter(ctx->image, ctx->scene->image, ctx->imageRenderDirect);
 
     SCREEN_GL_CHECK();
 }
@@ -841,9 +881,10 @@ void SCREEN_sceneReset(void)
     {
 
         SCREEN_RenderPassDev* passDev = ctx->buffer + i;
-        SCREEN_renderPassDevReset(passDev, false);
+        SCREEN_RenderPass* passDesc = ctx->scene->buffer + i;
+        SCREEN_renderPassDevReset(passDev, passDesc, false);
     }
-    SCREEN_renderPassDevReset(ctx->image, ctx->imageRenderDirect);
+    SCREEN_renderPassDevReset(ctx->image, ctx->scene->image, ctx->imageRenderDirect);
 
     SCREEN_sceneStateReset();
 }
@@ -893,7 +934,7 @@ void SCREEN_frame(f32 dt, bool stopped)
     {
         SCREEN_renderPassDevOnRender(ctx->buffer + i, ctx->scene->buffer + i);
     }
-    SCREEN_renderPassDevOnRender(ctx->image, &ctx->scene->image);
+    SCREEN_renderPassDevOnRender(ctx->image, ctx->scene->image);
 
     if (!ctx->imageRenderDirect)
     {
@@ -1031,7 +1072,7 @@ void SCREEN_setRenderSize(const SCREEN_RenderSize* rs)
         {
             SCREEN_renderPassDevOnResize(ctx->buffer + i, ctx->scene->buffer + i, false, widthCopy, heightCopy);
         }
-        SCREEN_renderPassDevOnResize(ctx->image, &ctx->scene->image, ctx->imageRenderDirect, 0, 0);
+        SCREEN_renderPassDevOnResize(ctx->image, ctx->scene->image, ctx->imageRenderDirect, 0, 0);
 
         glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);

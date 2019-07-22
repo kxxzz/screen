@@ -252,7 +252,7 @@ static void SCREEN_loadScenePassFromJson
     }
     else
     {
-        renderPass = &desc->image;
+        renderPass = desc->image;
     }
 
     const nx_json* channelsJs = nx_json_get(passJs, "channels");
@@ -400,7 +400,7 @@ static SCREEN_LoadFileError SCREEN_loadSceneFromJson(char* code, const char* dir
         }
     }
     const nx_json* imageJs = nx_json_get(rootJs, "image");
-    SCREEN_loadScenePassFromJson(imageJs, dir, desc, dataBuf, pathBuf, &desc->image.shaderCodeOffset, NULL);
+    SCREEN_loadScenePassFromJson(imageJs, dir, desc, dataBuf, pathBuf, &desc->image->shaderCodeOffset, NULL);
 
     const nx_json* assetsJs = nx_json_get(rootJs, "assets");
     if (assetsJs->type != NX_JSON_NULL)
