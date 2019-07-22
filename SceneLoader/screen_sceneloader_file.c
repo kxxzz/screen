@@ -322,7 +322,71 @@ static void SCREEN_loadScenePassFromJson
             else
             {
                 // todo report error
-                continue;
+                goto error;
+            }
+
+            const nx_json* lastJs = nx_json_item(channelJs, channelJs->length - 1);
+            if (lastJs->type == NX_JSON_OBJECT)
+            {
+                const nx_json* wrapJs = nx_json_get(lastJs, "wrap");
+                const nx_json* filterJs = nx_json_get(lastJs, "filter");
+                if (wrapJs->type != NX_JSON_NULL)
+                {
+                    if (wrapJs->type != NX_JSON_STRING)
+                    {
+                        // todo report error
+                        goto error;
+                    }
+                    static const char* nameTable[SCREEN_ChannelWrapCount] =
+                    {
+                        "repeat",
+                        "clamp",
+                    };
+                    bool m = false;
+                    for (u32 i = 0; i < SCREEN_ChannelWrapCount; ++i)
+                    {
+                        if (0 == strcicmp(nameTable[i], wrapJs->text_value))
+                        {
+                            renderPass->channel[cidx].wrap = i;
+                            m = true;
+                            break;
+                        }
+                    }
+                    if (!m)
+                    {
+                        // todo report error
+                        goto error;
+                    }
+                }
+                if (filterJs->type != NX_JSON_NULL)
+                {
+                    if (filterJs->type != NX_JSON_STRING)
+                    {
+                        // todo report error
+                        goto error;
+                    }
+                    static const char* nameTable[SCREEN_ChannelFilterCount] =
+                    {
+                        "mipmap",
+                        "linear",
+                        "nearest",
+                    };
+                    bool m = false;
+                    for (u32 i = 0; i < SCREEN_ChannelFilterCount; ++i)
+                    {
+                        if (0 == strcicmp(nameTable[i], filterJs->text_value))
+                        {
+                            renderPass->channel[cidx].filter = i;
+                            m = true;
+                            break;
+                        }
+                    }
+                    if (!m)
+                    {
+                        // todo report error
+                        goto error;
+                    }
+                }
             }
         }
     }
