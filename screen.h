@@ -153,7 +153,7 @@ typedef struct SCREEN_RenderPass
 {
     SCREEN_Channel channel[SCREEN_Channels_MAX];
     u32 shaderCodeOffset;
-    bool specBufferSize;
+    bool isSpecBufferSize;
     u32 bufferWidth;
     u32 bufferHeight;
 } SCREEN_RenderPass;

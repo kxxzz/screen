@@ -326,6 +326,37 @@ static void SCREEN_loadScenePassFromJson
             }
         }
     }
+
+    const nx_json* specBufferSizeJs = nx_json_get(passJs, "specBufferSize");
+    if (specBufferSizeJs->type != NX_JSON_NULL)
+    {
+        if (specBufferSizeJs->type != NX_JSON_ARRAY)
+        {
+            // todo report error
+            goto error;
+        }
+        if (specBufferSizeJs->length != 2)
+        {
+            // todo report error
+            goto error;
+        }
+        renderPass->isSpecBufferSize = true;
+        const nx_json* widthJs = nx_json_item(specBufferSizeJs, 0);
+        const nx_json* heightJs = nx_json_item(specBufferSizeJs, 1);
+        if (widthJs->type != NX_JSON_INTEGER)
+        {
+            // todo report error
+            goto error;
+        }
+        if (heightJs->type != NX_JSON_INTEGER)
+        {
+            // todo report error
+            goto error;
+        }
+        renderPass->bufferWidth = (u32)widthJs->int_value;
+        renderPass->bufferHeight = (u32)heightJs->int_value;
+    }
+
     *pShaderOff = shaderOff;
     if (pBi)
     {

@@ -273,8 +273,8 @@ static void SCREEN_renderPassDevOnEnter(SCREEN_RenderPassDev* dev, const SCREEN_
 
     if (!noTex)
     {
-        u32 w = desc->specBufferSize ? desc->bufferWidth : ctx->renderWidth;
-        u32 h = desc->specBufferSize ? desc->bufferHeight : ctx->renderHeight;
+        u32 w = desc->isSpecBufferSize ? desc->bufferWidth : ctx->renderWidth;
+        u32 h = desc->isSpecBufferSize ? desc->bufferHeight : ctx->renderHeight;
         vec_char* tmpDataBuf = ctx->tmpDataBuf;
 
         glGenTextures(1, &dev->texture);
@@ -309,7 +309,7 @@ static void SCREEN_renderPassDevOnResize
         }
         return;
     }
-    if (desc->specBufferSize)
+    if (desc->isSpecBufferSize)
     {
         return;
     }
@@ -380,8 +380,8 @@ static void SCREEN_renderPassDevOnRender(SCREEN_RenderPassDev* dev, SCREEN_Rende
     glUseProgram(dev->shaderProgram);
     if (dev->uniform_Resolution >= 0)
     {
-        u32 w = desc->specBufferSize ? desc->bufferWidth : ctx->renderWidth;
-        u32 h = desc->specBufferSize ? desc->bufferHeight : ctx->renderHeight;
+        u32 w = desc->isSpecBufferSize ? desc->bufferWidth : ctx->renderWidth;
+        u32 h = desc->isSpecBufferSize ? desc->bufferHeight : ctx->renderHeight;
         glUniform3f(dev->uniform_Resolution, (f32)w, (f32)h, 0.f);
 
     }
@@ -452,8 +452,8 @@ static void SCREEN_renderPassDevOnRender(SCREEN_RenderPassDev* dev, SCREEN_Rende
             {
                 u32 bi = desc->channel[i].buffer;
                 SCREEN_RenderPass* pass = ctx->scene->buffer + bi;
-                w = pass->specBufferSize ? pass->bufferWidth : ctx->renderWidth;
-                h = pass->specBufferSize ? pass->bufferHeight : ctx->renderHeight;
+                w = pass->isSpecBufferSize ? pass->bufferWidth : ctx->renderWidth;
+                h = pass->isSpecBufferSize ? pass->bufferHeight : ctx->renderHeight;
                 break;
             }
             case SCREEN_ChannelType_Keyboard:
@@ -567,8 +567,8 @@ static void SCREEN_renderPassDevReset(SCREEN_RenderPassDev* dev, const SCREEN_Re
     }
     if (dev->texture)
     {
-        u32 w = desc->specBufferSize ? desc->bufferWidth : ctx->renderWidth;
-        u32 h = desc->specBufferSize ? desc->bufferHeight : ctx->renderHeight;
+        u32 w = desc->isSpecBufferSize ? desc->bufferWidth : ctx->renderWidth;
+        u32 h = desc->isSpecBufferSize ? desc->bufferHeight : ctx->renderHeight;
         vec_char* tmpDataBuf = ctx->tmpDataBuf;
 
         vec_resize(tmpDataBuf, w * h * 4);
