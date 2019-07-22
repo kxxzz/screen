@@ -16,6 +16,7 @@
 #define HAVE_M_PI
 #define SDL_MAIN_HANDLED
 #include <SDL.h>
+#include <SDL_syswm.h>
 
 #include <argparse.h>
 
@@ -116,6 +117,15 @@ int main(int argc, char* argv[])
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, winWidth, winHeight,
         SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE
     );
+#ifdef _WIN32
+    HWND hwnd;
+    {
+        SDL_SysWMinfo wmInfo;
+        SDL_VERSION(&wmInfo.version);
+        SDL_GetWindowWMInfo(window, &wmInfo);
+        hwnd = wmInfo.info.win.window;
+    }
+#endif
     SDL_GLContext context = SDL_GL_CreateContext(window);
     SCREEN_startup();
     SCREEN_enter(winWidth, winHeight);
@@ -123,6 +133,7 @@ int main(int argc, char* argv[])
 
     u32 intervalMode = 2;
     bool fullscreen = false;
+    bool topMost = false;
     bool stopped = false;
 
 
@@ -264,6 +275,13 @@ int main(int argc, char* argv[])
                 {
                     fullscreen = !fullscreen;
                     SDL_SetWindowFullscreen(window, fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
+                }
+                if (SDLK_F5 == e.key.keysym.sym)
+                {
+                    topMost = !topMost;
+#ifdef _WIN32
+                    SetWindowPos(hwnd, topMost ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+#endif
                 }
                 if (SDLK_F8 == e.key.keysym.sym)
                 {
