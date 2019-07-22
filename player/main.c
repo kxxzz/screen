@@ -30,6 +30,8 @@
 
 
 
+
+
 #ifdef ARYLEN
 # undef ARYLEN
 #endif
@@ -64,23 +66,6 @@ static int mainReturn(int r)
 
 
 
-enum
-{
-    TimeStrBuf_MAX = 16,
-};
-
-static char* nowStr(char* timeBuf)
-{
-    time_t t = time(NULL);
-    struct tm *lt = localtime(&t);
-    timeBuf[strftime(timeBuf, TimeStrBuf_MAX, "%H:%M:%S", lt)] = '\0';
-    return timeBuf;
-}
-
-
-
-
-
 
 
 int main(int argc, char* argv[])
@@ -89,8 +74,6 @@ int main(int argc, char* argv[])
     _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
     srand((u32)time(NULL));
-
-    char timeBuf[TimeStrBuf_MAX];
 
 
     char* sceneFile = NULL;
@@ -377,7 +360,6 @@ int main(int argc, char* argv[])
     SDL_GL_DeleteContext(context);
     SDL_DestroyWindow(window);
     SDL_Quit();
-
     return mainReturn(EXIT_SUCCESS);
 }
 
