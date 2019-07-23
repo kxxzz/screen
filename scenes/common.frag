@@ -1,4 +1,8 @@
 
+const float PI = 3.14159265359;
+const float InvPI = 1.0 / PI;
+const float HalfPI = PI * 0.5;
+
 
 float saturate(in float x)
 {
@@ -171,7 +175,38 @@ void anglesToAxes(in vec3 angles, out vec3 right, out vec3 up, out vec3 front)
 
 
 
+struct Camera
+{
+    vec3 pos, target, up;
+    float fov;  
+};
 
+mat3 cameraWorldToCamera(in Camera cam)
+{
+    vec3 front = normalize(cam.target - cam.pos);
+    vec3 right = normalize(cross(cam.up, front));
+    vec3 up = normalize(cross(front, right));
+    return mat3(right, up, front);
+}
+
+vec2 viewCoordFromUV(in vec2 uv, in float aspectRatio)
+{
+    vec2 viewCoord = uv * 2.0 - 1.0;
+    viewCoord.x *= aspectRatio;
+    return viewCoord; 
+}
+
+void cameraRayCalc
+(
+    in Camera cam, in vec2 uv, in float aspectRatio,
+    out vec3 rayOrigin, out vec3 rayDir
+)
+{
+    vec2 viewCoord = viewCoordFromUV(uv, aspectRatio);
+    rayOrigin = cam.pos;
+    float perspDist = 1.0 / tan(radians(cam.fov));
+    rayDir = normalize(cameraWorldToCamera(cam) * vec3(viewCoord, perspDist));
+}
 
 
 
