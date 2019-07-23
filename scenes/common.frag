@@ -133,6 +133,31 @@ vec3 tonemapPMalin(in vec3 x)
 
 
 
+void anglesToAxes(in vec3 angles, out vec3 right, out vec3 up, out vec3 front)
+{
+    mat3 rotX = mat3
+    (
+        1.0, 0.0, 0.0,
+        0.0, cos(angles.x), sin(angles.x),
+        0.0, -sin(angles.x), cos(angles.x)
+    );
+    mat3 rotY = mat3
+    (
+        cos(angles.y), 0.0, -sin(angles.y),
+        0.0, 1.0, 0.0,
+        sin(angles.y), 0.0, cos(angles.y)
+    );
+    mat3 rotZ = mat3
+    (
+        cos(angles.z), sin(angles.z), 0.0,
+        -sin(angles.z), cos(angles.z), 0.0,
+        0.0, 0.0, 1.0
+    );
+    mat3 m = rotY * rotX * rotZ;
+    right = m[0];
+    up = m[1];
+    front = m[2];
+}
 
 
 
