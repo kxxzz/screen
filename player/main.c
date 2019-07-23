@@ -69,6 +69,8 @@ static int mainReturn(int r)
 
 
 
+
+
 int main(int argc, char* argv[])
 {
 #if !defined(NDEBUG) && defined(_WIN32)
@@ -275,6 +277,9 @@ int main(int argc, char* argv[])
                 {
                     fullscreen = !fullscreen;
                     SDL_SetWindowFullscreen(window, fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
+#ifdef _WIN32
+                    SetWindowPos(hwnd, topMost ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+#endif
                 }
                 if (SDLK_F5 == e.key.keysym.sym)
                 {
@@ -287,6 +292,9 @@ int main(int argc, char* argv[])
                 {
                     fullscreen = !fullscreen;
                     SDL_SetWindowFullscreen(window, fullscreen ? SDL_WINDOW_FULLSCREEN : 0);
+#ifdef _WIN32
+                    SetWindowPos(hwnd, topMost ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+#endif
                 }
                 if (SDLK_TAB == e.key.keysym.sym)
                 {
