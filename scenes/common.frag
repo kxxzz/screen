@@ -216,10 +216,87 @@ void cameraRayCalc
 
 
 
+float RayCubeIntersect(in vec3 ro, in vec3 rd, vec3 cubePos, vec3 cubeSize, out vec2 hitDist)
+{
+    ro -= cubePos;
+
+    vec3 m = 1.0 / -rd;
+    vec3 o = mix(cubeSize*0.5, -cubeSize*0.5, lessThan(rd, vec3(0.0)));
+
+    vec3 uf = (ro + o) * m;
+    vec3 ub = (ro - o) * m;
+
+    hitDist.x = max(uf.x, max(uf.y, uf.z));
+    hitDist.y = min(ub.x, min(ub.y, ub.z));
+
+    if (hitDist.x < 0.0 && hitDist.y > 0.0)
+    {
+        hitDist.xy = hitDist.yx;
+        return 1.0;
+    }
+    return (hitDist.y < hitDist.x) ? 0.0 : (hitDist.x > 0.0 ? 1.0 : -1.0);
+}
 
 
+float RayCubeIntersect
+(
+    in vec3 ro, in vec3 rd, vec3 cubePos, vec3 cubeSize,
+    out vec2 hitDist, out vec3 hitNorm0, out vec3 hitNorm1
+)
+{
+    ro -= cubePos;
 
+    vec3 m = 1.0 / -rd;
+    vec3 os = mix(vec3(1.0), vec3(-1.0), lessThan(rd, vec3(0.0)));
+    vec3 o = -cubeSize * os * 0.5;
 
+    vec3 uf = (ro + o) * m;
+    vec3 ub = (ro - o) * m;
+
+    //hitDist.x = max(uf.x, max(uf.y, uf.z));
+    //hitDist.y = min(ub.x, min(ub.y, ub.z));
+
+    if (uf.x > uf.y)
+    {
+        hitDist.x = uf.x;
+        hitNorm0 = vec3(os.x, 0.0, 0.0);
+    }
+    else
+    {
+        hitDist.x = uf.y;
+        hitNorm0 = vec3(0.0, os.y, 0.0);
+    }
+    if (uf.z > hitDist.x )
+    {
+        hitDist.x = uf.z;
+        hitNorm0 = vec3(0.0, 0.0, os.z);
+    }
+    if (ub.x < ub.y)
+    {
+        hitDist.y = ub.x;
+        hitNorm1 = vec3(os.x, 0.0, 0.0);
+    }
+    else
+    {
+        hitDist.y = ub.y;
+        hitNorm1 = vec3(0.0, os.y, 0.0);
+    }
+    if (ub.z < hitDist.y)
+    {
+        hitDist.y = ub.z;
+        hitNorm1 = vec3(0.0, 0.0, os.z);
+    }
+
+    if (hitDist.x < 0.0 && hitDist.y > 0.0)
+    {
+        hitDist.xy = hitDist.yx;
+        vec3 t = hitNorm1;
+        hitNorm1 = hitNorm0;
+        hitNorm0 = t;
+        return 1.0;
+    }
+    return (hitDist.y < hitDist.x) ? 0.0 : (hitDist.x > 0.0 ? 1.0 : -1.0);
+}
 
 
 
