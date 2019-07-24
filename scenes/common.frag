@@ -170,6 +170,16 @@ void anglesToAxes(in vec3 angles, out vec3 right, out vec3 up, out vec3 front)
 
 
 
+void vec4Store(in ivec2 addr, in vec4 value, inout vec4 fragColor, in ivec2 fragCoord)
+{
+    if (all(equal(fragCoord, addr)))
+    {
+        fragColor = value;
+    }
+}
+
+
+
 
 
 
@@ -372,7 +382,58 @@ struct Material
 
 
 
+const int KEY_SPACE = 32;
+const int KEY_LEFT  = 37;
+const int KEY_UP    = 38;
+const int KEY_RIGHT = 39;
+const int KEY_DOWN  = 40;
+const int KEY_A     = 65;
+const int KEY_B     = 66;
+const int KEY_C     = 67;
+const int KEY_D     = 68;
+const int KEY_E     = 69;
+const int KEY_F     = 70;
+const int KEY_G     = 71;
+const int KEY_H     = 72;
+const int KEY_I     = 73;
+const int KEY_J     = 74;
+const int KEY_K     = 75;
+const int KEY_L     = 76;
+const int KEY_M     = 77;
+const int KEY_N     = 78;
+const int KEY_O     = 79;
+const int KEY_P     = 80;
+const int KEY_Q     = 81;
+const int KEY_R     = 82;
+const int KEY_S     = 83;
+const int KEY_T     = 84;
+const int KEY_U     = 85;
+const int KEY_V     = 86;
+const int KEY_W     = 87;
+const int KEY_X     = 88;
+const int KEY_Y     = 89;
+const int KEY_Z     = 90;
+const int KEY_COMMA = 188;
+const int KEY_PER   = 190;
 
+const int KEY_1 =   49;
+const int KEY_2 =   50;
+const int KEY_3 =   51;
+const int KEY_ENTER = 13;
+const int KEY_SHIFT = 16;
+const int KEY_CTRL  = 17;
+const int KEY_ALT   = 18;
+const int KEY_TAB   = 9;
+
+bool keyIsPressed(sampler2D samp, int key)
+{
+    return texelFetch(samp, ivec2(key, 0), 0).x > 0.0;    
+}
+
+bool keyIsToggled(sampler2D samp, int key)
+{
+    return texelFetch(samp, ivec2(key, 2), 0).x > 0.0;    
+}
 
 
 
