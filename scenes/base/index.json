@@ -1,17 +1,25 @@
 {
-  // "assets": [
-  //   {
-  //     "type": "cube",
-  //     "faces": [
-  //       "../Uffizi Gallery/posx.jpg",
-  //       "../Uffizi Gallery/negx.jpg",
-  //       "../Uffizi Gallery/posy.jpg",
-  //       "../Uffizi Gallery/negy.jpg",
-  //       "../Uffizi Gallery/posz.jpg",
-  //       "../Uffizi Gallery/negz.jpg",
-  //     ]
-  //   }
-  // ],
+  "assets": [
+    {
+      "type": "cube",
+      // "faces": [
+      //   "../Storforsen4/posx.jpg",
+      //   "../Storforsen4/negx.jpg",
+      //   "../Storforsen4/posy.jpg",
+      //   "../Storforsen4/negy.jpg",
+      //   "../Storforsen4/posz.jpg",
+      //   "../Storforsen4/negz.jpg",
+      // ],
+      "faces": [
+        "../Uffizi Gallery/posx.jpg",
+        "../Uffizi Gallery/negx.jpg",
+        "../Uffizi Gallery/posy.jpg",
+        "../Uffizi Gallery/negy.jpg",
+        "../Uffizi Gallery/posz.jpg",
+        "../Uffizi Gallery/negz.jpg",
+      ]
+    }
+  ],
   "commonShader": "../common.frag",
   "buffers": [
     {
@@ -19,7 +27,7 @@
       "channels": [
         ["buffer", 0],
         ["keyboard"],
-        //["asset", 0],
+        ["asset", 0],
       ],
       "shader": "a.frag"
     }

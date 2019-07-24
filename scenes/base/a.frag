@@ -31,6 +31,7 @@ float sceneIntersect(in vec3 ro, in vec3 rd, out float dist, out vec3 norm, out 
 
 vec3 pathTracing(in vec3 ro, in vec3 rd)
 {
+    vec3 pot = vec3(1.0);
     vec3 col = vec3(0);
     for (float b = 0.0; b < float(GI_BOUNDS); ++b)
     {
@@ -39,12 +40,13 @@ vec3 pathTracing(in vec3 ro, in vec3 rd)
         Material mtl;
         if (sceneIntersect(ro, rd, dist, norm, mtl) > 0.0)
         {
+            pot *= mtl.albedo;
             col = mtl.albedo;
             break;
         }
         else
         {
-            col = vec3(0.5);
+            col += pot * (textureLod(iChannel2, rd, 0.0).rgb);
             break;
         }
     }

@@ -10,6 +10,7 @@
 #include <math.h>
 #include <ctype.h>
 #include <time.h>
+#include <errno.h>
 
 #ifdef _WIN32
 # include <gettimeofday.h>

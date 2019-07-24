@@ -610,9 +610,11 @@ SCREEN_LoadFileError SCREEN_loadSceneFile(const char* filename, vec_char* pathBu
             }
             else if (0 == strcicmp(FILEU_filenameExt(filename), "json"))
             {
+                errno = 0;
                 u32 size = FILEU_readFile(filename, NULL, 0);
                 if ((-1 == size) || !size)
                 {
+                    printf("Error %d\n", errno);
                     // todo report error
                     return SCREEN_LoadFileError_FileInvalid;
                 }
