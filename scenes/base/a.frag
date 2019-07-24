@@ -2,14 +2,15 @@
 #define GI_BOUNDS 1
 
 
-float sceneIntersect(in vec3 ro, in vec3 rd, out float dist, out vec3 norm, out vec3 diffuse)
+
+float sceneIntersect(in vec3 ro, in vec3 rd, out float dist, out vec3 norm, out Material mtl)
 {
     vec2 d; vec3 n0, n1;
     float hit = RayCubeIntersect(ro, rd, vec3(0.0, -0.8, 0.0), vec3(2., 0.05, 1.5), d);
     hit = hit > 0.0 ? 1.0 : 0.0;
     dist = d.x;
     norm = n0;
-    diffuse = vec3(1.0, 0.005, 0.005) * 0.8;
+    mtl.albedo = vec3(1.0, 0.005, 0.005) * 0.8;
     return hit;
 }
 
@@ -20,10 +21,11 @@ vec3 pathTracing(in vec3 ro, in vec3 rd)
     for (float b = 0.0; b < float(GI_BOUNDS); ++b)
     {
         float dist;
-        vec3 norm, diffuse;
-        if (sceneIntersect(ro, rd, dist, norm, diffuse) > 0.0)
+        vec3 norm;
+        Material mtl;
+        if (sceneIntersect(ro, rd, dist, norm, mtl) > 0.0)
         {
-            col = diffuse;
+            col = mtl.albedo;
             break;
         }
         else

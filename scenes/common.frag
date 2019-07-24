@@ -216,6 +216,8 @@ void cameraRayCalc
 
 
 
+
+
 float RayCubeIntersect(in vec3 ro, in vec3 rd, vec3 cubePos, vec3 cubeSize, out vec2 hitDist)
 {
     ro -= cubePos;
@@ -310,7 +312,10 @@ float RayCubeIntersect
 
 
 
-
+struct Material
+{
+    vec3 albedo;
+};
 
 
 
