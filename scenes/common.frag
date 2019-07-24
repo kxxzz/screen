@@ -304,6 +304,45 @@ float RayCubeIntersect
 
 
 
+float RaySphereIntersect(in vec3 ro, in vec3 rd, vec3 spherePos, float sr2, out vec2 hitDist)
+{
+    ro -= spherePos;
+
+    float a = dot(rd, rd);
+    float b = 2.0 * dot(ro, rd);
+    float c = dot(ro, ro) - sr2;
+
+    float D = b*b - 4.0*a*c;
+    if (D < 0.0)
+    {
+        return 0.0;
+    }
+    float sqrtD = sqrt(D);
+    // hitDist = (-b + (c < 0.0 ? sqrtD : -sqrtD)) / a * 0.5;
+    hitDist = (-b + vec2(-sqrtD, sqrtD)) / a * 0.5;
+
+    // if (start == inside) ...
+    if (c < 0.0)
+    {
+        hitDist.xy = hitDist.yx;
+    }
+    // hitDist.x > 0.0 || start == inside ? infront : behind
+    return ((hitDist.x > 0.0) || (c < 0.0)) ? 1.0 : -1.0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

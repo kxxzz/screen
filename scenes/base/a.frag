@@ -5,12 +5,26 @@
 
 float sceneIntersect(in vec3 ro, in vec3 rd, out float dist, out vec3 norm, out Material mtl)
 {
-    vec2 d; vec3 n0, n1;
-    float hit = RayCubeIntersect(ro, rd, vec3(0.0, -0.8, 0.0), vec3(2., 0.05, 1.5), d);
-    hit = hit > 0.0 ? 1.0 : 0.0;
-    dist = d.x;
-    norm = n0;
-    mtl.albedo = vec3(1.0, 0.005, 0.005) * 0.8;
+    float hit;
+    {
+        vec2 d; vec3 n0, n1;
+        float hit0 = RayCubeIntersect(ro, rd, vec3(0.0, -0.8, 0.0), vec3(2., 0.05, 1.5), d);
+        hit = hit0 > 0.0 ? 1.0 : 0.0;
+        dist = d.x;
+        norm = n0;
+        mtl.albedo = vec3(1.0, 0.005, 0.005) * 0.8;
+    }
+    {
+        vec2 d;
+        float hit0 = RaySphereIntersect(ro, rd, vec3(0), 0.5, d);
+        if ((hit0 > 0.0) && ((hit <= 0.0) || (dist > d.x)))
+        {
+            dist = d.x;
+            norm = normalize(ro + rd * dist);
+            mtl.albedo = vec3(1.0);
+            hit = hit0;
+        }
+    }
     return hit;
 }
 
@@ -30,7 +44,7 @@ vec3 pathTracing(in vec3 ro, in vec3 rd)
         }
         else
         {
-            col = vec3(1);
+            col = vec3(0.5);
             break;
         }
     }
