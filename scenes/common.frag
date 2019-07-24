@@ -204,7 +204,7 @@ void cameraRayCalc
 {
     vec2 viewCoord = viewCoordFromUV(uv, aspectRatio);
     rayOrigin = cam.pos;
-    float perspDist = 1.0 / tan(radians(cam.fov));
+    float perspDist = 1.0 / tan(cam.fov);
     rayDir = normalize(cameraWorldToCamera(cam) * vec3(viewCoord, perspDist));
 }
 
