@@ -8,7 +8,7 @@ float sceneIntersect(in vec3 ro, in vec3 rd, out float dist, out vec3 norm, out 
     float hit;
     {
         vec2 d; vec3 n0, n1;
-        float hit0 = RayCubeIntersect(ro, rd, vec3(0.0, -0.8, 0.0), vec3(2.5, 0.05, 1.5)*2., d);
+        float hit0 = RayCubeIntersect(ro, rd, vec3(0.0, -0.8, 0.0), vec3(2.5, 0.05, 2.5)*2., d);
         hit = hit0 > 0.0 ? 1.0 : 0.0;
         dist = d.x;
         norm = n0;
