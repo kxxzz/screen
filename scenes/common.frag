@@ -3,6 +3,9 @@ const float PI = 3.14159265359;
 const float InvPI = 1.0 / PI;
 const float HalfPI = PI * 0.5;
 
+const float DEG2RAD = float(PI / 180.0);
+const float RAD2DEG = float(180.0 / PI);
+
 
 float saturate(in float x)
 {
@@ -183,22 +186,6 @@ void vec4Store(in ivec2 addr, in vec4 value, inout vec4 fragColor, in ivec2 frag
 
 
 
-
-
-struct Camera
-{
-    vec3 pos, target, up;
-    float fov;  
-};
-
-mat3 cameraWorldToCamera(in Camera cam)
-{
-    vec3 front = normalize(cam.target - cam.pos);
-    vec3 right = normalize(cross(cam.up, front));
-    vec3 up = normalize(cross(front, right));
-    return mat3(right, up, front);
-}
-
 vec2 viewCoordFromUV(in vec2 uv, in float aspectRatio)
 {
     vec2 viewCoord = uv * 2.0 - 1.0;
@@ -206,17 +193,13 @@ vec2 viewCoordFromUV(in vec2 uv, in float aspectRatio)
     return viewCoord; 
 }
 
-void cameraRayCalc
-(
-    in Camera cam, in vec2 uv, in float aspectRatio,
-    out vec3 rayOrigin, out vec3 rayDir
-)
-{
-    vec2 viewCoord = viewCoordFromUV(uv, aspectRatio);
-    rayOrigin = cam.pos;
-    float perspDist = 1.0 / tan(cam.fov);
-    rayDir = normalize(cameraWorldToCamera(cam) * vec3(viewCoord, perspDist));
-}
+
+
+
+
+
+
+
 
 
 
@@ -361,25 +344,6 @@ float RaySphereIntersect(in vec3 ro, in vec3 rd, vec3 spherePos, float sr2, out 
 
 
 
-struct Material
-{
-    vec3 albedo;
-};
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 const int KEY_SPACE = 32;
@@ -434,6 +398,119 @@ bool keyIsToggled(sampler2D samp, int key)
 {
     return texelFetch(samp, ivec2(key, 2), 0).x > 0.0;    
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+struct Camera
+{
+    vec3 pos, target, up;
+    float fov;  
+};
+
+mat3 cameraWorldToCamera(in Camera cam)
+{
+    vec3 front = normalize(cam.target - cam.pos);
+    vec3 right = normalize(cross(cam.up, front));
+    vec3 up = normalize(cross(front, right));
+    return mat3(right, up, front);
+}
+
+void cameraRayCalc
+(
+    in Camera cam, in vec2 uv, in float aspectRatio,
+    out vec3 rayOrigin, out vec3 rayDir
+)
+{
+    vec2 viewCoord = viewCoordFromUV(uv, aspectRatio);
+    rayOrigin = cam.pos;
+    float perspDist = 1.0 / tan(cam.fov);
+    rayDir = normalize(cameraWorldToCamera(cam) * vec3(viewCoord, perspDist));
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+struct Material
+{
+    vec3 albedo;
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

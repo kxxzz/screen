@@ -83,7 +83,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord)
     cam.pos = pos;
     cam.target = pos + front;
     cam.up = up;
-    cam.fov = radians(25.);
+    cam.fov = radians(25.0);
 
     vec2 uv = fragCoord / iResolution.xy;
     float aspectRatio = iResolution.x / iResolution.y;
