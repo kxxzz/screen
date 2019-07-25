@@ -1,0 +1,38 @@
+{
+  "assets": [
+    {
+      "type": "2d",
+      "uri": "../Gray Noise Medium.png"
+    }
+  ],
+  "buffers": [
+    {
+      "id": 0,
+      "channels": [
+        ["keyboard"],
+        ["buffer", 0]
+      ],
+      "shader": "b.frag"
+    },
+    {
+      "id": 1,
+      "channels": [
+        ["buffer", 1],
+        ["asset", 0],
+        ["buffer", 0]
+      ],
+      "shader": "c.frag"
+    }
+  ],
+  "image": {
+    "channels": [
+        ["buffer", 1],
+        null,
+        ["buffer", 0]
+    ],
+    "shader": "image.frag"
+  }
+}
+
+
+

@@ -1,0 +1,33 @@
+{
+  "assets": [
+    {
+      "type": "2d",
+      "uri": "../Organic 3.jpg"
+    },
+    {
+      "type": "2d",
+      "uri": "../Wood.jpg"
+    },
+  ],
+  "buffers": [
+    {
+      "id": 0,
+      "channels": [
+        null,
+        ["buffer", 0],
+        ["asset", 0],
+        ["asset", 1],
+      ],
+      "shader": "a.frag"
+    }
+  ],
+  "image": {
+    "channels": [
+      ["buffer", 0]
+    ],
+    "shader": "image.frag"
+  }
+}
+
+
+

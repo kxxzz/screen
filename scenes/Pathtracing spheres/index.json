@@ -1,0 +1,25 @@
+{
+  "buffers": [
+    {
+      "id": 0,
+      "shader": "b.frag"
+    },
+    {
+      "id": 1,
+      "channels": [
+        ["buffer", 1],
+        ["buffer", 0]
+      ],
+      "shader": "a.frag"
+    }
+  ],
+  "image": {
+    "channels": [
+      ["buffer", 1]
+    ],
+    "shader": "image.frag"
+  }
+}
+
+
+

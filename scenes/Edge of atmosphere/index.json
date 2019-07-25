@@ -1,0 +1,18 @@
+{
+  "assets": [
+    {
+      "type": "2d",
+      "uri": "../RGBA Noise Medium.png"
+    }
+  ],
+  "image": {
+    "channels": [
+      ["asset", 0],
+      ["keyboard"]
+    ],
+    "shader": "image.frag"
+  }
+}
+
+
+

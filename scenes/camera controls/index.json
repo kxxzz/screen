@@ -1,0 +1,53 @@
+{
+  "assets": [
+    {
+      "type": "2d",
+      "uri": "../RGBA Noise Medium.png"
+    },
+  ],
+  "commonShader": "common.frag",
+  "buffers": [
+    {
+      "id": 0,
+       "channels": [
+        ["keyboard"],
+        ["buffer", 0],
+        ["buffer", 1],
+        ["asset", 0]
+      ],
+      "shader": "a.frag"
+    },
+    {
+      "id": 1,
+      "channels": [
+        ["keyboard"],
+        ["buffer", 0],
+        ["buffer", 1],
+        ["asset", 0]
+      ],
+      "shader": "b.frag"
+    },
+    {
+      "id": 2,
+      "channels": [
+        ["keyboard"],
+        ["buffer", 0],
+        ["buffer", 1],
+        ["asset", 0]
+      ],
+      "shader": "c.frag"
+    },
+  ],
+  "image": {
+    "channels": [
+      ["keyboard"],
+      ["buffer", 1],
+      ["buffer", 2],
+      ["buffer", 3]
+    ],
+    "shader": "image.frag"
+  }
+}
+
+
+

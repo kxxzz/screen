@@ -1,0 +1,17 @@
+{
+  "assets": [
+    {
+      "type": "2d",
+      "uri": "../Gray Noise Small.png"
+    }
+  ],
+  "image": {
+    "channels": [
+      ["asset", 0, {"filter": "linear"}]
+    ],
+    "shader": "image.frag"
+  }
+}
+
+
+

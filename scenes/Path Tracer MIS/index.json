@@ -1,0 +1,37 @@
+{
+  "assets": [
+    {
+      "type": "2d",
+      "uri": "../Wood.jpg"
+    },
+    {
+      "type": "2d",
+      "uri": "../Rusty Metal.jpg"
+    },
+    {
+      "type": "2d",
+      "uri": "../Wood.jpg"
+    }
+  ],
+  "buffers": [
+    {
+      "id": 0,
+      "channels": [
+        ["asset", 0],
+        ["asset", 1],
+        ["asset", 2],
+        ["buffer", 0]
+      ],
+      "shader": "a.frag"
+    }
+  ],
+  "image": {
+    "channels": [
+      ["buffer", 0]
+    ],
+    "shader": "image.frag"
+  }
+}
+
+
+

@@ -1,0 +1,59 @@
+{
+  "assets": [
+    {
+      "type": "2d",
+      "uri": "../RGBA Noise Medium.png"
+    },
+    {
+      "type": "2d",
+      "uri": "../Organic 3.jpg"
+    }
+  ],
+  "buffers": [
+    {
+      "id": 0,
+       "channels": [
+        ["buffer", 0],
+        ["asset", 0],
+      ],
+      "shader": "a.frag"
+    },
+    {
+      "id": 1,
+      "channels": [
+        ["buffer", 0],
+        ["asset", 0],
+      ],
+      "shader": "b.frag"
+    },
+    {
+      "id": 2,
+       "channels": [
+        ["buffer", 0],
+        ["buffer", 1],
+        ["asset", 0],
+        ["asset", 1],
+      ],
+      "shader": "c.frag"
+    },
+    {
+      "id": 3,
+      "channels": [
+        ["buffer", 0]
+      ],
+      "shader": "d.frag"
+    },
+  ],
+  "image": {
+    "channels": [
+      ["buffer", 0],
+      ["buffer", 1],
+      ["buffer", 2],
+      ["buffer", 3]
+    ],
+    "shader": "image.frag"
+  }
+}
+
+
+

@@ -1,0 +1,68 @@
+{
+  "assets": [
+    {
+      "type": "cube",
+      "faces": [
+        "../Uffizi Gallery/posx.jpg",
+        "../Uffizi Gallery/negx.jpg",
+        "../Uffizi Gallery/posy.jpg",
+        "../Uffizi Gallery/negy.jpg",
+        "../Uffizi Gallery/posz.jpg",
+        "../Uffizi Gallery/negz.jpg",
+      ]
+    },
+    {
+      "type": "2d",
+      "uri": "../Abstract 3.jpg"
+    },
+  ],
+  "commonShader": "common.frag",
+  "buffers": [
+    {
+      "id": 0,
+       "channels": [
+        ["buffer", 0],
+        ["asset", 0],
+        ["asset", 1],
+        ["keyboard"],
+      ],
+      "shader": "a.frag"
+    },
+    {
+      "id": 1,
+      "channels": [
+        ["buffer", 0],
+        ["buffer", 1],
+      ],
+      "shader": "b.frag"
+    },
+    {
+      "id": 2,
+       "channels": [
+        ["buffer", 1],
+        ["buffer", 2],
+      ],
+      "shader": "c.frag"
+    },
+    {
+      "id": 3,
+      "channels": [
+        ["buffer", 2],
+        ["buffer", 3],
+      ],
+      "shader": "d.frag"
+    },
+  ],
+  "image": {
+    "channels": [
+      ["buffer", 2],
+      ["buffer", 3],
+      ["asset", 1],
+      ["buffer", 0],
+    ],
+    "shader": "image.frag"
+  }
+}
+
+
+

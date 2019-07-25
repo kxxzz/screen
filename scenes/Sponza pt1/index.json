@@ -1,0 +1,40 @@
+{
+  "commonShader": "common.frag",
+  "buffers": [
+    {
+      "id": 0,
+      "channels": [
+        ["buffer", 0]
+        ["keyboard"]
+      ],
+      "shader": "a.frag"
+    },
+    {
+      "id": 1,
+      "channels": [
+        ["buffer", 0],
+        ["buffer", 1]
+      ],
+      "shader": "b.frag"
+    },
+    {
+      "id": 2,
+      "channels": [
+        ["buffer", 0],
+        ["buffer", 1],
+        ["buffer", 2]
+      ],
+      "shader": "d.frag"
+    }
+  ],
+  "image": {
+    "channels": [
+      ["buffer", 2],
+      ["buffer", 1]
+    ],
+    "shader": "image.frag"
+  }
+}
+
+
+

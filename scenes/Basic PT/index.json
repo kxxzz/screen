@@ -1,0 +1,43 @@
+{
+  "assets": [
+    {
+      "type": "cube",
+      // "faces": [
+      //   "../St. Peter's Basilica Blurred/posx.png",
+      //   "../St. Peter's Basilica Blurred/negx.png",
+      //   "../St. Peter's Basilica Blurred/posy.png",
+      //   "../St. Peter's Basilica Blurred/negy.png",
+      //   "../St. Peter's Basilica Blurred/posz.png",
+      //   "../St. Peter's Basilica Blurred/negz.png"
+      // ]
+      "faces": [
+        "../Uffizi Gallery/posx.jpg",
+        "../Uffizi Gallery/negx.jpg",
+        "../Uffizi Gallery/posy.jpg",
+        "../Uffizi Gallery/negy.jpg",
+        "../Uffizi Gallery/posz.jpg",
+        "../Uffizi Gallery/negz.jpg"
+      ]
+    }
+  ],
+  "buffers": [
+    {
+      "id": 0,
+      "channels": [
+        ["buffer", 0],
+        ["keyboard"],
+        ["asset", 0]
+      ],
+      "shader": "a.frag"
+    }
+  ],
+  "image": {
+    "channels": [
+      ["buffer", 0]
+    ],
+    "shader": "image.frag"
+  }
+}
+
+
+
