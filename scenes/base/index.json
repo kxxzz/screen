@@ -2,22 +2,22 @@
   "assets": [
     {
       "type": "cube",
-      // "faces": [
-      //   "../Storforsen4/posx.jpg",
-      //   "../Storforsen4/negx.jpg",
-      //   "../Storforsen4/posy.jpg",
-      //   "../Storforsen4/negy.jpg",
-      //   "../Storforsen4/posz.jpg",
-      //   "../Storforsen4/negz.jpg",
-      // ],
       "faces": [
-        "../Uffizi Gallery/posx.jpg",
-        "../Uffizi Gallery/negx.jpg",
-        "../Uffizi Gallery/posy.jpg",
-        "../Uffizi Gallery/negy.jpg",
-        "../Uffizi Gallery/posz.jpg",
-        "../Uffizi Gallery/negz.jpg",
-      ]
+        "../Storforsen4/posx.jpg",
+        "../Storforsen4/negx.jpg",
+        "../Storforsen4/posy.jpg",
+        "../Storforsen4/negy.jpg",
+        "../Storforsen4/posz.jpg",
+        "../Storforsen4/negz.jpg",
+      ],
+      // "faces": [
+      //   "../Uffizi Gallery/posx.jpg",
+      //   "../Uffizi Gallery/negx.jpg",
+      //   "../Uffizi Gallery/posy.jpg",
+      //   "../Uffizi Gallery/negy.jpg",
+      //   "../Uffizi Gallery/posz.jpg",
+      //   "../Uffizi Gallery/negz.jpg",
+      // ]
     }
   ],
   "commonShader": "../common.frag",

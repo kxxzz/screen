@@ -7,18 +7,18 @@ const float DEG2RAD = float(PI / 180.0);
 const float RAD2DEG = float(180.0 / PI);
 
 
-float saturate(in float x)
+float clamp01(in float x)
 {
     return clamp(x, 0.0, 1.0);
 }
-vec3 saturate(in vec3 x)
+vec3 clamp01(in vec3 x)
 {
     return clamp(x.rgb, 0.0, 1.0);
 }
 // Remove the [0, amount] tail and linearly rescale (amount, 1].
 float linstep(float low, float high, float v)
 {
-    return saturate((v-low)/(high-low));
+    return clamp01((v-low)/(high-low));
 }
 float pow2(in float x)
 {
@@ -34,15 +34,169 @@ float pow4(in float x)
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+// single iteration of Bob Jenkins' One-At-A-Time hashing algorithm:
+//  http://www.burtleburtle.net/bob/hash/doobs.html
+// suggested by Spatial on stackoverflow:
+//  http://stackoverflow.com/questions/4200224/random-noise-functions-for-glsl
+uint xorShiftBJ(uint x) 
+{
+    x += x << 10u;
+    x ^= x >>  6u;
+    x += x <<  3u;
+    x ^= x >> 11u;
+    x += x << 15u;
+    return x;
+}
+
+// xor-shift algorithm by George Marsaglia
+//  https://www.thecodingforums.com/threads/re-rngs-a-super-kiss.704080/
+// suggested by Nathan Reed:
+//  http://www.reedbeta.com/blog/quick-and-easy-gpu-random-numbers-in-d3d11/
+uint xorShiftGM(uint x)
+{
+    x ^= x << 13u;
+    x ^= x >> 17u;
+    x ^= x <<  5u;
+    return x;
+}
+
+// hashing algorithm by Thomas Wang 
+// http://www.burtleburtle.net/bob/hash/integer.html
+// suggested by Nathan Reed:
+// http://www.reedbeta.com/blog/quick-and-easy-gpu-random-numbers-in-d3d11/
+uint hashWang(uint x)
+{
+    x  = (x ^ 61u) ^ (x >> 16u);
+    x *= 9u;
+    x ^= x >> 4u;
+    x *= 0x27d4eb2du;
+    x ^= x >> 15u;
+    return x;
+}
+
+
+
+
+
+// https://stackoverflow.com/questions/4200224/random-noise-functions-for-glsl
+// Construct a float with half-open range [0:1] using low 23 bits.
+// All zeroes yields 0.0, all ones yields the next smallest representable value below 1.0.
+float floatConstruct(uint m)
+{
+    const uint ieeeMantissa = 0x007FFFFFu; // binary32 mantissa bitmask
+    const uint ieeeOne      = 0x3F800000u; // 1.0 in IEEE binary32
+    m &= ieeeMantissa;                     // Keep only mantissa bits (fractional part)
+    m |= ieeeOne;                          // Add fractional part to 1.0
+    float  f = uintBitsToFloat( m );       // Range [1:2]
+    return f - 1.0;                        // Range [0:1]
+}
+
+
+
+
+//#define hashUint xorShiftBJ
+//#define hashUint xorShiftGM
+#define hashUint hashWang
+
+
+uint hashUint(uint v, uint r)
+{
+    return hashUint(v ^ r);
+}
+uint hashUint(uvec2 v, uvec2 r)
+{
+    return hashUint(hashUint(v.x , r.x ) ^ (v.y ^ r.y));
+}
+uint hashUint(uvec3 v, uvec3 r)
+{
+    return hashUint(hashUint(v.xy, r.xy) ^ (v.z ^ r.z));
+}
+uint hashUint(uvec4 v, uvec4 r)
+{
+    return hashUint(hashUint(v.xy, r.xy) ^ hashUint(v.zw, r.zw));
+}
+
+uint hashUint(float v, uint r)
+{
+    return hashUint(floatBitsToUint(v), r);
+}
+uint hashUint(vec2 v, uvec2 r)
+{
+    return hashUint(floatBitsToUint(v), r);
+}
+uint hashUint(vec3 v, uvec3 r)
+{
+    return hashUint(floatBitsToUint(v), r);
+}
+uint hashUint(vec4 v, uvec4 r)
+{
+    return hashUint(floatBitsToUint(v), r);
+}
+
+float hashFloat(uint v, uint r)
+{
+    return floatConstruct(hashUint(v, r));
+}
+float hashFloat(uvec2 v, uvec2 r)
+{
+    return floatConstruct(hashUint(v, r));
+}
+float hashFloat(uvec3 v, uvec3 r)
+{
+    return floatConstruct(hashUint(v, r));
+}
+float hashFloat(uvec4 v, uvec4 r)
+{
+    return floatConstruct(hashUint(v, r));
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 vec3 toGamma(in vec3 c)
 {
     //return sqrt(color);
-    return pow(saturate(c), vec3(1.0/2.2));
+    return pow(clamp01(c), vec3(1.0/2.2));
 }
 vec3 toLinear(in vec3 c)
 {
-    return pow(saturate(c), vec3(2.2));
+    return pow(clamp01(c), vec3(2.2));
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 vec3 tonemapReinhard(in vec3 color)
@@ -140,6 +294,12 @@ vec3 tonemapPMalin(in vec3 x)
 
 
 
+
+
+
+
+
+
 void anglesToAxes(in vec3 angles, out vec3 right, out vec3 up, out vec3 front)
 {
     mat3 rotX = mat3
@@ -171,21 +331,6 @@ void anglesToAxes(in vec3 angles, out vec3 right, out vec3 up, out vec3 front)
 
 
 
-
-
-void vec4Store(in ivec2 addr, in vec4 value, inout vec4 fragColor, in ivec2 fragCoord)
-{
-    if (all(equal(fragCoord, addr)))
-    {
-        fragColor = value;
-    }
-}
-
-
-
-
-
-
 vec2 viewCoordFromUV(in vec2 uv, in float aspectRatio)
 {
     vec2 viewCoord = uv * 2.0 - 1.0;
@@ -198,6 +343,13 @@ vec2 viewCoordFromUV(in vec2 uv, in float aspectRatio)
 
 
 
+void storeVec4(in ivec2 addr, in vec4 value, inout vec4 fragColor, in ivec2 fragCoord)
+{
+    if (all(equal(fragCoord, addr)))
+    {
+        fragColor = value;
+    }
+}
 
 
 
@@ -211,7 +363,20 @@ vec2 viewCoordFromUV(in vec2 uv, in float aspectRatio)
 
 
 
-float RayCubeIntersect(in vec3 ro, in vec3 rd, vec3 cubePos, vec3 cubeSize, out vec2 hitDist)
+
+
+
+
+
+
+
+
+
+
+
+
+
+float rayCube(in vec3 ro, in vec3 rd, vec3 cubePos, vec3 cubeSize, out vec2 hitDist)
 {
     ro -= cubePos;
 
@@ -233,7 +398,7 @@ float RayCubeIntersect(in vec3 ro, in vec3 rd, vec3 cubePos, vec3 cubeSize, out 
 }
 
 
-float RayCubeIntersect
+float rayCube
 (
     in vec3 ro, in vec3 rd, vec3 cubePos, vec3 cubeSize,
     out vec2 hitDist, out vec3 hitNorm0, out vec3 hitNorm1
@@ -297,7 +462,7 @@ float RayCubeIntersect
 
 
 
-float RaySphereIntersect(in vec3 ro, in vec3 rd, vec3 spherePos, float sr2, out vec2 hitDist)
+float raySphere(in vec3 ro, in vec3 rd, vec3 spherePos, float sr2, out vec2 hitDist)
 {
     ro -= spherePos;
 
@@ -322,6 +487,111 @@ float RaySphereIntersect(in vec3 ro, in vec3 rd, vec3 spherePos, float sr2, out 
     // hitDist.x > 0.0 || start == inside ? infront : behind
     return ((hitDist.x > 0.0) || (c < 0.0)) ? 1.0 : -1.0;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// http://orbit.dtu.dk/files/126824972/onb_frisvad_jgt2012_v2.pdf
+// http://jcgt.org/published/0006/01/01/
+// modified for right-handedness here
+// Constructs a right-handed, orthonormal coordinate system from a given vector of unit length.
+void orthonormalBasisRH(vec3 n, out vec3 ox, out vec3 oz)
+{
+    float sig = n.z < 0.0 ? 1.0 : -1.0;
+    float a = 1.0 / (n.z - sig);
+    float b = n.x * n.y * a;
+    ox = vec3(1.0 + sig * n.x * n.x * a, sig * b, sig * n.x);
+    oz = vec3(b, sig + n.y * n.y * a, n.y);
+}
+
+
+
+// s0 [-1..1], s1 [-1..1]
+// samples spherical cap for s1 [cosAng05..1]
+// samples hemisphere if s1 [0..1]
+vec3 sampleSphere(float s0, float s1)
+{
+    float ang = PI * s0;
+    float s1p = sqrt(1.0 - s1*s1);
+    return vec3(cos(ang) * s1p, 
+                           s1 , 
+                sin(ang) * s1p);
+}
+
+// s0 [-1..1], s1 [-1..1]
+// samples spherical cap for s1 [cosAng05..1]
+vec3 sampleSphere(float s0, float s1, vec3 normal)
+{    
+    vec3 sph = sampleSphere(s0, s1);
+    vec3 ox, oz;
+    orthonormalBasisRH(normal, ox, oz);
+    return ox*sph.x + normal*sph.y + oz*sph.z;
+}
+
+// s0 [-1..1], s1 [-1..1]
+vec3 sampleHemisphere(float s0, float s1, vec3 normal)
+{
+    vec3 smpl = sampleSphere(s0, s1);
+    return (dot(smpl, normal) < 0.0) ? -smpl : smpl;
+}
+
+// s0 [-1..1], s1 [0..1]
+vec2 sampleDisk(float s0, float s1)
+{
+    return vec2(cos(PI * s0), sin(PI * s0)) * sqrt(s1);
+}
+
+// s0 [-1..1], s1 [0..1]
+vec3 sampleClampedCosineLobe(float s0, float s1)
+{    
+    vec2 d  = sampleDisk(s0, s1);
+    float y = sqrt(clamp01(1.0 - s1));
+    return vec3(d.x, y, d.y);
+}
+
+// s0 [-1..1], s1 [0..1]
+vec3 sampleClampedCosineLobe(float s0, float s1, vec3 normal)
+{    
+    vec2 d  = sampleDisk(s0, s1);
+    float y = sqrt(clamp01(1.0 - s1));
+    vec3 ox, oz;
+    orthonormalBasisRH(normal, ox, oz);
+    return (ox * d.x) + (normal * y) + (oz * d.y);
+}
+
+// s [-1..1]
+float sampleTriangle(float s) 
+{ 
+    float v = 1.0 - sqrt(abs(s));
+    return s < 0.0 ? -v : v; 
+}
+
+
+
+
+
+
+
+
 
 
 
