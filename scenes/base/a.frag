@@ -49,6 +49,8 @@ vec3 renderScene(in vec3 ro, in vec3 rd, in uint hh)
                 float h0 = hashFloat(hh, 0x874C40D4u);
                 float h1 = hashFloat(hh, 0xF27BD7E1u);
                 rd = normalize(sampleSphere(h0, h1) + norm);
+                //h1 = clamp01(h1 * 0.5 + 0.5);
+                //rd = normalize(sampleClampedCosineLobe(h0, h1, norm));
             }
         }
         else
