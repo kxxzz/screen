@@ -7,6 +7,13 @@ const float DEG2RAD = float(PI / 180.0);
 const float RAD2DEG = float(180.0 / PI);
 
 
+
+
+
+
+
+
+
 float clamp01(in float x)
 {
     return clamp(x, 0.0, 1.0);
@@ -52,8 +59,8 @@ float pow4(in float x)
 uint xorShiftBJ(uint x) 
 {
     x += x << 10u;
-    x ^= x >>  6u;
-    x += x <<  3u;
+    x ^= x >> 6u;
+    x += x << 3u;
     x ^= x >> 11u;
     x += x << 15u;
     return x;
@@ -67,7 +74,7 @@ uint xorShiftGM(uint x)
 {
     x ^= x << 13u;
     x ^= x >> 17u;
-    x ^= x <<  5u;
+    x ^= x << 5u;
     return x;
 }
 
@@ -77,7 +84,7 @@ uint xorShiftGM(uint x)
 // http://www.reedbeta.com/blog/quick-and-easy-gpu-random-numbers-in-d3d11/
 uint hashWang(uint x)
 {
-    x  = (x ^ 61u) ^ (x >> 16u);
+    x = (x ^ 61u) ^ (x >> 16u);
     x *= 9u;
     x ^= x >> 4u;
     x *= 0x27d4eb2du;
@@ -287,7 +294,7 @@ vec3 tonemapPMalin(in vec3 x)
     return (x * ( a * x + b ) ) / ( x * ( c * x + d ) + e);
 }
 
-
+#define tonemap tonemapPMalin
 
 
 
@@ -376,117 +383,6 @@ void storeVec4(in ivec2 addr, in vec4 value, inout vec4 fragColor, in ivec2 frag
 
 
 
-float rayCube(in vec3 ro, in vec3 rd, vec3 cubePos, vec3 cubeSize, out vec2 hitDist)
-{
-    ro -= cubePos;
-
-    vec3 m = 1.0 / -rd;
-    vec3 o = mix(cubeSize*0.5, -cubeSize*0.5, lessThan(rd, vec3(0.0)));
-
-    vec3 uf = (ro + o) * m;
-    vec3 ub = (ro - o) * m;
-
-    hitDist.x = max(uf.x, max(uf.y, uf.z));
-    hitDist.y = min(ub.x, min(ub.y, ub.z));
-
-    if (hitDist.x < 0.0 && hitDist.y > 0.0)
-    {
-        hitDist.xy = hitDist.yx;
-        return 1.0;
-    }
-    return (hitDist.y < hitDist.x) ? 0.0 : (hitDist.x > 0.0 ? 1.0 : -1.0);
-}
-
-
-float rayCube
-(
-    in vec3 ro, in vec3 rd, vec3 cubePos, vec3 cubeSize,
-    out vec2 hitDist, out vec3 hitNorm0, out vec3 hitNorm1
-)
-{
-    ro -= cubePos;
-
-    vec3 m = 1.0 / -rd;
-    vec3 os = mix(vec3(1.0), vec3(-1.0), lessThan(rd, vec3(0.0)));
-    vec3 o = -cubeSize * os * 0.5;
-
-    vec3 uf = (ro + o) * m;
-    vec3 ub = (ro - o) * m;
-
-    //hitDist.x = max(uf.x, max(uf.y, uf.z));
-    //hitDist.y = min(ub.x, min(ub.y, ub.z));
-
-    if (uf.x > uf.y)
-    {
-        hitDist.x = uf.x;
-        hitNorm0 = vec3(os.x, 0.0, 0.0);
-    }
-    else
-    {
-        hitDist.x = uf.y;
-        hitNorm0 = vec3(0.0, os.y, 0.0);
-    }
-    if (uf.z > hitDist.x )
-    {
-        hitDist.x = uf.z;
-        hitNorm0 = vec3(0.0, 0.0, os.z);
-    }
-    if (ub.x < ub.y)
-    {
-        hitDist.y = ub.x;
-        hitNorm1 = vec3(os.x, 0.0, 0.0);
-    }
-    else
-    {
-        hitDist.y = ub.y;
-        hitNorm1 = vec3(0.0, os.y, 0.0);
-    }
-    if (ub.z < hitDist.y)
-    {
-        hitDist.y = ub.z;
-        hitNorm1 = vec3(0.0, 0.0, os.z);
-    }
-
-    if (hitDist.x < 0.0 && hitDist.y > 0.0)
-    {
-        hitDist.xy = hitDist.yx;
-        vec3 t = hitNorm1;
-        hitNorm1 = hitNorm0;
-        hitNorm0 = t;
-        return 1.0;
-    }
-    return (hitDist.y < hitDist.x) ? 0.0 : (hitDist.x > 0.0 ? 1.0 : -1.0);
-}
-
-
-
-
-
-float raySphere(in vec3 ro, in vec3 rd, vec3 spherePos, float sr2, out vec2 hitDist)
-{
-    ro -= spherePos;
-
-    float a = dot(rd, rd);
-    float b = 2.0 * dot(ro, rd);
-    float c = dot(ro, ro) - sr2;
-
-    float D = b*b - 4.0*a*c;
-    if (D < 0.0)
-    {
-        return 0.0;
-    }
-    float sqrtD = sqrt(D);
-    // hitDist = (-b + (c < 0.0 ? sqrtD : -sqrtD)) / a * 0.5;
-    hitDist = (-b + vec2(-sqrtD, sqrtD)) / a * 0.5;
-
-    // if (start == inside) ...
-    if (c < 0.0)
-    {
-        hitDist.xy = hitDist.yx;
-    }
-    // hitDist.x > 0.0 || start == inside ? infront : behind
-    return ((hitDist.x > 0.0) || (c < 0.0)) ? 1.0 : -1.0;
-}
 
 
 
@@ -508,82 +404,6 @@ float raySphere(in vec3 ro, in vec3 rd, vec3 spherePos, float sr2, out vec2 hitD
 
 
 
-
-
-// http://orbit.dtu.dk/files/126824972/onb_frisvad_jgt2012_v2.pdf
-// http://jcgt.org/published/0006/01/01/
-// modified for right-handedness here
-// Constructs a right-handed, orthonormal coordinate system from a given vector of unit length.
-void orthonormalBasisRH(vec3 n, out vec3 ox, out vec3 oz)
-{
-    float sig = n.z < 0.0 ? 1.0 : -1.0;
-    float a = 1.0 / (n.z - sig);
-    float b = n.x * n.y * a;
-    ox = vec3(1.0 + sig * n.x * n.x * a, sig * b, sig * n.x);
-    oz = vec3(b, sig + n.y * n.y * a, n.y);
-}
-
-
-
-// s0 [-1..1], s1 [-1..1]
-// samples spherical cap for s1 [cosAng05..1]
-// samples hemisphere if s1 [0..1]
-vec3 sampleSphere(float s0, float s1)
-{
-    float ang = PI * s0;
-    float s1p = sqrt(1.0 - s1*s1);
-    return vec3(cos(ang) * s1p, 
-                           s1 , 
-                sin(ang) * s1p);
-}
-
-// s0 [-1..1], s1 [-1..1]
-// samples spherical cap for s1 [cosAng05..1]
-vec3 sampleSphere(float s0, float s1, vec3 normal)
-{    
-    vec3 sph = sampleSphere(s0, s1);
-    vec3 ox, oz;
-    orthonormalBasisRH(normal, ox, oz);
-    return ox*sph.x + normal*sph.y + oz*sph.z;
-}
-
-// s0 [-1..1], s1 [-1..1]
-vec3 sampleHemisphere(float s0, float s1, vec3 normal)
-{
-    vec3 smpl = sampleSphere(s0, s1);
-    return (dot(smpl, normal) < 0.0) ? -smpl : smpl;
-}
-
-// s0 [-1..1], s1 [0..1]
-vec2 sampleDisk(float s0, float s1)
-{
-    return vec2(cos(PI * s0), sin(PI * s0)) * sqrt(s1);
-}
-
-// s0 [-1..1], s1 [0..1]
-vec3 sampleClampedCosineLobe(float s0, float s1)
-{    
-    vec2 d  = sampleDisk(s0, s1);
-    float y = sqrt(clamp01(1.0 - s1));
-    return vec3(d.x, y, d.y);
-}
-
-// s0 [-1..1], s1 [0..1]
-vec3 sampleClampedCosineLobe(float s0, float s1, vec3 normal)
-{    
-    vec2 d  = sampleDisk(s0, s1);
-    float y = sqrt(clamp01(1.0 - s1));
-    vec3 ox, oz;
-    orthonormalBasisRH(normal, ox, oz);
-    return (ox * d.x) + (normal * y) + (oz * d.y);
-}
-
-// s [-1..1]
-float sampleTriangle(float s) 
-{ 
-    float v = 1.0 - sqrt(abs(s));
-    return s < 0.0 ? -v : v; 
-}
 
 
 
