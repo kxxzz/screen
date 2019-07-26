@@ -95,7 +95,7 @@ void SCREEN_cmdExec(const char* cmd, u32 cmdSize)
     {
         SCREEN_cmdExecLoadScene,
     };
-    table[cmd[0]](cmd, cmdSize);
+    table[(u32)cmd[0]](cmd, cmdSize);
 }
 
 

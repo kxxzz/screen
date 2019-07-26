@@ -1,4 +1,6 @@
-#pragma warning(disable: 4101)
+#ifdef _MSC_VER
+# pragma warning(disable: 4101)
+#endif
 
 #include <stdlib.h>
 #ifdef _WIN32
@@ -71,7 +73,7 @@ static int mainReturn(int r)
 
 
 
-int main(int argc, char* argv[])
+int main(int argc, const char* argv[])
 {
 #if !defined(NDEBUG) && defined(_WIN32)
     _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
@@ -298,7 +300,7 @@ int main(int argc, char* argv[])
                 }
                 if (SDLK_TAB == e.key.keysym.sym)
                 {
-                    intervalMode = ++intervalMode % ARYLEN(IntervalTable);
+                    intervalMode = (intervalMode + 1) % ARYLEN(IntervalTable);
                     int r = SDL_GL_SetSwapInterval(intervalMode);
                     if (0 != r)
                     {

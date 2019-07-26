@@ -341,7 +341,7 @@ static void SCREEN_console_onRead(uv_stream_t* stream, ssize_t nread, const uv_b
         // https://tools.ietf.org/html/rfc6455#section-5.2
         u32 headerLength = 2;
 
-        u8 finalFragment = base[0] >> 7 & 0x1;
+        //u8 finalFragment = base[0] >> 7 & 0x1;
         WS_FrameOp opcode = base[0] & 0xf;
         u8 masked = base[1] >> 7 & 0x1;
         u32 payloadLength = base[1] & 0x7f;
@@ -427,7 +427,7 @@ static void SCREEN_console_onConnect(uv_connect_t* conn, int status)
     {
         key[i] = rand();
     }
-    char* keyStr = base64_encode((char*)key, WS_KEY_SIZE, NULL);
+    char* keyStr = (char*)base64_encode((u8*)key, WS_KEY_SIZE, NULL);
 
     s32 n = snprintf(NULL, 0, requestFmt, ctx->uri, ctx->host, ctx->port, keyStr);
     vec_resize(ctx->sendBuf, n + 1);

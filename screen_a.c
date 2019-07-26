@@ -96,6 +96,7 @@ GLenum SCREEN_glCheck(const char *const file, int const line)
     if (glerr)
     {
         const char* errStr = SCREEN_glErrStr(glerr);
+        printf("GL Error: %s", errStr);
         assert(false);
     }
     return glerr;
@@ -332,7 +333,7 @@ void SCREEN_assetMakeGpuData(char* dstBuf, const char* sceneData, const SCREEN_A
         int x, y, comp;
         stbi_uc* data = stbi_load_from_memory
         (
-            sceneData + asset->dataOffset, asset->dataSize, &x, &y, &comp, asset->components
+            (u8*)sceneData + asset->dataOffset, (int)asset->dataSize, &x, &y, &comp, (int)asset->components
         );
         if (!data)
         {
@@ -356,7 +357,7 @@ void SCREEN_assetMakeGpuData(char* dstBuf, const char* sceneData, const SCREEN_A
             u32 srcDataSize = asset->cubeFaceDataSize[f];
             stbi_uc* data = stbi_load_from_memory
             (
-                sceneData + asset->dataOffset + srcDataOff, srcDataSize, &x, &y, &comp, asset->components
+                (u8*)sceneData + asset->dataOffset + srcDataOff, srcDataSize, &x, &y, &comp, (int)asset->components
             );
             if (!data)
             {
