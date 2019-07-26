@@ -14,7 +14,6 @@
 
 #ifdef __unix__
 
-
 static uint64_t htonll(uint64_t x)
 {
     union
