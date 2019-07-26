@@ -197,7 +197,9 @@ static void SCREEN_consoleSend(WS_FrameOp opcode, const char* data, u32 len)
             sendBuf[headerSize + i] ^= maskingKey[i % 4];
         }
     }
-    uv_buf_t uvBuf = { headerSize + len, sendBuf };
+    uv_buf_t uvBuf;
+    uvBuf.base = sendBuf;
+    uvBuf.len = headerSize + len;
     uv_write(ctx->writeReq, ctx->conn->handle, &uvBuf, 1, NULL);
 }
 
@@ -432,7 +434,9 @@ static void SCREEN_console_onConnect(uv_connect_t* conn, int status)
     n = snprintf(ctx->sendBuf->data, ctx->sendBuf->length, requestFmt, ctx->uri, ctx->host, ctx->port, keyStr);
     free(keyStr);
     assert(n > 0);
-    uv_buf_t uvBuf = { n, ctx->sendBuf->data };
+    uv_buf_t uvBuf;
+    uvBuf.base = ctx->sendBuf->data;
+    uvBuf.len = n;
     uv_write(ctx->writeReq, ctx->conn->handle, &uvBuf, 1, NULL);
     uv_read_start(ctx->conn->handle, SCREEN_console_onAlloc, SCREEN_console_onRead);
     vec_resize(ctx->recvBuf, 0);
