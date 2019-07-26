@@ -12,6 +12,32 @@
 
 
 
+#ifdef __unix__
+
+
+static uint64_t htonll(uint64_t x)
+{
+    union
+    {
+        uint64_t v64;
+        uint32_t v32[2];
+    } u;
+    u.v64 = x;
+    uint32_t temp = u.v32[0];
+    u.v32[0] = htonl(u.v32[1]);
+    u.v32[1] = htonl(temp);
+    return u.v64;
+}
+
+static uint64_t ntohll(uint64_t x)
+{
+    return htonll(x);
+}
+
+#endif
+
+
+
 
 static char SCREEN_ConsoleURL[SCREEN_ConsoleURL_MAX];
 
@@ -23,12 +49,13 @@ void SCREEN_consoleSetURL(const char* url)
 
 
 
+#ifdef HOST_NAME_MAX
+# undef HOST_NAME_MAX
+#endif
 
-
-
-
-
-
+#ifdef MAX_REQUEST_PATH_LENGTH
+# undef MAX_REQUEST_PATH_LENGTH
+#endif
 
 enum
 {
