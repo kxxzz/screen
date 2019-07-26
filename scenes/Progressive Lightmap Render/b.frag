@@ -216,7 +216,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     vec3 lc = vec3(-2.,-3.,-1.5);
     vec2 m = iMouse.xy;
     //m = iResolution.xy/2. + vec2(100.*sin(4.*iTime),0.);
-    if( iMouse.z > 0. && (m.x > LM_RES/2. || m.y > LM_RES/2.) )
+    if(/* iMouse.z > 0. &&*/ (m.x > LM_RES/2. || m.y > LM_RES/2.) )
         lc = vec3(22.*(m.x/iResolution.x-.5),-6.+12.*m.y/iResolution.y,-3.+6.*m.x/iResolution.x);
     
     vec3 directLight = vec3(0.);

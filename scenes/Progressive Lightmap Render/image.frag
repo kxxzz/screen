@@ -146,7 +146,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
 
     // visualise light
     vec3 lc = vec3(-2.,-3.,-1.5);
-    if( iMouse.z > 0. )
+    //if( iMouse.z > 0. )
         lc = vec3(22.*(iMouse.x/iResolution.x-.5),-6.+12.*iMouse.y/iResolution.y,-3.+6.*iMouse.x/iResolution.x);
     float sphDist = iSphere( ro, rd, vec4(lc,LIGHTR));
     
