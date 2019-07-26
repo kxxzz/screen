@@ -1,0 +1,22 @@
+{
+  "assets": [
+    {
+      "type": "2d",
+      "uri": "../RGBA Noise Medium.png"
+    },
+    {
+      "type": "2d",
+      "uri": "../Rusty Metal.jpg"
+    },
+  ],
+  "image": {
+    "channels": [
+      ["asset", 0],
+      ["asset", 1],
+    ],
+    "shader": "image.frag"
+  }
+}
+
+
+
