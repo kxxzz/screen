@@ -1,0 +1,41 @@
+{
+  "assets": [
+    {
+      "type": "cube",
+      "faces": [
+        "../St. Peter's Basilica/posx.jpg",
+        "../St. Peter's Basilica/negx.jpg",
+        "../St. Peter's Basilica/posy.jpg",
+        "../St. Peter's Basilica/negy.jpg",
+        "../St. Peter's Basilica/posz.jpg",
+        "../St. Peter's Basilica/negz.jpg"
+      ]
+    }
+  ],
+  "buffers": [
+    {
+      "id": 0,
+      "channels": [
+        ["asset", 0],
+      ],
+      "shader": "a.frag"
+    },
+    {
+      "id": 1,
+      "channels": [
+        ["buffer", 0],
+        ["buffer", 1],
+      ],
+      "shader": "b.frag"
+    },
+  ],
+  "image": {
+    "channels": [
+      ["buffer", 1],
+    ],
+    "shader": "image.frag"
+  }
+}
+
+
+
