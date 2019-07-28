@@ -325,6 +325,31 @@ static void SCREEN_loadScenePassFromJson
                 goto error;
             }
 
+            switch (renderPass->channel[cidx].type)
+            {
+            case SCREEN_ChannelType_Buffer:
+            {
+                renderPass->channel[cidx].filter = SCREEN_ChannelFilter_Linear;
+                renderPass->channel[cidx].wrap = SCREEN_ChannelWrap_Clamp;
+                break;
+            }
+            case SCREEN_ChannelType_Keyboard:
+            {
+                renderPass->channel[cidx].filter = SCREEN_ChannelFilter_Linear;
+                renderPass->channel[cidx].wrap = SCREEN_ChannelWrap_Clamp;
+                break;
+            }
+            case SCREEN_ChannelType_Asset:
+            {
+                renderPass->channel[cidx].filter = SCREEN_ChannelFilter_Mipmap;
+                renderPass->channel[cidx].wrap = SCREEN_ChannelWrap_Repeat;
+                break;
+            }
+            default:
+                assert(false);
+                break;
+            }
+
             const nx_json* lastJs = nx_json_item(channelJs, channelJs->length - 1);
             if (lastJs->type == NX_JSON_OBJECT)
             {
@@ -388,6 +413,7 @@ static void SCREEN_loadScenePassFromJson
                     }
                 }
             }
+            // lastJs
         }
     }
 
