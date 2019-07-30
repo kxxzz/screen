@@ -93,7 +93,7 @@ int main(int argc, const char* argv[])
         OPT_STRING('c', "config", &configFile, "config file to open"),
         OPT_BOOLEAN('w', "watch", &watchFlag, "watch file and reload it when it changes"),
         OPT_STRING('u', "url", &consoleURL, "Console URL (WebSocket) to connect"),
-        OPT_INTEGER(0, "rendersize", &renderSize, "used only when no config file with"),
+        OPT_INTEGER(0, "rendersize", &renderSize, "used only when no config file loaded"),
         OPT_END(),
     };
     struct argparse argparse;
