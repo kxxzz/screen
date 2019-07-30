@@ -85,6 +85,7 @@ int main(int argc, const char* argv[])
     char* configFile = NULL;
     int watchFlag = false;
     char* consoleURL = NULL;
+    int renderSize = -1;
     struct argparse_option options[] =
     {
         OPT_HELP(),
@@ -92,6 +93,7 @@ int main(int argc, const char* argv[])
         OPT_STRING('c', "config", &configFile, "config file to open"),
         OPT_BOOLEAN('w', "watch", &watchFlag, "watch file and reload it when it changes"),
         OPT_STRING('u', "url", &consoleURL, "Console URL (WebSocket) to connect"),
+        OPT_INTEGER(0, "rendersize", &renderSize, "used only when no config file with"),
         OPT_END(),
     };
     struct argparse argparse;
@@ -175,6 +177,11 @@ int main(int argc, const char* argv[])
         {
             SCREEN_loadConfigFile(configFile);
         }
+    }
+    else
+    {
+        SCREEN_RenderSize rs = { SCREEN_RenderSizeMode_Fixed, .size = renderSize };
+        SCREEN_setRenderSize(&rs);
     }
 
     if (consoleURL)
