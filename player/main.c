@@ -178,7 +178,7 @@ int main(int argc, const char* argv[])
             SCREEN_loadConfigFile(configFile);
         }
     }
-    else
+    else if (renderSize > 0)
     {
         SCREEN_RenderSize rs = { SCREEN_RenderSizeMode_Fixed, .size = renderSize };
         SCREEN_setRenderSize(&rs);
