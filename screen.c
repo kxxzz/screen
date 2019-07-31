@@ -1195,7 +1195,10 @@ void SCREEN_unloadScene(void)
 }
 
 
-
+bool SCREEN_sceneLoaded(void)
+{
+    return ctx->sceneLoaded;
+}
 
 
 

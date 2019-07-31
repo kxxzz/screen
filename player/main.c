@@ -70,9 +70,6 @@ static int mainReturn(int r)
 
 
 
-
-
-
 int main(int argc, const char* argv[])
 {
 #if !defined(NDEBUG) && defined(_WIN32)
@@ -121,7 +118,7 @@ int main(int argc, const char* argv[])
     (
         "SCREEN PLAYER",
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, winWidth, winHeight,
-        SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALWAYS_ON_TOP
+        SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE
     );
 #ifdef _WIN32
     HWND hwnd;
@@ -139,7 +136,7 @@ int main(int argc, const char* argv[])
 
     u32 intervalMode = 2;
     bool fullscreen = false;
-    bool topMost = false;
+    bool topMost = true;
     bool stopped = false;
 
 
@@ -191,6 +188,14 @@ int main(int argc, const char* argv[])
     }
 
 
+    if (SCREEN_sceneLoaded())
+    {
+#ifdef _WIN32
+        SetWindowPos(hwnd, topMost ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+#endif
+    }
+
+
     f32 now0 = (f32)SDL_GetTicks() / 1000.f;
     f32 lastCheckTime = 0;
     u32 frameCount = 0;
@@ -233,13 +238,20 @@ int main(int argc, const char* argv[])
                 sceneFile = realloc(sceneFile, strlen(path) + 1);
                 memcpy(sceneFile, path, strlen(path) + 1);
                 SDL_free(path);
+                SCREEN_LoadFileError err;
                 if (watchFlag)
                 {
-                    SCREEN_fwtchScreenBind(sceneFile);
+                    err = SCREEN_fwtchScreenBind(sceneFile);
                 }
                 else
                 {
-                    SCREEN_loadSceneFile(sceneFile, NULL);
+                    err = SCREEN_loadSceneFile(sceneFile, NULL);
+                }
+                if (SCREEN_LoadFileError_NONE == err)
+                {
+#ifdef _WIN32
+                    SetWindowPos(hwnd, topMost ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+#endif
                 }
                 break;
             }
