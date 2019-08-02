@@ -363,7 +363,7 @@ int main(int argc, const char* argv[])
 
             lastCheckTime = now;
 
-            if (sceneFile && watchFlag)
+            if (watchFlag)
             {
                 if (SCREEN_fwtchUpdate())
                 {
