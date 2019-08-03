@@ -597,7 +597,7 @@ SCREEN_LoadFileError SCREEN_loadSceneFile(const char* filename, vec_char* pathBu
                 }
 
                 char dir[SCREEN_PATH_BUF_MAX];
-                FILEU_getDirName(dir, path, sizeof(dir));
+                FILEU_getDirName(dir, path);
                 SCREEN_LoadFileError r = SCREEN_loadSceneFromJson(buf, dir, desc, pathBuf);
                 free(buf);
                 return r;
@@ -654,7 +654,7 @@ SCREEN_LoadFileError SCREEN_loadSceneFile(const char* filename, vec_char* pathBu
                 }
 
                 char dir[SCREEN_PATH_BUF_MAX];
-                FILEU_getDirName(dir, filename, sizeof(dir));
+                FILEU_getDirName(dir, filename);
                 SCREEN_LoadFileError r = SCREEN_loadSceneFromJson(buf, dir, desc, pathBuf);
                 free(buf);
                 return r;
