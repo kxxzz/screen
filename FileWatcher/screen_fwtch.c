@@ -12,7 +12,7 @@
 
 typedef struct SCREEN_FwtchFile
 {
-    char path[SCREEN_PATH_MAX];
+    char path[SCREEN_PATH_BUF_MAX];
     time_t mtimeLast;
 } SCREEN_FwtchFile;
 
@@ -61,7 +61,7 @@ void SCREEN_fwtchDestroy(void)
 
 static void SCREEN_fwtchFileInit(SCREEN_FwtchFile* wf, const char* path)
 {
-    stzncpy(wf->path, path, SCREEN_PATH_MAX);
+    stzncpy(wf->path, path, SCREEN_PATH_BUF_MAX);
     struct stat st;
     stat(wf->path, &st);
     wf->mtimeLast = st.st_mtime;

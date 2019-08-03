@@ -88,7 +88,7 @@ static void SCREEN_loadSceneAssetFromJson
     SCREEN_Asset* desc, vec_char* dataBuf, u32* pDataOff, vec_char* pathBuf
 )
 {
-    char path[SCREEN_PATH_MAX] = "";
+    char path[SCREEN_PATH_BUF_MAX] = "";
     if (assetJs->type != NX_JSON_OBJECT)
     {
         // todo report error
@@ -207,7 +207,7 @@ static void SCREEN_loadScenePassFromJson
     u32* pShaderOff, u32* pBi
 )
 {
-    char path[SCREEN_PATH_MAX] = "";
+    char path[SCREEN_PATH_BUF_MAX] = "";
     if (passJs->type != NX_JSON_OBJECT)
     {
         // todo report error
@@ -467,7 +467,7 @@ error:
 static SCREEN_LoadFileError SCREEN_loadSceneFromJson(char* code, const char* dir, SCREEN_Scene* desc, vec_char* pathBuf)
 {
     vec_char dataBuf[1] = { 0 };
-    char path[SCREEN_PATH_MAX] = "";
+    char path[SCREEN_PATH_BUF_MAX] = "";
 
     const nx_json* rootJs = nx_json_parse(code, NULL);
     if (!rootJs)
@@ -576,7 +576,7 @@ SCREEN_LoadFileError SCREEN_loadSceneFile(const char* filename, vec_char* pathBu
     {
         if (FILEU_dirExist(filename))
         {
-            char path[SCREEN_PATH_MAX] = "";
+            char path[SCREEN_PATH_BUF_MAX] = "";
             snprintf(path, sizeof(path), "%s/%s", filename, "index.json");
 
             if (FILEU_fileExist(path))
@@ -596,7 +596,7 @@ SCREEN_LoadFileError SCREEN_loadSceneFile(const char* filename, vec_char* pathBu
                     vec_pusharr(pathBuf, path, 1 + (u32)strlen(path));
                 }
 
-                char dir[SCREEN_PATH_MAX];
+                char dir[SCREEN_PATH_BUF_MAX];
                 FILEU_getDirName(dir, path, sizeof(dir));
                 SCREEN_LoadFileError r = SCREEN_loadSceneFromJson(buf, dir, desc, pathBuf);
                 free(buf);
@@ -653,7 +653,7 @@ SCREEN_LoadFileError SCREEN_loadSceneFile(const char* filename, vec_char* pathBu
                     vec_pusharr(pathBuf, filename, 1 + (u32)strlen(filename));
                 }
 
-                char dir[SCREEN_PATH_MAX];
+                char dir[SCREEN_PATH_BUF_MAX];
                 FILEU_getDirName(dir, filename, sizeof(dir));
                 SCREEN_LoadFileError r = SCREEN_loadSceneFromJson(buf, dir, desc, pathBuf);
                 free(buf);

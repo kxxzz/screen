@@ -61,18 +61,18 @@ static int strcicmp(const char* a, const char* b)
 
 
 
-static char* stzncpy(char* dst, char const* src, u32 len)
+static char* stzncpy(char* dst, char const* src, u32 len1)
 {
-    assert(len > 0);
+    assert(len1 > 0);
 #ifdef _WIN32
-    char* p = _memccpy(dst, src, 0, len - 1);
+    char* p = _memccpy(dst, src, 0, len1 - 1);
 #else
-    char* p = memccpy(dst, src, 0, len - 1);
+    char* p = memccpy(dst, src, 0, len1 - 1);
 #endif
     if (p) --p;
     else
     {
-        p = dst + len - 1;
+        p = dst + len1 - 1;
         *p = 0;
     }
     return p;

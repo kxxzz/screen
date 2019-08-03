@@ -3,12 +3,13 @@
 
 
 #include "screen.h"
+#include <fileu.h>
 
 
 
 enum
 {
-    SCREEN_PATH_MAX = 512,
+    SCREEN_PATH_BUF_MAX = FILEU_PATH_BUF_MAX,
 };
 
 
