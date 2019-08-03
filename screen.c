@@ -76,7 +76,7 @@ void SCREEN_startup(void)
 
     ctx->textureInternalFormat = GL_RGBA32F;
     SCREEN_RenderSize renderSize = { SCREEN_RenderSizeMode_Scale, .scale = 1 };
-    ctx->renderSize[0] = renderSize;
+    *ctx->renderSize = renderSize;
 }
 
 
@@ -1056,7 +1056,7 @@ const SCREEN_RenderSize* SCREEN_renderSize(void)
 
 void SCREEN_setRenderSize(const SCREEN_RenderSize* rs)
 {
-    ctx->renderSize[0] = rs[0];
+    *ctx->renderSize = *rs;
 
     u32 renderWidth0 = ctx->renderWidth;
     u32 renderHeight0 = ctx->renderHeight;
