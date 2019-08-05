@@ -112,65 +112,6 @@ float floatConstruct(uint m)
 
 
 
-//#define hashUint xorShiftBJ
-//#define hashUint xorShiftGM
-#define hashUint hashWang
-
-
-uint hashUint(uint v, uint r)
-{
-    return hashUint(v ^ r);
-}
-uint hashUint(uvec2 v, uvec2 r)
-{
-    return hashUint(hashUint(v.x , r.x ) ^ (v.y ^ r.y));
-}
-uint hashUint(uvec3 v, uvec3 r)
-{
-    return hashUint(hashUint(v.xy, r.xy) ^ (v.z ^ r.z));
-}
-uint hashUint(uvec4 v, uvec4 r)
-{
-    return hashUint(hashUint(v.xy, r.xy) ^ hashUint(v.zw, r.zw));
-}
-
-uint hashUint(float v, uint r)
-{
-    return hashUint(floatBitsToUint(v), r);
-}
-uint hashUint(vec2 v, uvec2 r)
-{
-    return hashUint(floatBitsToUint(v), r);
-}
-uint hashUint(vec3 v, uvec3 r)
-{
-    return hashUint(floatBitsToUint(v), r);
-}
-uint hashUint(vec4 v, uvec4 r)
-{
-    return hashUint(floatBitsToUint(v), r);
-}
-
-float hashFloat(uint v, uint r)
-{
-    return floatConstruct(hashUint(v, r));
-}
-float hashFloat(uvec2 v, uvec2 r)
-{
-    return floatConstruct(hashUint(v, r));
-}
-float hashFloat(uvec3 v, uvec3 r)
-{
-    return floatConstruct(hashUint(v, r));
-}
-float hashFloat(uvec4 v, uvec4 r)
-{
-    return floatConstruct(hashUint(v, r));
-}
-
-
-
-
 
 
 
@@ -294,7 +235,6 @@ vec3 tonemapPMalin(in vec3 x)
     return (x * ( a * x + b ) ) / ( x * ( c * x + d ) + e);
 }
 
-#define tonemap tonemapPMalin
 
 
 
