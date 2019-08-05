@@ -738,12 +738,15 @@ void SCREEN_enter(u32 w, u32 h)
 
     glGenVertexArrays(1, &ctx->va);
     glBindVertexArray(ctx->va);
+    {
+        const GLint attrib_position = 0;
+        glVertexAttribPointer(attrib_position, 2, GL_FLOAT, GL_FALSE, 0, 0);
+        glEnableVertexAttribArray(attrib_position);
+    }
+    SCREEN_GL_CHECK();
 
-    const GLint attrib_position = 0;
     glBindBuffer(GL_ARRAY_BUFFER, ctx->vb);
-    glVertexAttribPointer(attrib_position, 2, GL_FLOAT, GL_FALSE, 0, 0);
-    glEnableVertexAttribArray(attrib_position);
-
+    glBindVertexArray(ctx->va);
     SCREEN_GL_CHECK();
 
 
