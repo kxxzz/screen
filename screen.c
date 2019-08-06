@@ -538,9 +538,9 @@ static void SCREEN_renderPassDevOnRender(SCREEN_RenderPassDev* dev, SCREEN_Rende
         }
         if (type != SCREEN_ChannelType_Unused)
         {
-            GLenum wrap = SCREEN_glWrap(desc->channel[i].wrap);
-            GLenum filterMin = SCREEN_glMinFilter(desc->channel[i].filter);
-            GLenum filterMag = SCREEN_glMagFilter(desc->channel[i].filter);
+            GLenum wrap = SCREEN_glSamplerWrap(desc->channel[i].wrap);
+            GLenum filterMin = SCREEN_glSamplerMinFilter(desc->channel[i].filter);
+            GLenum filterMag = SCREEN_glSamplerMagFilter(desc->channel[i].filter);
             glTexParameteri(target, GL_TEXTURE_WRAP_S, wrap);
             glTexParameteri(target, GL_TEXTURE_WRAP_T, wrap);
             glTexParameteri(target, GL_TEXTURE_MIN_FILTER, filterMin);
