@@ -40,7 +40,6 @@ typedef struct SCREEN_Context
     SCREEN_AssetDev asset[SCREEN_Assets_MAX];
     SCREEN_RenderPassDev buffer[SCREEN_Buffers_MAX];
     SCREEN_RenderPassDev image[1];
-    GLuint vb;
     GLuint va;
     GLuint fb;
     GLuint texKeyboard;
@@ -732,22 +731,26 @@ void SCREEN_enter(u32 w, u32 h)
          1.0f, -1.0f,
          1.0f,  1.0f,
     };
-    glGenBuffers(1, &ctx->vb);
-    glBindBuffer(GL_ARRAY_BUFFER, ctx->vb);
+    GLuint vb;
+    glGenBuffers(1, &vb);
+    glBindBuffer(GL_ARRAY_BUFFER, vb);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     glGenVertexArrays(1, &ctx->va);
     glBindVertexArray(ctx->va);
     {
+        glBindBuffer(GL_ARRAY_BUFFER, vb);
         const GLint attrib_position = 0;
         glVertexAttribPointer(attrib_position, 2, GL_FLOAT, GL_FALSE, 0, 0);
         glEnableVertexAttribArray(attrib_position);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
+    glBindVertexArray(0);
     SCREEN_GL_CHECK();
 
-    glBindBuffer(GL_ARRAY_BUFFER, ctx->vb);
+    glDeleteBuffers(1, &vb);
     glBindVertexArray(ctx->va);
-    SCREEN_GL_CHECK();
 
 
     glGenFramebuffers(1, &ctx->fb);
@@ -793,7 +796,6 @@ void SCREEN_leave(void)
 
     glDeleteFramebuffers(1, &ctx->fb);
     glDeleteVertexArrays(1, &ctx->va);
-    glDeleteBuffers(1, &ctx->vb);
 }
 
 
