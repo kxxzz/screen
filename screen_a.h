@@ -176,7 +176,7 @@ static GLenum SCREEN_glTargetTextureFromAssetType(SCREEN_AssetType type)
 }
 
 
-static GLenum SCREEN_glFilterFromChannelWrap(SCREEN_ChannelWrap wrap)
+static GLenum SCREEN_glWrap(SCREEN_ChannelWrap wrap)
 {
     assert(wrap < SCREEN_ChannelWrapCount);
     static const GLenum a[SCREEN_ChannelWrapCount] =
@@ -188,7 +188,7 @@ static GLenum SCREEN_glFilterFromChannelWrap(SCREEN_ChannelWrap wrap)
 }
 
 
-static GLenum SCREEN_glMinFilterFromChannelFilter(SCREEN_ChannelFilter filter)
+static GLenum SCREEN_glMinFilter(SCREEN_ChannelFilter filter)
 {
     assert(filter < SCREEN_ChannelFilterCount);
     static const GLenum a[SCREEN_ChannelFilterCount] =
@@ -201,7 +201,7 @@ static GLenum SCREEN_glMinFilterFromChannelFilter(SCREEN_ChannelFilter filter)
 }
 
 
-static GLenum SCREEN_glMagFilterFromChannelFilter(SCREEN_ChannelFilter filter)
+static GLenum SCREEN_glMagFilter(SCREEN_ChannelFilter filter)
 {
     assert(filter < SCREEN_ChannelFilterCount);
     static const GLenum a[SCREEN_ChannelFilterCount] =
