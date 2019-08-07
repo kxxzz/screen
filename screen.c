@@ -903,24 +903,25 @@ void SCREEN_frame(f32 dt, bool stopped)
 {
     assert(ctx->entered);
 
+    glViewport(0, 0, ctx->renderWidth, ctx->renderHeight);
+    glClearColor(0.0f, 0.0f, 1.0f, 1.0);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    if (!ctx->sceneLoaded)
+    {
+        return;
+    }
+    
     ctx->timeDelta = dt;
     if (!stopped)
     {
         ctx->time += dt;
     }
-
-
-    glViewport(0, 0, ctx->renderWidth, ctx->renderHeight);
-    glClearColor(0.0f, 0.0f, 1.0f, 1.0);
-    glClear(GL_COLOR_BUFFER_BIT);
-
-    if (!ctx->image->shaderProgram)
-    {
-        return;
-    }
-    SCREEN_GL_CHECK();
+    assert(ctx->image->shaderProgram);
 
     {
+        SCREEN_GL_CHECK();
+
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, ctx->texKeyboard);
         glTexSubImage2D
