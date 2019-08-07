@@ -152,7 +152,6 @@ static void SCREEN_assetDevOnEnter(u32 ai)
     glTexParameteri(target, GL_TEXTURE_BASE_LEVEL, 0);
     glTexParameteri(target, GL_TEXTURE_MAX_LEVEL, 1000);
 
-    glBindTexture(target, dev->texture);
     switch (target)
     {
     case GL_TEXTURE_2D:
