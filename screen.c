@@ -400,7 +400,7 @@ static void SCREEN_renderPassDevOnRender(SCREEN_RenderPassDev* dev, SCREEN_Rende
             (f32)ctx->pointX * screenToRender,
             (f32)(ctx->height - ctx->pointY) * screenToRender,
             (f32)ctx->pointStart[0] * screenToRender,
-            (ctx->pointStart[1] > 0)
+            (ctx->pointStart[1] >= 0)
                 ? +(f32)(ctx->height - ctx->pointStart[1]) * screenToRender
                 : -(f32)(ctx->height + ctx->pointStart[1]) * screenToRender
         );
