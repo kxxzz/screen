@@ -133,10 +133,10 @@ static const char* SCREEN_shaderCommonSrcHeader(void)
 static const char* SCREEN_shaderVertexSrc(void)
 {
     static const char* a =
-        "layout (location = 0) in vec4 vPosition;\n"
+        "layout (location = 0) in vec4 aPosition;\n"
         "void main()\n"
         "{\n"
-        "    gl_Position = vPosition;\n"
+        "    gl_Position = aPosition;\n"
         "}\n"
         ;
     return a;
