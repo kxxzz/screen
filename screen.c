@@ -674,14 +674,7 @@ static void SCREEN_calcSceneToRender(void)
         ctx->renderWidth = (u32)ceil(n * a);
         ctx->renderHeight = (u32)ceil(n);
     }
-    if ((ctx->width == ctx->renderWidth) && (ctx->height == ctx->renderHeight))
-    {
-        ctx->imageRenderDirect = true;
-    }
-    else
-    {
-        ctx->imageRenderDirect = false;
-    }
+    ctx->imageRenderDirect = (ctx->width == ctx->renderWidth) && (ctx->height == ctx->renderHeight);
 }
 
 
