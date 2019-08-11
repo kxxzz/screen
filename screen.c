@@ -187,6 +187,8 @@ static void SCREEN_assetDevOnEnter(u32 ai)
 
     glGenerateMipmap(target);
     SCREEN_GL_CHECK();
+
+    glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 
@@ -287,6 +289,8 @@ static void SCREEN_renderPassDevOnEnter(SCREEN_RenderPassDev* dev, const SCREEN_
         memset(tmpDataBuf->data, 0, tmpDataBuf->length);
         glBindTexture(GL_TEXTURE_2D, dev->texture);
         glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, tmpDataBuf->data);
+
+        glBindTexture(GL_TEXTURE_2D, 0);
     }
 }
 
@@ -773,6 +777,7 @@ void SCREEN_enter(u32 w, u32 h)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
+        glBindTexture(GL_TEXTURE_2D, 0);
         SCREEN_GL_CHECK();
     }
 
@@ -931,6 +936,7 @@ void SCREEN_frame(f32 dt, bool stopped)
             SCREEN_KeyboardTextureDataFormat, SCREEN_KeyboardTextureDataType,
             ctx->keyboardState
         );
+        glBindTexture(GL_TEXTURE_2D, 0);
         SCREEN_GL_CHECK();
 
         memset(ctx->keyboardState + SCREEN_KeyboardState_KeyPressed, 0, sizeof(*ctx->keyboardState));
