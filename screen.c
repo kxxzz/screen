@@ -343,22 +343,17 @@ static void SCREEN_renderPassDevOnResize
         assert(GL_FRAMEBUFFER_COMPLETE == glCheckFramebufferStatus(GL_READ_FRAMEBUFFER));
 
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, ctx->fb);
-        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, dev->texture, 0);
+        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, dev->texture, 0);
         SCREEN_GL_CHECK();
         assert(GL_FRAMEBUFFER_COMPLETE == glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER));
 
-        {
-            const GLenum bufs[] = { GL_COLOR_ATTACHMENT1 };
-            glDrawBuffers(ARYLEN(bufs), bufs);
-            SCREEN_GL_CHECK();
-        }
-        glBlitFramebuffer(0, 0, widthCopy, heightCopy, 0, 0, widthCopy, heightCopy, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-        SCREEN_GL_CHECK();
         {
             const GLenum bufs[] = { GL_COLOR_ATTACHMENT0 };
             glDrawBuffers(ARYLEN(bufs), bufs);
             SCREEN_GL_CHECK();
         }
+        glBlitFramebuffer(0, 0, widthCopy, heightCopy, 0, 0, widthCopy, heightCopy, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+        SCREEN_GL_CHECK();
     }
     if (texture0)
     {
