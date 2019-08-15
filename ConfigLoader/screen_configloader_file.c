@@ -19,6 +19,11 @@ SCREEN_LoadFileError SCREEN_loadConfigFromJson(char* code)
         // todo report error
         return SCREEN_LoadFileError_FileInvalid;
     }
+    if (root->type != NX_JSON_OBJECT)
+    {
+        // todo report error
+        goto error;
+    }
 
     const nx_json* renderScale = nx_json_get(root, "renderScale");
     const nx_json* renderSize = nx_json_get(root, "renderSize");
