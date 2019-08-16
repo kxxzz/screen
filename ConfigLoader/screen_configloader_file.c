@@ -16,12 +16,12 @@ SCREEN_LoadFileError SCREEN_loadConfigFromJson(char* code)
     const nx_json* root = nx_json_parse(code, NULL);
     if (!root)
     {
-        // todo report error
+        LOGE("invalied config json");
         return SCREEN_LoadFileError_FileInvalid;
     }
     if (root->type != NX_JSON_OBJECT)
     {
-        // todo report error
+        LOGE("invalied config json");
         goto error;
     }
 
@@ -33,7 +33,7 @@ SCREEN_LoadFileError SCREEN_loadConfigFromJson(char* code)
         if ((renderScale->type != NX_JSON_INTEGER) &&
             (renderScale->type != NX_JSON_DOUBLE))
         {
-            // todo report error
+            LOGE("invalied renderScale");
             goto error;
         }
         f32 scale;
@@ -53,7 +53,7 @@ SCREEN_LoadFileError SCREEN_loadConfigFromJson(char* code)
     {
         if (renderSize->type != NX_JSON_INTEGER)
         {
-            // todo report error
+            LOGE("invalied renderSize");
             goto error;
         }
         u32 size = (u32)renderSize->int_value;
@@ -62,7 +62,7 @@ SCREEN_LoadFileError SCREEN_loadConfigFromJson(char* code)
     }
     else
     {
-        // todo report error
+        LOGE("renderScale/renderSize can't exist both");
         goto error;
     }
 
@@ -85,7 +85,7 @@ SCREEN_LoadFileError SCREEN_loadConfigFile(const char* filename)
             u32 size = FILEU_readFile(filename, NULL, 0);
             if ((-1 == size) || !size)
             {
-                // todo report error
+                LOGE("invalied file %s", filename);
                 return SCREEN_LoadFileError_FileInvalid;
             }
             char* buf = malloc(size + 1);
@@ -98,13 +98,13 @@ SCREEN_LoadFileError SCREEN_loadConfigFile(const char* filename)
         }
         else
         {
-            // todo report error
+            LOGE("unknown config file ext: %s", filename);
             return SCREEN_LoadFileError_FileUnkExt;
         }
     }
     else
     {
-        // todo report error
+        LOGE("no file %s", filename);
         return SCREEN_LoadFileError_NoFile;
     }
 }

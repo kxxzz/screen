@@ -336,7 +336,7 @@ void SCREEN_assetMakeGpuData(char* dstBuf, const char* sceneData, const SCREEN_A
         );
         if (!data)
         {
-            // todo report error
+            LOGE("failed decode image data");
             return;
         }
         assert(asset->size[0] == x);
@@ -360,7 +360,7 @@ void SCREEN_assetMakeGpuData(char* dstBuf, const char* sceneData, const SCREEN_A
             );
             if (!data)
             {
-                // todo report error
+                LOGE("failed decode image data");
                 return;
             }
             assert(asset->size[0] == x);
@@ -373,7 +373,7 @@ void SCREEN_assetMakeGpuData(char* dstBuf, const char* sceneData, const SCREEN_A
     }
     else
     {
-        // todo report error
+        LOGE("unsupported image type: %s", SCREEN_AssetTypeNameTable(asset->type));
         return;
     }
 }

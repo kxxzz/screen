@@ -26,7 +26,7 @@ static u32 SCREEN_loadFileDataToBuf(vec_char* dataBuf, vec_char* pathBuf, const 
     u32 size = FILEU_readFile(filename, NULL, 0);
     if ((-1 == size) || !size)
     {
-        // todo report error
+        LOGE("invalid file %s", filename);
         return -1;
     }
     u32 offset = dataBuf->length;
@@ -55,12 +55,12 @@ static bool SCREEN_loadAssetFromImageFile
     int r = stbi_info(filename, &x, &y, &comp);
     if (!r)
     {
-        // todo report error
+        LOGE("invalid image file %s", filename);
         return false;
     }
     if ((comp != 1) && (comp != 3) && (comp != 4))
     {
-        // todo report error
+        LOGE("invalid image file %s", filename);
         return false;
     }
     if (asset)
@@ -91,7 +91,7 @@ static void SCREEN_loadSceneAssetFromJson
     char path[SCREEN_PATH_BUF_MAX] = "";
     if (assetJs->type != NX_JSON_OBJECT)
     {
-        // todo report error
+        LOGE("invalid asset");
         goto error;
     }
 
@@ -106,7 +106,7 @@ static void SCREEN_loadSceneAssetFromJson
         {
             if (typeJs->type != NX_JSON_STRING)
             {
-                // todo report error
+                LOGE("invalid asset type");
                 goto error;
             }
             const char* typeStr = typeJs->text_value;
@@ -121,7 +121,7 @@ static void SCREEN_loadSceneAssetFromJson
             }
             if (-1 == type)
             {
-                // todo report error
+                LOGE("invalid asset type");
                 goto error;
             }
         }
@@ -132,7 +132,7 @@ static void SCREEN_loadSceneAssetFromJson
         const nx_json* uriJs = nx_json_get(assetJs, "uri");
         if (uriJs->type != NX_JSON_STRING)
         {
-            // todo report error
+            LOGE("invalid uri");
             goto error;
         }
         const char* filename = uriJs->text_value;
@@ -151,12 +151,12 @@ static void SCREEN_loadSceneAssetFromJson
         const nx_json* facesJs = nx_json_get(assetJs, "faces");
         if (facesJs->type != NX_JSON_ARRAY)
         {
-            // todo report error
+            LOGE("invalid faces");
             goto error;
         }
         if (facesJs->length != 6)
         {
-            // todo report error
+            LOGE("invalid faces");
             goto error;
         }
 
@@ -166,7 +166,7 @@ static void SCREEN_loadSceneAssetFromJson
             const nx_json* faceJs = nx_json_item(facesJs, f);
             if (faceJs->type != NX_JSON_STRING)
             {
-                // todo report error
+                LOGE("invalid face");
                 goto error;
             }
             const char* filename = faceJs->text_value;
@@ -184,7 +184,7 @@ static void SCREEN_loadSceneAssetFromJson
     }
     else
     {
-        // todo report error
+        LOGE("unsupported asset type: %s", SCREEN_AssetTypeNameTable(type));
         goto error;
     }
     return;
@@ -210,13 +210,13 @@ static void SCREEN_loadScenePassFromJson
     char path[SCREEN_PATH_BUF_MAX] = "";
     if (passJs->type != NX_JSON_OBJECT)
     {
-        // todo report error
+        LOGE("invalid pass");
         goto error;
     }
     const nx_json* shaderJs = nx_json_get(passJs, "shader");
     if (shaderJs->type != NX_JSON_STRING)
     {
-        // todo report error
+        LOGE("invalid shader");
         goto error;
     }
     const char* filename = shaderJs->text_value;
@@ -224,7 +224,6 @@ static void SCREEN_loadScenePassFromJson
     u32 shaderOff = SCREEN_loadFileDataToBuf(dataBuf, pathBuf, path, true);
     if (-1 == shaderOff)
     {
-        // todo report error
         goto error;
     }
 
@@ -234,13 +233,13 @@ static void SCREEN_loadScenePassFromJson
         const nx_json* idJs = nx_json_get(passJs, "id");
         if (idJs->type != NX_JSON_INTEGER)
         {
-            // todo report error
+            LOGE("invalid buffer id");
             goto error;
         }
         bi = (int)idJs->int_value;
-        if (bi >= SCREEN_Channels_MAX)
+        if (bi >= SCREEN_Buffers_MAX)
         {
-            // todo report error
+            LOGE("invalid buffer id");
             goto error;
         }
     }
@@ -260,12 +259,12 @@ static void SCREEN_loadScenePassFromJson
     {
         if (channelsJs->type != NX_JSON_ARRAY)
         {
-            // todo report error
+            LOGE("invalid channels");
             goto error;
         }
         if (channelsJs->length > SCREEN_Channels_MAX)
         {
-            // todo report error
+            LOGE("invalid channels");
             goto error;
         }
         for (int ci = 0; ci < channelsJs->length; ++ci)
@@ -274,7 +273,7 @@ static void SCREEN_loadScenePassFromJson
             u32 cidx = ci;
             if ((channelJs->type != NX_JSON_ARRAY) && (channelJs->type != NX_JSON_NULL))
             {
-                // todo report error
+                LOGE("invalid channel");
                 goto error;
             }
             if (NX_JSON_NULL == channelJs->type)
@@ -283,13 +282,13 @@ static void SCREEN_loadScenePassFromJson
             }
             if (!channelJs->length)
             {
-                // todo report error
+                LOGE("invalid channel");
                 goto error;
             }
             const nx_json* typeJs = nx_json_item(channelJs, 0);
             if (typeJs->type != NX_JSON_STRING)
             {
-                // todo report error
+                LOGE("invalid channel");
                 goto error;
             }
             const char* typeText = typeJs->text_value;
@@ -299,7 +298,7 @@ static void SCREEN_loadScenePassFromJson
                 const nx_json* idJs = nx_json_item(channelJs, 1);
                 if (idJs->type != NX_JSON_INTEGER)
                 {
-                    // todo report error
+                    LOGE("invalid channel id");
                     goto error;
                 }
                 renderPass->channel[cidx].buffer = (u32)idJs->int_value;
@@ -314,14 +313,14 @@ static void SCREEN_loadScenePassFromJson
                 const nx_json* idJs = nx_json_item(channelJs, 1);
                 if (idJs->type != NX_JSON_INTEGER)
                 {
-                    // todo report error
+                    LOGE("invalid asset id");
                     goto error;
                 }
                 renderPass->channel[cidx].buffer = (u32)idJs->int_value;
             }
             else
             {
-                // todo report error
+                LOGE("invalid channel");
                 goto error;
             }
 
@@ -359,7 +358,7 @@ static void SCREEN_loadScenePassFromJson
                 {
                     if (wrapJs->type != NX_JSON_STRING)
                     {
-                        // todo report error
+                        LOGE("invalid wrap");
                         goto error;
                     }
                     static const char* nameTable[SCREEN_ChannelWrapCount] =
@@ -379,7 +378,7 @@ static void SCREEN_loadScenePassFromJson
                     }
                     if (!m)
                     {
-                        // todo report error
+                        LOGE("invalid wrap");
                         goto error;
                     }
                 }
@@ -387,7 +386,7 @@ static void SCREEN_loadScenePassFromJson
                 {
                     if (filterJs->type != NX_JSON_STRING)
                     {
-                        // todo report error
+                        LOGE("invalid filter");
                         goto error;
                     }
                     static const char* nameTable[SCREEN_ChannelFilterCount] =
@@ -408,7 +407,7 @@ static void SCREEN_loadScenePassFromJson
                     }
                     if (!m)
                     {
-                        // todo report error
+                        LOGE("invalid filter");
                         goto error;
                     }
                 }
@@ -422,12 +421,12 @@ static void SCREEN_loadScenePassFromJson
     {
         if (specBufferSizeJs->type != NX_JSON_ARRAY)
         {
-            // todo report error
+            LOGE("invalid specBufferSize");
             goto error;
         }
         if (specBufferSizeJs->length != 2)
         {
-            // todo report error
+            LOGE("invalid specBufferSize");
             goto error;
         }
         renderPass->isSpecBufferSize = true;
@@ -435,12 +434,12 @@ static void SCREEN_loadScenePassFromJson
         const nx_json* heightJs = nx_json_item(specBufferSizeJs, 1);
         if (widthJs->type != NX_JSON_INTEGER)
         {
-            // todo report error
+            LOGE("invalid width");
             goto error;
         }
         if (heightJs->type != NX_JSON_INTEGER)
         {
-            // todo report error
+            LOGE("invalid height");
             goto error;
         }
         renderPass->bufferWidth = (u32)widthJs->int_value;
@@ -472,7 +471,7 @@ static SCREEN_LoadFileError SCREEN_loadSceneFromJson(char* code, const char* dir
     const nx_json* rootJs = nx_json_parse(code, NULL);
     if (!rootJs)
     {
-        // todo report error
+        LOGE("invalid json");
         return SCREEN_LoadFileError_FileInvalid;
     }
     {
@@ -481,7 +480,7 @@ static SCREEN_LoadFileError SCREEN_loadSceneFromJson(char* code, const char* dir
         {
             if (shaderJs->type != NX_JSON_STRING)
             {
-                // todo report error
+                LOGE("invalid assets");
                 goto error;
             }
             const char* filename = shaderJs->text_value;
@@ -489,7 +488,6 @@ static SCREEN_LoadFileError SCREEN_loadSceneFromJson(char* code, const char* dir
             u32 shaderOff = SCREEN_loadFileDataToBuf(dataBuf, pathBuf, path, true);
             if (-1 == shaderOff)
             {
-                // todo report error
                 goto error;
             }
             desc->commonShaderCodeOffset = shaderOff;
@@ -500,7 +498,7 @@ static SCREEN_LoadFileError SCREEN_loadSceneFromJson(char* code, const char* dir
     {
         if (buffersJs->type != NX_JSON_ARRAY)
         {
-            // todo report error
+            LOGE("invalid buffers");
             goto error;
         }
         for (int i = 0; i < buffersJs->length; ++i)
@@ -515,7 +513,6 @@ static SCREEN_LoadFileError SCREEN_loadSceneFromJson(char* code, const char* dir
             }
             else
             {
-                // todo report error
                 goto error;
             }
         }
@@ -528,7 +525,7 @@ static SCREEN_LoadFileError SCREEN_loadSceneFromJson(char* code, const char* dir
     {
         if (assetsJs->type != NX_JSON_ARRAY)
         {
-            // todo report error
+            LOGE("invalid assets");
             goto error;
         }
         desc->assetCount = assetsJs->length;
@@ -543,7 +540,6 @@ static SCREEN_LoadFileError SCREEN_loadSceneFromJson(char* code, const char* dir
             }
             else
             {
-                // todo report error
                 goto error;
             }
         }
@@ -584,7 +580,7 @@ SCREEN_LoadFileError SCREEN_loadSceneFile(const char* filename, vec_char* pathBu
                 u32 size = FILEU_readFile(path, NULL, 0);
                 if ((-1 == size) || !size)
                 {
-                    // todo report error
+                    LOGE("invalid file %s", path);
                     return SCREEN_LoadFileError_FileInvalid;
                 }
                 char* buf = malloc(size + 1);
@@ -604,7 +600,7 @@ SCREEN_LoadFileError SCREEN_loadSceneFile(const char* filename, vec_char* pathBu
             }
             else
             {
-                // todo report error
+                LOGE("no entry file for %s", filename);
                 return SCREEN_LoadFileError_NoEntryFile;
             }
         }
@@ -619,7 +615,7 @@ SCREEN_LoadFileError SCREEN_loadSceneFile(const char* filename, vec_char* pathBu
                 u32 size = FILEU_readFile(filename, NULL, 0);
                 if ((-1 == size) || !size)
                 {
-                    // todo report error
+                    LOGE("invalid file %s", filename);
                     return SCREEN_LoadFileError_FileInvalid;
                 }
                 char* buf = malloc(size + 1);
@@ -660,14 +656,14 @@ SCREEN_LoadFileError SCREEN_loadSceneFile(const char* filename, vec_char* pathBu
             }
             else
             {
-                // todo report error
+                LOGE("unknown file ext %s", filename);
                 return SCREEN_LoadFileError_FileUnkExt;
             }
         }
     }
     else
     {
-        // todo report error
+        LOGE("no file %s", filename);
         return SCREEN_LoadFileError_NoFile;
     }
 }
