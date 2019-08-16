@@ -136,7 +136,7 @@ int main(int argc, const char* argv[])
 
     u32 intervalMode = 2;
     bool fullscreen = false;
-    bool topMost = true;
+    bool topMost = false;
     bool stopped = false;
 
 

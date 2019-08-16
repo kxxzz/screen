@@ -248,7 +248,7 @@ static void SCREEN_console_onAlloc(uv_handle_t* handle, size_t size, uv_buf_t* b
 
 static void SCREEN_console_onClose(uv_handle_t* handle)
 {
-    printf("[Console] disconnected\n");
+    LOGV("[Console] disconnected");
     ctx->state = SCREEN_ConsoleState_Disconnected;
 }
 
@@ -262,7 +262,7 @@ static void SCREEN_console_onReadHandlePayload(void)
 {
     if (ctx->recvBuf->length > ctx->payloadLength)
     {
-        printf("[Console] error: recv payload\n");
+        LOGV("[Console] error: recv payload");
         vec_resize(ctx->recvBuf, ctx->payloadLength);
     }
     if (ctx->recvBuf->length == ctx->payloadLength)
@@ -279,13 +279,13 @@ static void SCREEN_console_onReadHandlePayload(void)
         case WS_FrameOp_Text:
         {
             vec_push(ctx->recvBuf, 0);
-            printf("[Console] incommig text\n%s", ctx->recvBuf->data);
+            LOGV("[Console] incommig text\n%s", ctx->recvBuf->data);
             SCREEN_consoleSendText(ctx->recvBuf->data, ctx->recvBuf->length);
             break;
         }
         case WS_FrameOp_Binary:
         {
-            printf("[Console] incommig binrary size=%u\n", ctx->recvBuf->length);
+            LOGV("[Console] incommig binrary size=%u", ctx->recvBuf->length);
             SCREEN_cmdExec(ctx->recvBuf->data, ctx->recvBuf->length);
             break;
         }
@@ -300,8 +300,8 @@ static void SCREEN_console_onReadHandlePayload(void)
             break;
         }
         default:
-            printf("[Console] unhandled opcode=%u\n", ctx->opState);
-            printf("\n%s\n", ctx->recvBuf->data);
+            LOGW("[Console] unhandled opcode=%u", ctx->opState);
+            LOGV("\n%s\n", ctx->recvBuf->data);
             break;
         }
         ctx->opState = WS_FrameOp_Continuation;
@@ -330,8 +330,8 @@ static void SCREEN_console_onRead(uv_stream_t* stream, ssize_t nread, const uv_b
         assert(SCREEN_ConsoleState_Connected == ctx->state);
         ctx->state = SCREEN_ConsoleState_Handshaked;
 
-        printf("[Console] handshaked\n");
-        printf("%s", ctx->recvBuf->data);
+        LOGV("[Console] handshaked");
+        LOGV("%s", ctx->recvBuf->data);
         vec_resize(ctx->recvBuf, 0);
         return;
     }
@@ -402,11 +402,11 @@ static void SCREEN_console_onConnect(uv_connect_t* conn, int status)
         ctx->state = SCREEN_ConsoleState_Disconnected;
         char errStr[4096];
         uv_strerror_r(status, errStr, sizeof(errStr));
-        printf("[Console] error: %s\n", errStr);
+        LOGV("[Console] error: %s", errStr);
         return;
     }
 
-    printf("[Console] connected\n");
+    LOGV("[Console] connected");
     assert(ctx->conn == conn);
 
     assert(SCREEN_ConsoleState_Connecting == ctx->state);

@@ -20,6 +20,11 @@
 
 #include <vec.h>
 
+#include <log.h>
+
+#define LOG_LEVEL LOG_INFO
+#include <zf_log.h>
+
 
 
 
@@ -44,6 +49,23 @@
 
 
 #define zalloc(sz) calloc(1, sz)
+
+
+
+
+//#define LOGV(...) log_trace(__VA_ARGS__)
+//#define LOGD(...) log_debug(__VA_ARGS__)
+//#define LOGI(...) log_info(__VA_ARGS__)
+//#define LOGW(...) log_warn(__VA_ARGS__)
+//#define LOGE(...) log_error(__VA_ARGS__)
+//#define LOGF(...) log_fatal(__VA_ARGS__)
+
+#define LOGV(...) ZF_LOGV(__VA_ARGS__)
+#define LOGD(...) ZF_LOGD(__VA_ARGS__)
+#define LOGI(...) ZF_LOGI(__VA_ARGS__)
+#define LOGW(...) ZF_LOGW(__VA_ARGS__)
+#define LOGE(...) ZF_LOGE(__VA_ARGS__)
+#define LOGF(...) ZF_LOGF(__VA_ARGS__)
 
 
 

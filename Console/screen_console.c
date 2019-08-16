@@ -87,7 +87,7 @@ void SCREEN_cmdExec(const char* cmd, u32 cmdSize)
 {
     if (cmd[0] >= SCREEN_CmdCount)
     {
-        printf("unknown cmd %c", cmd[0]);
+        LOGE("unknown cmd %c", cmd[0]);
         return;
     }
     typedef void(*Exec)(const char* cmd, u32 cmdSize);

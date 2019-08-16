@@ -68,6 +68,7 @@ include_directories (imp/gettimeofday)
 include_directories (imp/threads)
 include_directories (imp/webby)
 include_directories (imp/base64)
+include_directories (imp/log.c)
 
 file (GLOB IMP_SRC_FILES
     imp/*.h
@@ -88,11 +89,19 @@ file (GLOB IMP_SRC_FILES
     imp/webby/*.c
     imp/base64/*.h
     imp/base64/*.c
+    imp/log.c/*.h
+    imp/log.c/*.c
     )
 list(FILTER IMP_SRC_FILES EXCLUDE REGEX "main.c$")
 
 source_group (imp FILES ${IMP_SRC_FILES})
 add_library (imp STATIC ${IMP_SRC_FILES})
+set_target_properties (imp PROPERTIES FOLDER imp)
+
+
+include_directories (imp/zf_log)
+add_subdirectory (imp/zf_log)
+set_target_properties (zf_log PROPERTIES FOLDER imp)
 
 
 file (GLOB SRC_FILES *.h *.c)
@@ -155,13 +164,13 @@ endif ()
 if (NOT DEFINED EMSCRIPTEN)
     if (WIN32)
         target_link_libraries (
-            player opengl32 gl3w uv_a
+            player opengl32 gl3w uv_a zf_log
             version winmm imm32
             wldap32 crypt32 ws2_32 normaliz
             userenv psapi iphlpapi
             )
     else ()
-        target_link_libraries (player GL gl3w uv)
+        target_link_libraries (player GL gl3w uv zf_log)
     endif ()
 endif ()
 

@@ -640,8 +640,7 @@ SCREEN_LoadFileError SCREEN_loadSceneFile(const char* filename, vec_char* pathBu
                 u32 size = FILEU_readFile(filename, NULL, 0);
                 if ((-1 == size) || !size)
                 {
-                    printf("Error %d\n", errno);
-                    // todo report error
+                    LOGE("failed read file \"%s\", errno=%d", filename, errno);
                     return SCREEN_LoadFileError_FileInvalid;
                 }
                 char* buf = malloc(size + 1);

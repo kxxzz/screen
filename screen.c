@@ -687,8 +687,8 @@ void SCREEN_enter(u32 w, u32 h)
     assert(!ctx->entered);
     ctx->entered = true;
 
-    //printf("GL_VERSION  : %s\n", glGetString(GL_VERSION));
-    //printf("GL_RENDERER : %s\n", glGetString(GL_RENDERER));
+    LOGI("GL_VERSION  : %s", glGetString(GL_VERSION));
+    LOGI("GL_RENDERER : %s", glGetString(GL_RENDERER));
 #ifdef SCREEN_USE_GL3W
     glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 #endif
@@ -910,7 +910,10 @@ void SCREEN_frame(f32 dt, bool stopped)
     {
         ctx->time += dt;
     }
-    assert(ctx->image->shaderProgram);
+    if (!ctx->image->shaderProgram)
+    {
+        return;
+    }
 
     {
         SCREEN_GL_CHECK();

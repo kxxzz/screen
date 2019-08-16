@@ -199,8 +199,7 @@ bool SCREEN_fwtchUpdate(void)
         modified = modified || m;
         if (m)
         {
-            // todo report
-            printf("[SCENE CHANGE] \"%s\"\n", sceneFiles->data[ctx->sceneFileIndex].path);
+            LOGD("[SCENE CHANGE] \"%s\"", sceneFiles->data[ctx->sceneFileIndex].path);
             SCREEN_LoadFileError err = SCREEN_loadSceneFile(sceneFiles->data[0].path, pathBuf);
             if (!err)
             {
@@ -224,8 +223,7 @@ bool SCREEN_fwtchUpdate(void)
         modified = modified || m;
         if (m)
         {
-            // todo report
-            printf("[CONFIG CHANGE] \"%s\"\n", configFile->path);
+            LOGD("[CONFIG CHANGE] \"%s\"", configFile->path);
             SCREEN_LoadFileError err = SCREEN_loadConfigFile(configFile->path);
             if (!err)
             {

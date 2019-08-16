@@ -96,8 +96,7 @@ GLenum SCREEN_glCheck(const char *const file, int const line)
     if (glerr)
     {
         const char* errStr = SCREEN_glErrStr(glerr);
-        printf("GL Error: %s", errStr);
-        assert(false);
+        LOGE("GL Error: %s", errStr);
     }
     return glerr;
 #else
@@ -198,7 +197,7 @@ static GLuint SCREEN_compileShader(GLenum type, GLsizei srcCount, const char** s
     {
         char infoBuf[4096];
         glGetShaderInfoLog(shader, sizeof(infoBuf), &status, infoBuf);
-        printf("failed compile shader:\n%s\n", infoBuf);
+        LOGE("failed compile shader:\n%s\n", infoBuf);
         glDeleteShader(shader);
         return 0;
     }
@@ -254,7 +253,7 @@ GLuint SCREEN_buildShaderProgram(const char* shaderComm, const char* shaderChann
     {
         char infoBuf[4096];
         glGetProgramInfoLog(shaderProgram, sizeof(infoBuf), &status, infoBuf);
-        printf("failed link shader program:\n%s\n", infoBuf);
+        LOGE("failed link shader program:\n%s\n", infoBuf);
         glDeleteShader(fragShader);
         glDeleteShader(vertShader);
         glDeleteProgram(shaderProgram);
