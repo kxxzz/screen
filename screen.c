@@ -188,7 +188,7 @@ static void SCREEN_assetDevOnEnter(u32 ai)
     glGenerateMipmap(target);
     SCREEN_GL_CHECK();
 
-    glBindTexture(GL_TEXTURE_2D, 0);
+    glBindTexture(target, 0);
 }
 
 
