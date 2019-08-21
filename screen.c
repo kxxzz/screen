@@ -380,7 +380,6 @@ static void SCREEN_renderPassDevOnRender(SCREEN_RenderPassDev* dev, SCREEN_Rende
         u32 w = desc->isSpecBufferSize ? desc->bufferWidth : ctx->renderWidth;
         u32 h = desc->isSpecBufferSize ? desc->bufferHeight : ctx->renderHeight;
         glUniform3f(dev->uniform_Resolution, (f32)w, (f32)h, 0.f);
-
     }
     if (dev->uniform_Time >= 0)
     {
