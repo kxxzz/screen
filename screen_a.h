@@ -145,9 +145,7 @@ static char* stzncpy(char* dst, char const* src, u32 len1)
 #  error
 # endif
 #else
-# define SCREEN_USE_GL3W
-# include <GL/gl3w.h>
-# include <GL/glcorearb.h>
+# include <glad/glad.h>
 #endif
 
 

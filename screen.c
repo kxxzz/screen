@@ -66,10 +66,11 @@ static SCREEN_Context* ctx = NULL;
 
 void SCREEN_startup(void)
 {
-#ifdef SCREEN_USE_GL3W
-    int err = gl3wInit();
-    assert(0 == err);
-#endif
+    if (!gladLoadGL())
+    {
+        LOGF("failed load GL");
+        exit(-1);
+    }
     assert(!ctx);
     ctx = (SCREEN_Context*)zalloc(sizeof(*ctx));
 
@@ -688,9 +689,8 @@ void SCREEN_enter(u32 w, u32 h)
 
     LOGI("GL_VERSION  : %s", glGetString(GL_VERSION));
     LOGI("GL_RENDERER : %s", glGetString(GL_RENDERER));
-#ifdef SCREEN_USE_GL3W
+
     glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
-#endif
 
     assert(w && h);
 

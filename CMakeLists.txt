@@ -17,10 +17,6 @@ include (CMakeDependentOption)
 
 set (IMPLIB_DIR "imp")
 
-set (GL3W_DIR ${IMPLIB_DIR}/gl3w)
-include_directories (${GL3W_DIR}/include)
-link_directories (${GL3W_DIR}/build/${ConfigurationName})
-
 set (SDL_DIR ${IMPLIB_DIR}/sdl)
 include_directories (${SDL_DIR}/include)
 link_directories (${SDL_DIR}/build/${ConfigurationName})
@@ -59,6 +55,7 @@ set (CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -DDEBUG")
 
 
 include_directories (imp)
+include_directories (imp/glad/include)
 include_directories (imp/vec)
 include_directories (imp/fileu)
 include_directories (imp/argparse)
@@ -72,6 +69,9 @@ include_directories (imp/log.c)
 
 file (GLOB IMP_SRC_FILES
     imp/*.h
+    imp/glad/include/KHR/*.h
+    imp/glad/include/glad/*.h
+    imp/glad/src/*.c
     imp/vec/*.h
     imp/vec/*.c
     imp/fileu/*.h
@@ -164,13 +164,13 @@ endif ()
 if (NOT DEFINED EMSCRIPTEN)
     if (WIN32)
         target_link_libraries (
-            player opengl32 gl3w uv_a zf_log
+            player opengl32 uv_a zf_log
             version winmm imm32
             wldap32 crypt32 ws2_32 normaliz
             userenv psapi iphlpapi
             )
     else ()
-        target_link_libraries (player GL gl3w uv zf_log)
+        target_link_libraries (player GL uv zf_log)
     endif ()
 endif ()
 
