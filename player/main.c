@@ -140,8 +140,7 @@ int main(int argc, const char* argv[])
     bool stopped = false;
 
 
-    static const int IntervalTable[] = { 0, 1, -1 };
-    int r = SDL_GL_SetSwapInterval(IntervalTable[intervalMode]);
+    int r = SDL_GL_SetSwapInterval(intervalMode);
     assert(0 == r);
 
 
@@ -319,7 +318,7 @@ int main(int argc, const char* argv[])
                 }
                 if (SDLK_TAB == e.key.keysym.sym)
                 {
-                    intervalMode = (intervalMode + 1) % ARYLEN(IntervalTable);
+                    intervalMode = (intervalMode + 1) % 3;
                     int r = SDL_GL_SetSwapInterval(intervalMode);
                     if (0 != r)
                     {
