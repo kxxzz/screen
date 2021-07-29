@@ -40,7 +40,7 @@ endif ()
 
 
 if (MSVC)
-    set (CMAKE_C_FLAGS "/W3 /WX")
+    set (CMAKE_C_FLAGS "/W3")
 endif ()
 if (CMAKE_COMPILER_IS_GNUCC)
     set (CMAKE_C_FLAGS "-std=c11 -Wall -Wno-unused-function -DHAVE_PTHREAD -D_GNU_SOURCE -D_O_CLOEXEC")
